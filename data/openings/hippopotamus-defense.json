@@ -1,0 +1,623 @@
+{
+  "opening": "Hippopotamus Defense",
+  "color": "black",
+  "description": "A universal system where Black builds a compact fortress with pawns on d6/e6, fianchettoed bishops on b7/g7, knights on d7/e7, and pawns on a6/h6. Black waits for White to overextend, then counterattacks with central breaks (...e5 or ...d5) or flank attacks (...f5, ...b5).",
+  "difficulty": "beginner",
+  "targetRating": 700,
+  "keyPrinciples": [
+    "Develop all pieces behind the pawn chain before breaking",
+    "If White plays d5, respond with ...e5 and aim for ...f5",
+    "If White plays e5, respond with ...d5 and aim for ...c5",
+    "Do NOT break in the center too early - complete your setup first",
+    "The pawn wall on a6/b6/d6/e6/g6/h6 controls every square on the 5th rank",
+    "Avoid the Austrian Attack (f4) - if White plays f4 early, consider ...Nf6 transposing to the Pirc"
+  ],
+  "variations": [
+    {
+      "id": "hippo-vs-e4-main",
+      "name": "Hippo vs 1.e4 — Main Setup",
+      "description": "The standard Hippopotamus formation against king's pawn openings. Black plays ...g6 first to fianchetto the dark-squared bishop, then builds the full Hippo wall.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "e4",
+          "black": "g6",
+          "blackExplanation": "Start the Hippo with ...g6. This is the most flexible first move — it prepares the kingside fianchetto and doesn't commit to a specific pawn structure yet."
+        },
+        {
+          "moveNumber": 2,
+          "white": "d4",
+          "black": "Bg7",
+          "blackExplanation": "Develop the dark-squared bishop to its best diagonal. From g7 it controls the long diagonal a1-h8 and supports a future ...e5 break."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Nc3",
+          "black": "d6",
+          "blackExplanation": "Establish the first pillar of the Hippo pawn chain. The pawn on d6 controls e5 and c5, and opens the diagonal for the light-squared bishop."
+        },
+        {
+          "moveNumber": 4,
+          "white": "Nf3",
+          "black": "a6",
+          "blackExplanation": "A key Hippo move. The pawn on a6 prevents Nb5 or Bb5, prepares ...b6 and ...Bb7, and later supports a ...b5 queenside expansion."
+        },
+        {
+          "moveNumber": 5,
+          "white": "Be2",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto. The pawn on b6 will support the bishop on b7 and control c5 and a5."
+        },
+        {
+          "moveNumber": 6,
+          "white": "O-O",
+          "black": "Bb7",
+          "blackExplanation": "Complete the queenside fianchetto. The bishop on b7 aims at the e4 pawn and controls the long diagonal a8-h1."
+        },
+        {
+          "moveNumber": 7,
+          "white": "Be3",
+          "black": "e6",
+          "blackExplanation": "The second pillar of the Hippo. The pawn on e6 controls d5 and f5, completing the small but solid pawn center."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Qd2",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight to d7 rather than f6, keeping the g7 bishop's diagonal clear. The knight on d7 supports both ...e5 and ...c5 breaks."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Rad1",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight to e7. From here it can support ...d5 or ...f5, and can reroute to g6, f5, or c6 later."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Rfe1",
+          "black": "h6",
+          "blackExplanation": "Complete the Hippo pawn wall. The pawn on h6 prevents Ng5 or Bg5 and prepares a future ...g5 kingside expansion."
+        },
+        {
+          "moveNumber": 11,
+          "white": "Bc4",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside to safety. The Hippo setup is now complete: pawns on a6/b6/d6/e6/g6/h6, bishops on b7/g7, knights on d7/e7."
+        },
+        {
+          "moveNumber": 12,
+          "white": "d5",
+          "black": "e5",
+          "blackExplanation": "The key reactive break! When White pushes d5, lock the center with ...e5. Now plan ...f5 to attack White's center, similar to a King's Indian structure."
+        }
+      ],
+      "resultDescription": "Black has completed the full Hippopotamus setup and responded to White's d5 push by locking the center with ...e5. Black now has a King's Indian-style structure and will aim for ...f5 to attack White's e4 pawn and create kingside counterplay."
+    },
+    {
+      "id": "hippo-vs-e4-aggressive-white",
+      "name": "Hippo vs 1.e4 — White Pushes e5 Early",
+      "description": "White tries to grab space with e5. Black locks the center with ...d5 and gets a French Defense-style position with extra flexibility.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "e4",
+          "black": "g6",
+          "blackExplanation": "Start the Hippo with the kingside fianchetto preparation."
+        },
+        {
+          "moveNumber": 2,
+          "white": "d4",
+          "black": "Bg7",
+          "blackExplanation": "Fianchetto the dark-squared bishop to its most active square."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Nc3",
+          "black": "d6",
+          "blackExplanation": "Establish the d6 pawn, controlling e5 and preparing the Hippo structure."
+        },
+        {
+          "moveNumber": 4,
+          "white": "Nf3",
+          "black": "e6",
+          "blackExplanation": "Set up the e6 pawn early. Together with d6, this creates a solid small center."
+        },
+        {
+          "moveNumber": 5,
+          "white": "e5",
+          "black": "d5",
+          "blackExplanation": "The key reactive break! When White pushes e5, lock the center with ...d5. This creates a French Defense structure where Black's dark-squared bishop is already actively placed on g7."
+        },
+        {
+          "moveNumber": 6,
+          "white": "Be2",
+          "black": "Ne7",
+          "blackExplanation": "Develop the knight to e7, keeping options to go to f5 (attacking the e5 pawn) or g6."
+        },
+        {
+          "moveNumber": 7,
+          "white": "O-O",
+          "black": "Nd7",
+          "blackExplanation": "Develop the second knight. From d7 it eyes the e5 pawn and supports a future ...c5 break."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Be3",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto and the ...c5 pawn break, which is the standard plan in this French-like structure."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Nd2",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto. The bishop pressures d5-e4 and supports the central structure."
+        },
+        {
+          "moveNumber": 10,
+          "white": "f4",
+          "black": "c5",
+          "blackExplanation": "Strike at White's d4 pawn with the thematic ...c5 break. This undermines White's center and opens the c-file for Black's rooks."
+        }
+      ],
+      "resultDescription": "Black has a French Defense structure but with the huge advantage of having the dark-squared bishop actively placed on g7 (normally it's trapped behind the e6 pawn in the French). Black will continue with ...O-O, ...a5, and pressure on the c-file."
+    },
+    {
+      "id": "hippo-vs-d4-main",
+      "name": "Hippo vs 1.d4 — Main Setup (Spassky Line)",
+      "description": "The classic Hippopotamus against queen's pawn openings, as played by Boris Spassky in his 1966 World Championship match. Black builds the full Hippo wall.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "d4",
+          "black": "g6",
+          "blackExplanation": "Begin with ...g6, just like against 1.e4. The Hippo is a universal system — same first move regardless of White's choice."
+        },
+        {
+          "moveNumber": 2,
+          "white": "c4",
+          "black": "Bg7",
+          "blackExplanation": "Fianchetto the dark-squared bishop immediately, putting it on the long diagonal."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Nc3",
+          "black": "d6",
+          "blackExplanation": "Establish the d6 pawn. This controls e5 and signals the Hippo formation."
+        },
+        {
+          "moveNumber": 4,
+          "white": "e4",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight to d7 early. This avoids any pin with Bg5 and keeps the g7 bishop's diagonal open."
+        },
+        {
+          "moveNumber": 5,
+          "white": "Nf3",
+          "black": "e6",
+          "blackExplanation": "Place the second pawn pillar on e6. The Hippo pawn duo d6/e6 is now in place."
+        },
+        {
+          "moveNumber": 6,
+          "white": "Be2",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto. The pawn on b6 supports Bb7 and controls c5."
+        },
+        {
+          "moveNumber": 7,
+          "white": "O-O",
+          "black": "Bb7",
+          "blackExplanation": "Complete the queenside fianchetto. The bishop on b7 targets e4 through the long diagonal."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Be3",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight to e7, where it supports ...d5 or ...f5 and can reroute to g6 or f5."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Qd2",
+          "black": "h6",
+          "blackExplanation": "Add the h6 pawn to the wall. This prevents Bg5 (or Bh6 trading the fianchettoed bishop) and prepares ...g5 if needed."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Rad1",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside. The Hippo is now fully deployed. Time to wait for White's break and react."
+        },
+        {
+          "moveNumber": 11,
+          "white": "d5",
+          "black": "e5",
+          "blackExplanation": "Lock the center with ...e5 in response to d5. Now plan ...f5 to generate King's Indian-style kingside counterplay."
+        }
+      ],
+      "resultDescription": "Black has completed the Hippo and reacted to White's d5 with ...e5, creating a closed King's Indian-type position. Black's plan is ...f5 (and possibly ...g5, ...Ng6, ...Nf4) for a kingside attack, while the Bb7 supports the center from the long diagonal."
+    },
+    {
+      "id": "hippo-vs-d4-white-plays-e5",
+      "name": "Hippo vs 1.d4 — White Pushes e5",
+      "description": "White occupies the center aggressively with e4-e5. Black locks up with ...d5 and plays French Defense-style counterplay on the queenside.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "d4",
+          "black": "g6",
+          "blackExplanation": "Start with the universal ...g6."
+        },
+        {
+          "moveNumber": 2,
+          "white": "c4",
+          "black": "Bg7",
+          "blackExplanation": "Fianchetto the dark-squared bishop."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Nc3",
+          "black": "d6",
+          "blackExplanation": "Establish the d6 outpost."
+        },
+        {
+          "moveNumber": 4,
+          "white": "e4",
+          "black": "e6",
+          "blackExplanation": "Set up both central pawns on the 6th rank, ready to react to White's advance."
+        },
+        {
+          "moveNumber": 5,
+          "white": "Nf3",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight to d7, supporting both ...e5 and ...c5 while keeping the bishop diagonal open."
+        },
+        {
+          "moveNumber": 6,
+          "white": "Be2",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight to e7, ready to support ...d5 or reroute to f5 or g6."
+        },
+        {
+          "moveNumber": 7,
+          "white": "O-O",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto and the future ...c5 break."
+        },
+        {
+          "moveNumber": 8,
+          "white": "e5",
+          "black": "d5",
+          "blackExplanation": "The key break! Lock the center with ...d5 when White pushes e5. This creates a French-like structure with Black's g7 bishop actively placed."
+        },
+        {
+          "moveNumber": 9,
+          "white": "c5",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto. The bishop supports the d5 pawn and eyes the kingside."
+        },
+        {
+          "moveNumber": 10,
+          "white": "b4",
+          "black": "O-O",
+          "blackExplanation": "Castle to safety. Black will now plan ...a5 to challenge White's queenside space, and ...Nf5 to pressure d4."
+        }
+      ],
+      "resultDescription": "The center is locked. Black has a solid French-like structure but with the critical advantage of the g7 bishop being active (not blocked behind e6 as in a typical French). Black plans ...a5, ...Nf5, and eventual breaks on the queenside."
+    },
+    {
+      "id": "hippo-vs-c4-english",
+      "name": "Hippo vs 1.c4 — English Opening",
+      "description": "Against the English, Black builds the same Hippo setup. White often transposes into d4 structures, and Black's system handles all cases.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "c4",
+          "black": "g6",
+          "blackExplanation": "The same universal first move. Against the English, ...g6 is natural and flexible."
+        },
+        {
+          "moveNumber": 2,
+          "white": "Nc3",
+          "black": "Bg7",
+          "blackExplanation": "Fianchetto the dark-squared bishop onto the long diagonal."
+        },
+        {
+          "moveNumber": 3,
+          "white": "d4",
+          "black": "d6",
+          "blackExplanation": "If White plays d4, we reach a familiar Hippo structure. Set up the d6 pillar."
+        },
+        {
+          "moveNumber": 4,
+          "white": "e4",
+          "black": "e6",
+          "blackExplanation": "Complete the central pawn duo. The Hippo's d6/e6 formation is in place."
+        },
+        {
+          "moveNumber": 5,
+          "white": "Nf3",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight behind the pawns, supporting future central breaks."
+        },
+        {
+          "moveNumber": 6,
+          "white": "Be2",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto and control the c5 square."
+        },
+        {
+          "moveNumber": 7,
+          "white": "O-O",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto. The bishop puts pressure on e4 through the long diagonal."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Be3",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight. The standard Hippo is nearly complete."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Qd2",
+          "black": "h6",
+          "blackExplanation": "Add the prophylactic ...h6 to the pawn wall, preventing Bg5 and Bh6."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Rad1",
+          "black": "a6",
+          "blackExplanation": "Complete the full Hippo wall with ...a6. Pawns on a6/b6/d6/e6/g6/h6 — every 5th rank square is covered."
+        },
+        {
+          "moveNumber": 11,
+          "white": "Rfe1",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside. The Hippo is fully set up. Wait for White's break and react accordingly."
+        }
+      ],
+      "resultDescription": "Black has the complete Hippo fortress against the English. Note: if White plays c4 and d4 with e4, this transposes to the same positions as the 1.d4 or 1.e4 Hippo lines. Black responds to d5 with ...e5 (plan ...f5) or to e5 with ...d5 (plan ...c5)."
+    },
+    {
+      "id": "hippo-vs-c4-no-d4",
+      "name": "Hippo vs 1.c4 — White Avoids d4",
+      "description": "White plays a pure English setup without d4. Black builds the Hippo and has an easier time since White's center is less imposing.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "c4",
+          "black": "g6",
+          "blackExplanation": "Begin with the universal ...g6."
+        },
+        {
+          "moveNumber": 2,
+          "white": "g3",
+          "black": "Bg7",
+          "blackExplanation": "Develop the bishop while White also fianchettoes. A symmetrical start."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Bg2",
+          "black": "d6",
+          "blackExplanation": "Set up the d6 pawn. No rush — White has not committed to d4."
+        },
+        {
+          "moveNumber": 4,
+          "white": "Nc3",
+          "black": "e6",
+          "blackExplanation": "Establish the e6/d6 pawn duo."
+        },
+        {
+          "moveNumber": 5,
+          "white": "Nf3",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight to d7, keeping the Bg7 diagonal clear."
+        },
+        {
+          "moveNumber": 6,
+          "white": "O-O",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight. The setup is nearly complete."
+        },
+        {
+          "moveNumber": 7,
+          "white": "d3",
+          "black": "b6",
+          "blackExplanation": "White plays a modest d3 — this means less central tension. Calmly prepare the queenside fianchetto."
+        },
+        {
+          "moveNumber": 8,
+          "white": "e4",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto. The bishop immediately pressures e4."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Be3",
+          "black": "h6",
+          "blackExplanation": "Add the prophylactic ...h6 to the wall."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Qd2",
+          "black": "a6",
+          "blackExplanation": "Complete the full Hippo pawn chain. The setup is fully built."
+        },
+        {
+          "moveNumber": 11,
+          "white": "Rae1",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside. Without d4, White's center is modest and Black has a very comfortable Hippo."
+        }
+      ],
+      "resultDescription": "Black has the complete Hippo against a restrained English setup. With White's pawn on d3 instead of d4, Black has extra flexibility and can consider ...e5 (gaining space) or ...d5 (challenging c4) at the right moment."
+    },
+    {
+      "id": "hippo-vs-nf3-reti",
+      "name": "Hippo vs 1.Nf3 — Reti Opening",
+      "description": "Against the Reti, Black builds the Hippo just as easily. The Reti is a flexible opening, and the Hippo is the perfect flexible response.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "Nf3",
+          "black": "g6",
+          "blackExplanation": "The universal Hippo first move. Against the Reti, ...g6 is perfectly natural."
+        },
+        {
+          "moveNumber": 2,
+          "white": "c4",
+          "black": "Bg7",
+          "blackExplanation": "Fianchetto the dark-squared bishop on the long diagonal."
+        },
+        {
+          "moveNumber": 3,
+          "white": "d4",
+          "black": "d6",
+          "blackExplanation": "If White plays d4, set up the Hippo d6 pawn. This position can transpose to the 1.d4 lines."
+        },
+        {
+          "moveNumber": 4,
+          "white": "Nc3",
+          "black": "Nd7",
+          "blackExplanation": "Develop the knight to d7 early, as in the Spassky game from the 1966 World Championship."
+        },
+        {
+          "moveNumber": 5,
+          "white": "e4",
+          "black": "e6",
+          "blackExplanation": "Set up the e6 pillar. The central pawn duo is established."
+        },
+        {
+          "moveNumber": 6,
+          "white": "Be2",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto."
+        },
+        {
+          "moveNumber": 7,
+          "white": "O-O",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto. The bishop on b7 targets e4."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Be3",
+          "black": "Ne7",
+          "blackExplanation": "Develop the second knight to e7, completing the minor piece development."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Qc2",
+          "black": "h6",
+          "blackExplanation": "The prophylactic ...h6, preventing Ng5 and Bg5. Part of the full Hippo pawn wall."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Rad1",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside. The Hippo is nearly complete."
+        },
+        {
+          "moveNumber": 11,
+          "white": "d5",
+          "black": "e5",
+          "blackExplanation": "Lock the center! When White pushes d5, respond with ...e5 and plan ...f5 for kingside counterplay."
+        },
+        {
+          "moveNumber": 12,
+          "white": "Qc1",
+          "black": "f5",
+          "blackExplanation": "Launch the kingside counterattack with ...f5! This is the thematic break after ...e5. Black attacks White's e4 pawn and opens the f-file."
+        }
+      ],
+      "resultDescription": "This is the actual Petrosian-Spassky 1966 World Championship line. After ...f5, Black has active kingside play. The Bb7 supports the center, and Black can continue with ...Nf6, ...g5, or ...fxe4 depending on White's response."
+    },
+    {
+      "id": "hippo-vs-nf3-quiet",
+      "name": "Hippo vs 1.Nf3 — White Plays Quietly (No d4)",
+      "description": "White plays a quiet Reti setup without early d4. Black gets the full Hippo with minimal pressure.",
+      "moves": [
+        {
+          "moveNumber": 1,
+          "white": "Nf3",
+          "black": "g6",
+          "blackExplanation": "Universal Hippo first move."
+        },
+        {
+          "moveNumber": 2,
+          "white": "g3",
+          "black": "Bg7",
+          "blackExplanation": "Both sides fianchetto. Natural development."
+        },
+        {
+          "moveNumber": 3,
+          "white": "Bg2",
+          "black": "d6",
+          "blackExplanation": "Set up the d6 pawn."
+        },
+        {
+          "moveNumber": 4,
+          "white": "O-O",
+          "black": "e6",
+          "blackExplanation": "Establish the e6/d6 pawn center."
+        },
+        {
+          "moveNumber": 5,
+          "white": "d3",
+          "black": "Ne7",
+          "blackExplanation": "White plays modestly with d3. Develop the knight to e7."
+        },
+        {
+          "moveNumber": 6,
+          "white": "e4",
+          "black": "Nd7",
+          "blackExplanation": "Develop the second knight behind the pawn chain."
+        },
+        {
+          "moveNumber": 7,
+          "white": "Nc3",
+          "black": "b6",
+          "blackExplanation": "Prepare the queenside fianchetto."
+        },
+        {
+          "moveNumber": 8,
+          "white": "Be3",
+          "black": "Bb7",
+          "blackExplanation": "Complete the fianchetto targeting e4."
+        },
+        {
+          "moveNumber": 9,
+          "white": "Qd2",
+          "black": "h6",
+          "blackExplanation": "Add the prophylactic ...h6 to the pawn wall."
+        },
+        {
+          "moveNumber": 10,
+          "white": "Nh4",
+          "black": "a6",
+          "blackExplanation": "Complete the Hippo pawn wall. White's knight retreat to h4 is non-threatening."
+        },
+        {
+          "moveNumber": 11,
+          "white": "f4",
+          "black": "O-O",
+          "blackExplanation": "Castle kingside. Even with f4, Black's solid structure is resilient. Plan ...d5 or ...e5 depending on White's center."
+        }
+      ],
+      "resultDescription": "Black has the full Hippo setup against a quiet Reti. White's d3+e4+f4 setup lacks the punch of d4, so Black is very comfortable and can choose when and where to break."
+    }
+  ],
+  "moveOrderNotes": {
+    "universalFirstMove": "Always play 1...g6 regardless of White's first move. This is the most flexible Hippo starting move.",
+    "secondMove": "Almost always 2...Bg7, completing the kingside fianchetto immediately.",
+    "avoidAustrianAttack": "If White plays an early f4 (creating pawns on d4+e4+f4), consider playing ...Nf6 instead of the pure Hippo, transposing into a Pirc Defense. The Austrian Attack is dangerous against the Hippo.",
+    "moveOrderFlexibility": "The order of ...d6, ...e6, ...b6, ...a6, ...h6, ...Nd7, and ...Ne7 is flexible. Adapt to White's moves, but the key principles are: (1) get ...d6 and ...e6 in early, (2) develop knights before pushing wing pawns, (3) castle when your king needs safety.",
+    "breakTimingRule": "NEVER break in the center until your setup is complete. The Hippo's strength is the fully built wall — premature breaks give White targets."
+  },
+  "sources": [
+    "Alessio De Santis - The Hippopotamus Defence (New in Chess, 2019)",
+    "Petrosian vs Spassky, World Championship Match 1966, Game 12",
+    "Spassky vs Ujtelky, Sochi 1964",
+    "Wikipedia - Hippopotamus Defence",
+    "Chess.com Opening Explorer"
+  ]
+}
