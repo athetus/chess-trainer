@@ -163,9 +163,9 @@ L('ponz-main-deep','Main Line Deep: After 8.O-O Be7','Extended main line showing
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Bd3','Nf6','O-O','Be7','Re1','O-O','Nd2','Nxe5','Rxe5','d6','Re1'],
 {6:'Seize the center with d4.',8:'Kick the knight and gain space.',10:'Recapture on e5.',12:'Develop to d3 -- active bishop.',14:'Castle to safety.',16:'Place the rook on the open e-file.',18:'Reroute the knight: Nd2 heading to f1-g3 or c4.',20:'Recapture with the rook, maintaining control of the e-file.',22:'Pull the rook back. White has a lasting positional edge.'}),
 
-L('ponz-main-positional','Positional: 7.Nxg6 + Qd4 (Queen Trade)','White trades knights then queens for a favorable endgame.','White gets a favorable endgame with more space and better pawn structure.',0,'main',
-['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Nxg6','hxg6','Qd4','Qf6','Qxf6','gxf6','Be3'],
-{6:'Push d4 to seize the center.',8:'Kick the knight away and gain space.',10:'Recapture on e5.',12:'Trade the knight first to clear the diagonal for the queen.',14:'Centralize the queen. Now the path to f6 is clear.',16:'Accept the queen trade -- endgame is favorable due to d5 space advantage.',18:'Develop the bishop. Clear positional edge in the endgame.'}),
+L('ponz-main-positional','Positional: Nxg6 Qd4 Qxe4+ (Win Knight!)','After Nxg6 and Qd4, Black offers a queen trade but Qxe4+ wins the knight with check!','White wins a free knight with Qxe4+. Much better than just trading queens!',0,'main',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Nxg6','hxg6','Qd4','Qf6','Qxe4+','Qe7','Qxe7+','Bxe7','Bf4'],
+{6:'Push d4 to seize the center.',8:'Kick the knight away and gain space.',10:'Recapture on e5.',12:'Trade the knight to clear the diagonal.',14:'Centralize the queen.',16:'Qxe4+! Don\'t trade queens! Capture the knight WITH CHECK. Free piece!',18:'Trade queens now. White is up a full knight.',20:'Develop the bishop. White is winning.'}),
 
 L('ponz-gotham-qb3','GothamChess Main: 5.e5 Nd5 6.Qb3','THE GothamChess Ponziani line. After exd4, push e5 and Qb3 for massive center.','White has a dream center (d4+e5), active queen, and Black\'s knight is stuck on b6.',0,'main',
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','Qb3','Nb6','cxd4','d5','exd6','Bxd6','Bd3','O-O','O-O'],
@@ -242,9 +242,9 @@ L('ponz-d6-d5-bg5-safe','3...d6: d5 Bg5 (Black Plays Safe)','After d5 Bg5, if Bl
 ['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
 {6:'Push d4.',8:'Push d5! Kick the knight and grab space.',10:'Bg5! Even if Black doesn\'t bite, the pin is annoying.',12:'Retreat to h4, maintaining pressure on f6.',14:'Retreat to g3. Bishop controls e5 nicely.',16:'Develop to d3, aiming at the kingside.',18:'Castle. Space advantage and easy kingside attack.'}),
 
-L('ponz-passive-be7','Passive: 3...Be7 4.d4 d6 5.d5!','Safety-first by Black. Push d5 to kick the knight back to b8!','d5 kicks the knight to b8 (e7 is blocked!). White has huge space advantage.',0,'other',
+L('ponz-passive-be7','Passive: 3...Be7 4.d4 d6 5.d5!','Safety-first by Black. Push d5 — knight retreats to b8 (e7 is blocked by bishop)!','d5 kicks the knight to b8 (e7 blocked!). White has huge space advantage.',0,'other',
 ['e4','e5','Nf3','Nc6','c3','Be7','d4','d6','d5','Nb8','Bd3','Nf6','O-O','O-O','Nbd2','a5','Re1','Na6','Nf1'],
-{6:'Push d4!',8:'Push d5! Kick the knight. e7 is blocked by the bishop so it must retreat to b8!',10:'Develop to d3.',12:'Castle.',14:'Develop the knight.',16:'Rook to e1.',18:'Nf1 heading to g3. Huge space advantage.'}),
+{6:'Push d4!',8:'Push d5! Knight can\'t go to e7 (bishop blocks it!) — must retreat to b8!',10:'Develop to d3.',12:'Castle.',14:'Develop the knight.',16:'Rook to e1.',18:'Nf1 heading to g3. Huge space advantage.'}),
 
 L('ponz-aggressive-f5','Aggressive: 3...f5','Black attacks e4 but weakens the kingside.','White has clear advantage with better development.',0,'other',
 ['e4','e5','Nf3','Nc6','c3','f5','d4','fxe4','Nxe5','Qf6','Ng4','Qg6','Bf4','Nf6','d5','Ne5','Ne3'],
@@ -342,8 +342,8 @@ L('hippo-vs-h4-storm','Hippo vs h4 Pawn Storm','White storms with h4-h5. Don\'t 
 {1:'Start with ...g6.',3:'Fianchetto.',5:'Play ...d6. Don\'t panic about h4.',7:'Continue with ...a6. The h4 push isn\'t threatening yet.',9:'Keep building with ...b6. Let White waste tempi.',11:'Recapture ...fxg6! Keeps a pawn on g6 and opens the f-file.',13:'Complete fianchetto.',15:'Play ...e6 to block Bc4 and solidify.',17:'Continue developing.',19:'Second knight to e7.',21:'Strike with ...d5! Challenge the center.'}),
 
 L('hippo-vs-bh6','Hippo vs Bh6 (Bishop Trade)','White trades the dark bishop. Allow it -- compensate with solid center.','After trade, half-open g-file and strong Bb7 compensate.',0,'threats',
-['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Bh6','Bxh6','Qxh6','Ne7','Qd2','h6','Rad1','O-O','Rfe1','Nf5'],
-{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'Prophylactic ...a6.',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight.',17:'Allow the trade with ...Bxh6. The compensation is good enough.',19:'Develop knight to e7. Plan to reroute to f5.',21:'Play ...h6 to prevent queen returning to h6.',23:'Castle. Solid even without the dark bishop.',25:'Knight to f5! Dream outpost -- pressures d4 and e3.'}),
+['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Bh6','Bxh6','Qxh6','Ne7','Qd2','O-O','Rad1','h6','Rfe1','d5'],
+{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'Prophylactic ...a6.',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight.',17:'Allow the trade with ...Bxh6. Compensation is good enough.',19:'Develop knight to e7.',21:'Castle first! Get the king safe before pushing pawns.',23:'Now ...h6. Queen already left h6 so it\'s safe.',25:'Push ...d5! Challenge the center -- the key break after the bishop trade.'}),
 
 // === MIDDLEGAME PLANS ===
 L('hippo-f5-attack','Middlegame: ...f5 Kingside Attack','After d5/e5 lock, launch ...f5 followed by ...Nf6, ...g5.','Powerful kingside attack. Knight on f5 is a monster.',0,'plans',
