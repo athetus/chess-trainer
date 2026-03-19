@@ -50,6 +50,8 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
 .btn-next{background:#e94560;color:#fff}
 .btn-retry{background:#533483;color:#fff}
 .btn-menu{background:#16213e;color:#aaa}
+.btn-undo{background:#2a2a3e;color:#ffd700}
+.btn-report{background:#2a1a1a;color:#ff8a80;font-size:.72em!important}
 .controls button:active{transform:scale(.95);opacity:.8}
 #move-list{padding:6px 8px;margin:6px 0;background:#16213e;border-radius:8px;font-size:.78em;min-height:2em;line-height:1.6;color:#aaa;max-height:70px;overflow-y:auto}
 #move-list .move-number{color:#666}
@@ -118,7 +120,9 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     <button class="btn-explain" onclick="app.explain()">Why?</button>
     <button class="btn-next" onclick="app.nextLine()" style="display:none" id="btn-next">Next Line</button>
     <button class="btn-retry" onclick="app.retryLine()" style="display:none" id="btn-retry">Retry</button>
+    <button class="btn-undo" onclick="app.undo()">Undo</button>
     <button class="btn-menu" onclick="app.showLineSelector()">Lines</button>
+    <button class="btn-report" onclick="app.reportError()">Report Error</button>
   </div>
   <div id="move-list"></div>
   <div id="stats-panel">
@@ -779,6 +783,55 @@ var app=(function(){
   function nextLine(){startDrill()}
   function retryLine(){startDrill(currentLine)}
 
+  function undo(){
+    if(isAnimating||!currentLine||moveIndex<=currentLine.baseMoves)return;
+    // Undo back to the last position where it was the player's turn
+    // Need to undo: the opponent's last auto-move + the player's last move
+    var stepsBack=0;
+    // If it's currently the player's turn, undo player's last move + opponent's move before it
+    var turnColor=moveIndex%2===0?'w':'b';
+    if(turnColor===currentLine.playerColor){
+      // Player's turn: undo opponent auto-move + player's move = 2 moves
+      if(moveIndex>=2){game.undo();game.undo();moveIndex-=2;stepsBack=2}
+    }else{
+      // Opponent's turn (waiting for auto): undo just player's last move
+      if(moveIndex>=1){game.undo();moveIndex-=1;stepsBack=1}
+    }
+    if(stepsBack>0){
+      clearHighlights();clearArrows();selectedSquare=null;
+      board.position(game.fen());
+      // Rebuild move list
+      $('#move-list').html('');
+      var tempGame=new Chess();
+      for(var i=0;i<moveIndex;i++){
+        var m=tempGame.move(currentLine.moves[i]);
+        if(m)updateMoveList(m,i);
+      }
+      moveStartTime=Date.now();
+      setStatus('Undone. Try again!','info');
+    }
+  }
+
+  function reportError(){
+    if(!currentLine)return;
+    var report={
+      lineId:currentLine.id,
+      lineName:currentLine.name,
+      moveIndex:moveIndex,
+      fen:game.fen(),
+      expectedMove:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
+      fullMoves:currentLine.moves.join(' '),
+      timestamp:new Date().toISOString()
+    };
+    // Save to localStorage error log
+    var errors=[];
+    try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
+    errors.push(report);
+    localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
+    setStatus('Error reported! ('+errors.length+' total)','info');
+    Sound.play('correct');
+  }
+
   function showLineSelector(){
     if(lineSelectMode){hideLineSelector();return}
     lineSelectMode=true;
@@ -861,7 +914,7 @@ var app=(function(){
 
   $(document).ready(function(){init()});
 
-  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine};
+  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine,undo:undo,reportError:reportError};
 })();
 </script>
 </body>
