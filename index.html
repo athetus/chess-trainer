@@ -428,6 +428,7 @@ var app=(function(){
   var currentOpening='ponziani';
   var isAnimating=false;
   var lineSelectMode=false;
+  var autoAdvanceTimer=null;
 
   function init(){
     game=new Chess();
@@ -484,6 +485,7 @@ var app=(function(){
   function getLines(){return ALL_LINES.filter(function(l){return l.opening===currentOpening})}
 
   function startDrill(specificLine){
+    if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null}
     hideResult();hideLineSelector();
     game.reset();clearHighlights();
     selectedSquare=null;hintUsed=false;hintsUsedCount=0;
@@ -649,11 +651,15 @@ var app=(function(){
       $('#level-up').hide();
     }
 
-    // Show completion status right on screen so user doesn't miss it
-    setStatus(isPerfect?'Line complete! Perfect!':accuracy>=70?'Line complete! Good effort!':'Line complete. Keep practicing!',isPerfect?'correct':'info');
+    // Brief status + auto-advance like chess.com puzzles
+    var statusMsg=isPerfect?'Perfect! '+xpMsg:accuracy>=70?'Good! '+xpMsg:'Keep practicing. '+xpMsg;
+    setStatus(statusMsg,isPerfect?'correct':accuracy>=70?'info':'wrong');
+    // Auto-advance to next line after a short pause
+    var delay=isPerfect?1500:accuracy>=70?2500:3500;
+    autoAdvanceTimer=setTimeout(function(){startDrill()},delay);
+    // Show result briefly (user can tap Retry to cancel auto-advance)
     $('#result-screen').fadeIn(200);
     $('#drill-controls').hide();
-    setTimeout(function(){$('#result-screen')[0].scrollIntoView({behavior:'smooth',block:'center'})},250);
   }
 
   function hint(){
