@@ -159,9 +159,29 @@ L('ponz-main-positional','Positional: 7.Nxg6 + Qd4 (Queen Trade)','White trades 
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Nxg6','hxg6','Qd4','Qf6','Qxf6','gxf6','Be3'],
 {6:'Push d4 to seize the center.',8:'Kick the knight away and gain space.',10:'Recapture on e5.',12:'Trade the knight first to clear the diagonal for the queen.',14:'Centralize the queen. Now the path to f6 is clear.',16:'Accept the queen trade -- endgame is favorable due to d5 space advantage.',18:'Develop the bishop. Clear positional edge in the endgame.'}),
 
-L('ponz-main-exd4','Main Line: 3...Nf6 4.d4 exd4','Black captures on d4. White gets a strong center with e5.','White has a big center with d4+e5. Easy development.',0,'main',
+L('ponz-gotham-qb3','GothamChess Main: 5.e5 Nd5 6.Qb3','THE GothamChess Ponziani line. After exd4, push e5 and Qb3 for massive center.','White has a dream center (d4+e5), active queen, and Black\'s knight is stuck on b6.',0,'main',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','Qb3','Nb6','cxd4','d5','exd6','Bxd6','Bd3','O-O','O-O'],
+{6:'Push d4! The whole point of the Ponziani.',8:'Push e5! Kick the knight and grab space.',10:'Qb3! GothamChess\'s key move. Pressures b7 and eyes d5. Black\'s knight is displaced.',12:'Recapture. Massive center on d4+e5.',14:'Capture en passant. Open the position while Black is cramped.',16:'Develop to d3. Natural and strong.',18:'Castle. White has a dream position with huge center.'}),
+
+L('ponz-gotham-exd4-bc5-trap','TRAP: 5.e5 Bc5?? 6.Qa4! (GothamChess)','After 5.e5, Black develops Bc5 but Qa4 is a devastating double attack.','TRAP! Qa4 hits both Nc6 and the bishop. Black loses material.',1,'trap',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Bc5','Qa4'],
+{6:'Push d4.',8:'Push e5, kicking the knight.',10:'Qa4! Double attack on Nc6 and the undefended Bc5. Black can\'t save both.'}),
+
+L('ponz-main-exd4','Main Line: 3...Nf6 4.d4 exd4 (Book)','The book continuation with cxd4 and Bb4+ (alternative to GothamChess Qb3).','White has a big center with d4+e5. Easy development.',0,'main',
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','cxd4','Bb4+','Bd2','Bxd2+','Qxd2','d6'],
 {6:'Push d4, challenging the center.',8:'Advance with tempo! Pawn attacks the f6 knight.',10:'Recapture. Powerful pawn center on d4+e5.',12:'Block the check and develop the bishop.',14:'Recapture with queen, well-placed on d2.'}),
+
+L('ponz-gotham-bg5-trap','TRAP: Bg5 Poisoned e4 (GothamChess)','After 3...Nf6 4.d4 d6 5.d5 Ne7 6.Bg5, the e4 pawn is poisoned!','TRAP! If Black takes e4, Qa4+ forks king and knight. Famous GothamChess trick.',1,'trap',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','d5','Ne7','Bg5','Nxe4','Qa4+','Bd7','Qxe4'],
+{6:'Push d4 (if Black doesn\'t play d5, we play d4!).',8:'Push d5! Kick the knight and grab space.',10:'Bg5! THE GothamChess trick. Pins the f6 knight and poisons the e4 pawn.',12:'Qa4+! Fork the king and the knight on e4. Black can\'t save both.',14:'Win the knight back. White is up a clean pawn with a better position.'}),
+
+L('ponz-gotham-bg5-nontrap','Bg5 Line: Black Doesn\'t Take (GothamChess)','After 6.Bg5, if Black plays correctly with ...h6, White still has a great position.','White has space, active bishop pair, and the classic Nf1-g3 kingside setup.',0,'main',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
+{6:'Push d4.',8:'Push d5! Kick the knight.',10:'Bg5! Even if Black doesn\'t take e4, the pin is annoying.',12:'Retreat to h4, maintaining the pin on the knight.',14:'Retreat to g3. The bishop is well-placed here, controlling e5.',16:'Develop to d3. Aiming at the kingside.',18:'Castle. White has space and the classic kingside attack setup.'}),
+
+L('ponz-gotham-bc5-qa4','GothamChess: 3...Bc5 4.d4 with Qa4+','After 3...Bc5, White gets a huge center. d5 kicks the knight and Qa4+ creates threats.','White has a massive center and the queen creates tactical threats.',0,'main',
+['e4','e5','Nf3','Nc6','c3','Bc5','d4','exd4','cxd4','Bb4+','Nc3','Nf6','d5','Ne7','Bd3','d6','Qa4+'],
+{6:'Push d4! Challenge the bishop.',8:'Recapture. Big center.',10:'Nc3! Block the check AND develop the knight.',12:'Push d5! Kick the knight to the rim.',14:'Develop actively.',16:'Qa4+! Creates tactical threats including Qxb4 and dxc6.'}),
 
 L('ponz-nf6-d4-d6','Solid: 3...Nf6 4.d4 d6 (Not Capturing)','Black plays solid with d6 instead of taking. White gets the dream Nf1-g3 setup.','White has an ideal center and the classic Nf1-g3 kingside attack.',0,'main',
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','Bd3','Be7','O-O','O-O','Nbd2','Re8','Re1','Bf8','Nf1','h6','Ng3'],
