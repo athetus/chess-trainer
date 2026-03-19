@@ -122,7 +122,8 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     <button class="btn-retry" onclick="app.retryLine()" style="display:none" id="btn-retry">Retry</button>
     <button class="btn-undo" onclick="app.undo()">Undo</button>
     <button class="btn-menu" onclick="app.showLineSelector()">Lines</button>
-    <button class="btn-report" onclick="app.reportError()">Report Error</button>
+    <button class="btn-report" onclick="app.reportError()">Report</button>
+    <button class="btn-report" onclick="app.showErrorLog()">Errors</button>
   </div>
   <div id="move-list"></div>
   <div id="stats-panel">
@@ -133,6 +134,10 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     <div class="accuracy-bar"><div class="accuracy-fill" id="accuracy-fill" style="width:0%"></div></div>
   </div>
   <div id="line-selector"></div>
+  <div id="error-log" style="display:none;padding:8px;margin:6px 0">
+    <h3 style="font-size:.85em;color:#ff8a80;margin-bottom:6px">Error Reports <button onclick="app.clearErrors()" style="float:right;background:#2a1a1a;color:#ff8a80;border:1px solid #ff8a80;border-radius:6px;padding:3px 8px;font-size:.75em;cursor:pointer">Clear All</button></h3>
+    <div id="error-list" style="font-size:.72em;color:#aaa"></div>
+  </div>
   <div id="result-screen">
     <h2 id="result-title"></h2>
     <p id="result-desc"></p>
@@ -820,16 +825,40 @@ var app=(function(){
       moveIndex:moveIndex,
       fen:game.fen(),
       expectedMove:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
-      fullMoves:currentLine.moves.join(' '),
+      movesPlayed:currentLine.moves.slice(0,moveIndex).join(' '),
       timestamp:new Date().toISOString()
     };
-    // Save to localStorage error log
     var errors=[];
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
     errors.push(report);
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
     setStatus('Error reported! ('+errors.length+' total)','info');
     Sound.play('correct');
+    showErrorLog();
+  }
+
+  function showErrorLog(){
+    var el=$('#error-log');
+    if(el.is(':visible')){el.slideUp(200);return}
+    var errors=[];
+    try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
+    if(!errors.length){$('#error-list').html('<div style="padding:8px;color:#666">No errors reported yet.</div>');el.slideDown(200);return}
+    var html='';
+    errors.forEach(function(e,i){
+      html+='<div style="background:#16213e;padding:8px;margin:4px 0;border-radius:6px;border-left:3px solid #ff8a80">';
+      html+='<div style="color:#ff8a80;font-weight:600">#'+(i+1)+' '+e.lineName+'</div>';
+      html+='<div>Move '+e.moveIndex+' | Expected: <b>'+e.expectedMove+'</b></div>';
+      html+='<div style="color:#666;font-size:.9em">'+e.movesPlayed+'</div>';
+      html+='<div style="color:#555;font-size:.85em">'+e.timestamp.slice(0,16).replace('T',' ')+'</div>';
+      html+='</div>';
+    });
+    $('#error-list').html(html);
+    el.slideDown(200);
+  }
+
+  function clearErrors(){
+    localStorage.removeItem('chess-trainer-errors');
+    $('#error-list').html('<div style="padding:8px;color:#666">Cleared.</div>');
   }
 
   function showLineSelector(){
@@ -914,7 +943,7 @@ var app=(function(){
 
   $(document).ready(function(){init()});
 
-  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine,undo:undo,reportError:reportError};
+  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine,undo:undo,reportError:reportError,showErrorLog:showErrorLog,clearErrors:clearErrors};
 })();
 </script>
 </body>
