@@ -191,10 +191,6 @@ L('ponz-gotham-bc5-qa4','GothamChess: 3...Bc5 4.d4 with Qa4+','After 3...Bc5, Wh
 ['e4','e5','Nf3','Nc6','c3','Bc5','d4','exd4','cxd4','Bb4+','Nc3','Nf6','d5','Ne7','Bd3','d6','Qa4+'],
 {6:'Push d4! Challenge the bishop.',8:'Recapture. Big center.',10:'Nc3! Block the check AND develop the knight.',12:'Push d5! Kick the knight to the rim.',14:'Develop actively.',16:'Qa4+! Creates tactical threats including Qxb4 and dxc6.'}),
 
-L('ponz-nf6-d4-d6','Solid: 3...Nf6 4.d4 d6 (Not Capturing)','Black plays solid with d6 instead of taking. White gets the dream Nf1-g3 setup.','White has an ideal center and the classic Nf1-g3 kingside attack.',0,'main',
-['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','Bd3','Be7','O-O','O-O','Nbd2','Re8','Re1','Bf8','Nf1','h6','Ng3'],
-{6:'Push d4 -- two pawns in the center.',8:'Develop the bishop actively to d3.',10:'Castle to safety.',12:'Develop the knight. Plan: Nd2-f1-g3.',14:'Rook to e1, freeing f1 for the knight.',16:'Knight reroute: Nf1 heading to g3.',18:'Knight reaches g3, eyeing f5 and h5. Attack incoming!'}),
-
 // === COUNTERGAMBIT ===
 L('ponz-countergambit-f6','Countergambit: 3...d5 4.Qa4 f6 (Steinitz)','Black\'s best response with ...f6. Complex middlegame.','Complex middlegame. White has a slight pull with active pieces.',0,'counter',
 ['e4','e5','Nf3','Nc6','c3','d5','Qa4','f6','Bb5','Ne7','exd5','Qxd5','d4','Bd7'],
@@ -246,9 +242,9 @@ L('ponz-d6-d5-bg5-safe','3...d6: d5 Bg5 (Black Plays Safe)','After d5 Bg5, if Bl
 ['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
 {6:'Push d4.',8:'Push d5! Kick the knight and grab space.',10:'Bg5! Even if Black doesn\'t bite, the pin is annoying.',12:'Retreat to h4, maintaining pressure on f6.',14:'Retreat to g3. Bishop controls e5 nicely.',16:'Develop to d3, aiming at the kingside.',18:'Castle. Space advantage and easy kingside attack.'}),
 
-L('ponz-passive-be7','Passive: 3...Be7','Safety-first by Black. White builds the dream Nf1-g3 setup.','White has ideal center, more space, and Nf1-g3 attacking setup.',0,'other',
-['e4','e5','Nf3','Nc6','c3','Be7','d4','d6','Bd3','Nf6','O-O','O-O','Nbd2','Re8','Re1','Bf8','Nf1','h6','Ng3'],
-{6:'Seize the center.',8:'Develop actively to d3.',10:'Castle to safety.',12:'Develop knight for the Nf1-g3 maneuver.',14:'Rook to e1, freeing f1.',16:'Nf1 -- heading to g3.',18:'Ng3! Eyeing f5 and h5. Kingside attack!'}),
+L('ponz-passive-be7','Passive: 3...Be7 4.d4 d6 5.d5!','Safety-first by Black. Push d5 to kick the knight back to b8!','d5 kicks the knight to b8 (e7 is blocked!). White has huge space advantage.',0,'other',
+['e4','e5','Nf3','Nc6','c3','Be7','d4','d6','d5','Nb8','Bd3','Nf6','O-O','O-O','Nbd2','a5','Re1','Na6','Nf1'],
+{6:'Push d4!',8:'Push d5! Kick the knight. e7 is blocked by the bishop so it must retreat to b8!',10:'Develop to d3.',12:'Castle.',14:'Develop the knight.',16:'Rook to e1.',18:'Nf1 heading to g3. Huge space advantage.'}),
 
 L('ponz-aggressive-f5','Aggressive: 3...f5','Black attacks e4 but weakens the kingside.','White has clear advantage with better development.',0,'other',
 ['e4','e5','Nf3','Nc6','c3','f5','d4','fxe4','Nxe5','Qf6','Ng4','Qg6','Bf4','Nf6','d5','Ne5','Ne3'],
@@ -275,13 +271,13 @@ L('ponz-beginner-qf6','Beginner: 3...Qf6 (Early Queen)','Black brings out the qu
 ['e4','e5','Nf3','Nc6','c3','Qf6','d4','exd4','cxd4','Bb4+','Nc3','Nge7','d5','Nd8','Bd3'],
 {6:'Push d4 -- challenge the center.',8:'Recapture. Strong center.',10:'Develop with Nc3, blocking the check and developing.',12:'Push d5! Gain space and push the knight back.',14:'Develop the bishop actively.'}),
 
-L('ponz-beginner-qe7','Beginner: 3...Qe7 (Blocks Bishop)','Black blocks their own bishop development.','White has a dream position. Black\'s bishop is stuck behind the queen.',0,'beginner',
-['e4','e5','Nf3','Nc6','c3','Qe7','d4','d6','Bd3','Nf6','O-O','g6','Nbd2','Bg7','Re1'],
-{6:'Push d4.',8:'Develop to d3.',10:'Castle.',12:'Develop knight.',14:'Rook to the open e-file. White is much better.'}),
+L('ponz-beginner-qe7','Beginner: 3...Qe7 (Blocks Bishop)','Black blocks their own bishop. Push d5 -- knight retreats since e7 is blocked by the queen!','d5 forces knight to d8/b8 (e7 blocked by queen!). White has massive space.',0,'beginner',
+['e4','e5','Nf3','Nc6','c3','Qe7','d4','d6','d5','Nd8','Bd3','Nf6','O-O','g6','Nbd2','Bg7','Re1','O-O','Nf1'],
+{6:'Push d4.',8:'Push d5! Knight can\'t go to e7 (queen is there!) so it retreats to d8. Devastating.',10:'Develop to d3.',12:'Castle.',14:'Develop knight.',16:'Rook to e1.',18:'Nf1 heading to g3. Huge space advantage.'}),
 
-L('ponz-waiting-a6','Waiting: 3...a6 (Does Nothing)','Black wastes a move with ...a6. White gets extra tempo.','White has an even better version of the passive lines.',0,'beginner',
-['e4','e5','Nf3','Nc6','c3','a6','d4','Nf6','Bd3','d6','O-O','Be7','Nbd2','O-O','Re1'],
-{6:'Push d4. Black wasted a move so White is a tempo ahead.',8:'Develop to d3.',10:'Castle.',12:'Develop the knight.',14:'Rook to the e-file. White has a big advantage.'})
+L('ponz-waiting-a6','Waiting: 3...a6 (Wastes Tempo)','Black wastes a move. Punish with d5 immediately -- even more space!','d5 kicks the knight. Black wasted a tempo on ...a6 and is totally cramped.',0,'beginner',
+['e4','e5','Nf3','Nc6','c3','a6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
+{6:'Push d4. Black wasted a move on ...a6.',8:'Push d5! Punish the wasted tempo. Kick the knight and grab space.',10:'Bg5! Poison the e4 pawn -- same trick as always.',12:'Retreat to h4, maintaining pressure.',14:'Retreat to g3.',16:'Develop to d3.',18:'Castle. White has a huge space advantage.'})
 ];
 
 var HIPPO_LINES=[
