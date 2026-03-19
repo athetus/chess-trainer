@@ -333,7 +333,7 @@ L('hippo-b5-expand','Middlegame: ...b5 Queenside Expansion','Lock the center, th
 
 var ALL_LINES=[].concat(
   PONZIANI_LINES.map(function(l){l.opening='ponziani';l.playerColor='w';l.baseMoves=5;return l}),
-  HIPPO_LINES.map(function(l){l.opening='hippo';l.playerColor='b';l.baseMoves=0;return l})
+  HIPPO_LINES.map(function(l){l.opening='hippo';l.playerColor='b';l.baseMoves=0;l.flexible=true;return l})
 );
 
 // ===================== CATEGORIES =====================
@@ -488,7 +488,12 @@ var app=(function(){
     game.reset();clearHighlights();
     selectedSquare=null;hintUsed=false;hintsUsedCount=0;
     playerMoveCount=0;playerCorrectCount=0;moveIndex=0;
-    currentLine=specificLine||selectWeightedLine(getLines());
+    var src=specificLine||selectWeightedLine(getLines());
+    // Clone the line so flexible reordering doesn't modify the original
+    currentLine={id:src.id,name:src.name,description:src.description,result:src.result,
+      isTrap:src.isTrap,cat:src.cat,opening:src.opening,playerColor:src.playerColor,
+      baseMoves:src.baseMoves,flexible:src.flexible,
+      moves:src.moves.slice(),explanations:$.extend({},src.explanations)};
     board.orientation(currentLine.playerColor==='w'?'white':'black');
     board.position('start');
     $('#line-name').text(currentLine.name);
@@ -544,11 +549,27 @@ var app=(function(){
     var userMove=testGame.move({from:source,to:target,promotion:'q'});
     if(!userMove)return'snapback';
     playerMoveCount++;
-    if(userMove.san===expectedMove.san){
-      game.move(expectedSan);
+    var isCorrect=userMove.san===expectedMove.san;
+    // Flexible move order: accept if user's move matches any future move of their color
+    if(!isCorrect&&currentLine.flexible){
+      for(var fi=moveIndex+2;fi<currentLine.moves.length;fi+=2){
+        if(currentLine.moves[fi]===userMove.san){
+          // Swap moves and explanations in the cloned sequence
+          currentLine.moves[fi]=expectedSan;
+          currentLine.moves[moveIndex]=userMove.san;
+          var tmpExp=currentLine.explanations[fi];
+          currentLine.explanations[fi]=currentLine.explanations[moveIndex];
+          currentLine.explanations[moveIndex]=tmpExp;
+          isCorrect=true;
+          break;
+        }
+      }
+    }
+    if(isCorrect){
+      game.move(userMove.san);
       board.position(game.fen());
-      highlightLastMove(expectedMove);
-      updateMoveList(expectedMove,moveIndex);
+      highlightLastMove(userMove);
+      updateMoveList(userMove,moveIndex);
       playerCorrectCount++;sessionCorrect++;sessionTotal++;
       moveIndex++;
       setStatus('Correct!','correct');
