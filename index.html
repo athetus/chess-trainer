@@ -649,8 +649,11 @@ var app=(function(){
       $('#level-up').hide();
     }
 
+    // Show completion status right on screen so user doesn't miss it
+    setStatus(isPerfect?'Line complete! Perfect!':accuracy>=70?'Line complete! Good effort!':'Line complete. Keep practicing!',isPerfect?'correct':'info');
     $('#result-screen').fadeIn(200);
     $('#drill-controls').hide();
+    setTimeout(function(){$('#result-screen')[0].scrollIntoView({behavior:'smooth',block:'center'})},250);
   }
 
   function hint(){
