@@ -602,7 +602,7 @@ var app=(function(){
     $('#explanation-box').hide();
     $('#btn-next').hide();$('#btn-retry').hide();
     setStatus('Setting up position...','info');
-    showIntroCard(currentLine,function(){playBaseMoves()});
+    playBaseMoves();
   }
 
   function playBaseMoves(){
