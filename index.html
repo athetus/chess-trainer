@@ -29,7 +29,8 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
 .highlight-last{box-shadow:inset 0 0 0 3px #e94560!important}
 .highlight-hint{box-shadow:inset 0 0 0 4px #00d2ff!important}
 .highlight-selected{box-shadow:inset 0 0 0 3px #ffd700!important}
-.highlight-legal{background:radial-gradient(circle,rgba(0,210,255,.4) 25%,transparent 25%)!important}
+.highlight-legal{background:radial-gradient(circle,rgba(0,0,0,.25) 24%,transparent 25%)!important}
+.highlight-legal-capture{box-shadow:inset 0 0 0 5px rgba(0,0,0,.2)!important;border-radius:0!important}
 #status{text-align:center;padding:8px;font-size:.95em;min-height:2.5em;display:flex;align-items:center;justify-content:center}
 #status.correct{color:#00e676}
 #status.wrong{color:#ff5252}
@@ -436,30 +437,49 @@ var app=(function(){
       onDragStart:onDragStart,onDrop:onDrop,onSnapEnd:onSnapEnd
     });
     $(window).on('resize',function(){board.resize()});
-    $('#board').on('click','.square-55d63',handleSquareClick);
+    // Tap-to-move: use touchend on squares for mobile, click for desktop
+    // chessboard.js eats touch events on pieces (for drag), but onDrop handles taps on pieces
+    // This handler catches taps on empty squares and opponent pieces (destinations)
+    var tapTarget=null;
+    $('#board').on('touchstart mousedown','.square-55d63',function(e){
+      tapTarget=$(this).attr('data-square');
+    });
+    $('#board').on('touchend mouseup','.square-55d63',function(e){
+      var sq=$(this).attr('data-square');
+      if(sq&&sq===tapTarget){handleSquareClick(sq)}
+      tapTarget=null;
+    });
     checkDailyStreak();
     updateXPDisplay();
     updateDailyStreakDisplay();
     startDrill();
   }
 
-  function handleSquareClick(e){
-    if(isAnimating)return;
-    var sq=$(e.currentTarget).attr('data-square');
-    if(!sq||!currentLine)return;
+  function selectPiece(sq){
+    clearHighlights();
+    selectedSquare=sq;
+    highlightSquare(sq,'highlight-selected');
+    game.moves({square:sq,verbose:true}).forEach(function(m){
+      // Show ring for captures, dot for empty squares (like chess.com)
+      highlightSquare(m.to,m.captured?'highlight-legal-capture':'highlight-legal');
+    });
+  }
+
+  function handleSquareClick(sq){
+    if(isAnimating||!currentLine)return;
     if(game.turn()!==currentLine.playerColor)return;
     if(moveIndex>=currentLine.moves.length)return;
+    var piece=game.get(sq);
     if(selectedSquare){
+      if(sq===selectedSquare){clearHighlights();selectedSquare=null;return}
+      // Clicking another own piece: reselect
+      if(piece&&piece.color===currentLine.playerColor){selectPiece(sq);return}
+      // Try to move to this square
       tryMove(selectedSquare,sq,currentLine.moves[moveIndex]);
       clearHighlights();
       selectedSquare=null;
     }else{
-      var piece=game.get(sq);
-      if(piece&&piece.color===currentLine.playerColor){
-        selectedSquare=sq;
-        highlightSquare(sq,'highlight-selected');
-        game.moves({square:sq,verbose:true}).forEach(function(m){highlightSquare(m.to,'highlight-legal')});
-      }
+      if(piece&&piece.color===currentLine.playerColor){selectPiece(sq)}
     }
   }
 
@@ -533,8 +553,15 @@ var app=(function(){
   }
 
   function onDrop(source,target){
-    clearHighlights();selectedSquare=null;
     if(isAnimating)return'snapback';
+    // Tap on piece (no drag movement) = select it for tap-to-move
+    if(source===target){
+      if(selectedSquare===source){clearHighlights();selectedSquare=null}
+      else{selectPiece(source)}
+      return'snapback';
+    }
+    // Real drag to different square
+    clearHighlights();selectedSquare=null;
     return tryMove(source,target,currentLine.moves[moveIndex]);
   }
 
@@ -696,7 +723,7 @@ var app=(function(){
 
   function highlightSquare(sq,cls){$('#board .square-55d63[data-square="'+sq+'"]').addClass(cls)}
   function highlightLastMove(m){clearHighlights();if(m){highlightSquare(m.from,'highlight-last');highlightSquare(m.to,'highlight-last')}}
-  function clearHighlights(){$('#board .square-55d63').removeClass('highlight-last highlight-hint highlight-selected highlight-legal')}
+  function clearHighlights(){$('#board .square-55d63').removeClass('highlight-last highlight-hint highlight-selected highlight-legal highlight-legal-capture')}
 
   function updateMoveList(m,idx){
     var list=$('#move-list');
