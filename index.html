@@ -238,9 +238,13 @@ L('ponz-qh4-trap','TRAP: 7...Qh4?! (Aggressive but Loses)','After 7.Bd3, Black p
 {6:'Push d4.',8:'Kick the knight.',10:'Capture on e5.',12:'Develop to d3.',14:'Ng4! Attacks the queen and threatens Nf6+.',16:'Develop queen, preparing to castle.',18:'Castle to safety. White has an extra pawn.'}),
 
 // === OTHER RESPONSES ===
-L('ponz-passive-d6','Passive: 3...d6','Black plays safe but too passive. Dream center for White.','White has an ideal center and easy development.',0,'other',
-['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','Bd3','Be7','O-O','O-O','Nbd2','Bg4','h3'],
-{6:'Central plan! Two pawns in the center.',8:'Develop actively to d3.',10:'Castle to safety.',12:'Develop knight. Plan: Nf1-g3.',14:'Ask the bishop where it wants to go.'}),
+L('ponz-d6-d5-bg5-trap','TRAP: 3...d6 4.d4 Nf6 5.d5! Bg5 (Poisoned e4)','After 3...d6, push d5 to kick the knight, then Bg5 poisons the e4 pawn!','TRAP! If Black takes e4, Qa4+ forks king and knight. Same trick as the Nf6 line.',1,'trap',
+['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','Nxe4','Qa4+','Bd7','Qxe4'],
+{6:'Push d4! Two pawns in the center.',8:'Push d5! Kick the knight -- gain space. GothamChess rule: push d5 when you can!',10:'Bg5! Poison the e4 pawn. If Black takes it, Qa4+ wins it back and more.',12:'Qa4+! Fork the king and the knight on e4.',14:'Win the knight. White is up a clean pawn.'}),
+
+L('ponz-d6-d5-bg5-safe','3...d6: d5 Bg5 (Black Plays Safe)','After d5 Bg5, if Black doesn\'t take the poisoned e4 pawn.','White has space, active bishops, and the classic kingside setup.',0,'other',
+['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
+{6:'Push d4.',8:'Push d5! Kick the knight and grab space.',10:'Bg5! Even if Black doesn\'t bite, the pin is annoying.',12:'Retreat to h4, maintaining pressure on f6.',14:'Retreat to g3. Bishop controls e5 nicely.',16:'Develop to d3, aiming at the kingside.',18:'Castle. Space advantage and easy kingside attack.'}),
 
 L('ponz-passive-be7','Passive: 3...Be7','Safety-first by Black. White builds the dream Nf1-g3 setup.','White has ideal center, more space, and Nf1-g3 attacking setup.',0,'other',
 ['e4','e5','Nf3','Nc6','c3','Be7','d4','d6','Bd3','Nf6','O-O','O-O','Nbd2','Re8','Re1','Bf8','Nf1','h6','Ng3'],
