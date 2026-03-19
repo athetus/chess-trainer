@@ -52,20 +52,20 @@
         },
         {
           "id": "main_line_positional",
-          "name": "Positional Main Line: 7. Qd4 (Instead of 7. Bd3)",
+          "name": "Positional Main Line: 7. Nxg6 (Exchange First)",
           "branch_point": "After 6...Ng6",
-          "description": "White plays the solid positional approach instead of the trappy 7. Bd3.",
-          "result": "White has a pleasant endgame advantage with more space and better pawn structure.",
+          "description": "White trades the e5 knight for Black's g6 knight first, then centralizes the queen. A solid positional approach that avoids any traps.",
+          "result": "White has a pleasant positional advantage with the d5 wedge and better piece coordination.",
           "moves_from_branch": [
-            { "move": "Qd4", "color": "white", "why": "Centralize the queen. Threatens the e4 knight and eyes the kingside." },
-            { "move": "Qf6", "color": "black", "why": "Offer a queen trade and defend the knight." },
-            { "move": "Qxf6", "color": "white", "why": "Accept the trade -- White's endgame is favorable due to the d5 space advantage." },
-            { "move": "gxf6", "color": "black", "why": "Forced recapture. Black's pawn structure is damaged." },
-            { "move": "Nxg6", "color": "white", "why": "Eliminate the knight pair. White keeps the space advantage." },
-            { "move": "hxg6", "color": "black", "why": "Recapture. Black has doubled pawns but an open h-file." },
-            { "move": "Be3", "color": "white", "why": "Develop the bishop. White has a lasting positional edge." }
+            { "move": "Nxg6", "color": "white", "why": "Trade the knight before Black can use it. Opens the h-file for Black but simplifies to White's advantage." },
+            { "move": "hxg6", "color": "black", "why": "Forced recapture." },
+            { "move": "Qe2", "color": "white", "why": "Centralize the queen, targeting the e4 knight and preparing development." },
+            { "move": "Qe7", "color": "black", "why": "Defend the knight and prepare to trade queens." },
+            { "move": "Bf4", "color": "white", "why": "Develop the bishop to an active square, controlling dark squares." },
+            { "move": "d6", "color": "black", "why": "Open the diagonal for the c8 bishop." },
+            { "move": "Nd2", "color": "white", "why": "Attack the e4 knight. White will regain the pawn with a better position." }
           ],
-          "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Ne7 6. Nxe5 Ng6 7. Qd4 Qf6 8. Qxf6 gxf6 9. Nxg6 hxg6 10. Be3"
+          "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Ne7 6. Nxe5 Ng6 7. Nxg6 hxg6 8. Qe2 Qe7 9. Bf4 d6 10. Nd2"
         }
       ]
     },
@@ -235,13 +235,13 @@
         { "move": "Nf6", "color": "black", "why": "Develop the knight." },
         { "move": "O-O", "color": "white", "why": "Castle to safety. White has completed basic development quickly." },
         { "move": "O-O", "color": "black", "why": "Castle." },
-        { "move": "Nbd2", "color": "white", "why": "Develop the knight. Plan is Nf1-g3 to build a kingside attack." },
+        { "move": "Nbd2", "color": "white", "why": "Develop the knight. Plan is Re1, then Nf1-g3 to build a kingside attack." },
         { "move": "Re8", "color": "black", "why": "Put the rook on a useful file." },
-        { "move": "Nf1", "color": "white", "why": "Reroute the knight to g3, a classic attacking setup." },
+        { "move": "Re1", "color": "white", "why": "Move the rook to e1, freeing f1 for the knight maneuver." },
         { "move": "Bf8", "color": "black", "why": "Retreat the bishop to defend." },
-        { "move": "Ng3", "color": "white", "why": "The knight reaches g3, eyeing f5 and h5. White has a strong kingside attack brewing." }
+        { "move": "Nf1", "color": "white", "why": "Reroute the knight to g3, a classic attacking setup. The f1 square is now free." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Be7 4. d4 d6 5. Bd3 Nf6 6. O-O O-O 7. Nbd2 Re8 8. Nf1 Bf8 9. Ng3"
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Be7 4. d4 d6 5. Bd3 Nf6 6. O-O O-O 7. Nbd2 Re8 8. Re1 Bf8 9. Nf1"
     },
     {
       "id": "bc5_main",
@@ -260,10 +260,12 @@
         { "move": "Nbxd2", "color": "white", "why": "Recapture with the knight, developing toward the center." },
         { "move": "d5", "color": "black", "why": "Strike at the center before White consolidates." },
         { "move": "exd5", "color": "white", "why": "Capture. The center opens favorably for White." },
-        { "move": "Nxd5", "color": "black", "why": "Recapture with the knight on a central square." },
-        { "move": "Bc4", "color": "white", "why": "Develop the bishop to an active diagonal, attacking d5. White has better development and a strong center." }
+        { "move": "Qxd5", "color": "black", "why": "Recapture with the queen, centralizing." },
+        { "move": "Bc4", "color": "white", "why": "Develop the bishop to an active diagonal, attacking the queen and f7. White has better development and central control." },
+        { "move": "Qd8", "color": "black", "why": "Retreat the queen to avoid the bishop attack." },
+        { "move": "O-O", "color": "white", "why": "Castle to safety. White has a clear development advantage." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Bc5 4. d4 exd4 5. cxd4 Bb4+ 6. Bd2 Bxd2+ 7. Nbxd2 d5 8. exd5 Nxd5 9. Bc4",
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Bc5 4. d4 exd4 5. cxd4 Bb4+ 6. Bd2 Bxd2+ 7. Nbxd2 d5 8. exd5 Qxd5 9. Bc4 Qd8 10. O-O",
       "sub_variations": [
         {
           "id": "bc5_bb6_passive",
@@ -344,12 +346,12 @@
         { "move": "d4", "color": "white", "why": "Seize the center." },
         { "move": "Nxe4", "color": "black", "why": "Grab the e4 pawn." },
         { "move": "d5", "color": "white", "why": "Kick the c6 knight." },
-        { "move": "Bc5", "color": "black", "why": "MISTAKE: Tries to develop and protect the e4 knight via f2 pressure, but leaves both knights hanging." },
-        { "move": "Qa4+", "color": "white", "why": "KEY MOVE: Double attack! The queen checks the king and attacks the undefended e4 knight. Black cannot defend both pieces." },
-        { "move": "Nd7", "color": "black", "why": "Block the check." },
+        { "move": "Bc5", "color": "black", "why": "MISTAKE: Tries to develop and hold the e4 knight, but leaves both knights vulnerable." },
+        { "move": "Qa4", "color": "white", "why": "KEY MOVE: Double attack! The queen targets both the pinned Nc6 (on the a4-e8 diagonal) and the undefended Ne4. Black cannot save both." },
+        { "move": "O-O", "color": "black", "why": "Castle to escape the pin, but the e4 knight is still lost." },
         { "move": "Qxe4", "color": "white", "why": "Win the knight for free. White is a full piece up with a strong center." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Bc5 6. Qa4+ Nd7 7. Qxe4"
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Bc5 6. Qa4 O-O 7. Qxe4"
     },
     {
       "id": "qh4_trap",
@@ -394,11 +396,11 @@
         { "move": "Bd7", "color": "black", "why": "Develop the bishop and unpin from Bb5." },
         { "move": "O-O", "color": "white", "why": "Castle to safety. White now has a developed position and central tension." },
         { "move": "e4", "color": "black", "why": "Push the pawn to gain space and restrict the f3 knight." },
-        { "move": "Nd2", "color": "white", "why": "Retreat the knight to support c4 and avoid the pawn. Also unblocks the f-file for the rook." },
+        { "move": "Nfd2", "color": "white", "why": "Retreat the f3 knight to d2, avoiding the pawn and preparing to target e4. Unblocks the f-file for the rook." },
         { "move": "f5", "color": "black", "why": "Support the e4 pawn and grab more space." },
         { "move": "Re1", "color": "white", "why": "Target the e4 pawn. White will maneuver pieces to exploit Black's overextended center." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 d5 4. Qa4 f6 5. Bb5 Ne7 6. exd5 Qxd5 7. d4 Bd7 8. O-O e4 9. Nd2 f5 10. Re1"
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 d5 4. Qa4 f6 5. Bb5 Ne7 6. exd5 Qxd5 7. d4 Bd7 8. O-O e4 9. Nfd2 f5 10. Re1"
     },
     {
       "id": "main_line_deep",
@@ -420,13 +422,13 @@
         { "move": "Be7", "color": "black", "why": "Develop the bishop preparing to castle." },
         { "move": "Re1", "color": "white", "why": "Place the rook on the open e-file, supporting the e5 knight." },
         { "move": "O-O", "color": "black", "why": "Castle to safety." },
-        { "move": "Nbd2", "color": "white", "why": "Develop the knight. Plan is Nf1-g3 for a kingside buildup." },
+        { "move": "Nd2", "color": "white", "why": "Develop the b1 knight to d2. Plan is Nf1-g3 for a kingside buildup." },
         { "move": "Nxe5", "color": "black", "why": "Capture the strong e5 knight." },
         { "move": "Rxe5", "color": "white", "why": "Recapture with the rook on the open file. White has the d5 pawn and active pieces." },
-        { "move": "Bf6", "color": "black", "why": "Attack the rook." },
+        { "move": "d6", "color": "black", "why": "Attack the rook and develop." },
         { "move": "Re1", "color": "white", "why": "Retreat the rook to e1. White keeps the space advantage and will play Nf1-g3-f5 for the attack." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Ne7 6. Nxe5 Ng6 7. Bd3 Nf6 8. O-O Be7 9. Re1 O-O 10. Nbd2 Nxe5 11. Rxe5 Bf6 12. Re1"
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 Nxe4 5. d5 Ne7 6. Nxe5 Ng6 7. Bd3 Nf6 8. O-O Be7 9. Re1 O-O 10. Nd2 Nxe5 11. Rxe5 d6 12. Re1"
     },
     {
       "id": "leonhardt_nf6",
@@ -506,9 +508,9 @@
         { "move": "Be7", "color": "black", "why": "Develop the bishop." },
         { "move": "Nbd2", "color": "white", "why": "Develop the knight. Plan is the standard Nf1-g3 kingside attack." },
         { "move": "O-O", "color": "black", "why": "Castle." },
-        { "move": "Nf1", "color": "white", "why": "Reroute the knight. White's position is even better than the standard passive lines because Black wasted a move on a6." }
+        { "move": "Re1", "color": "white", "why": "Move the rook to e1, freeing f1 for the knight maneuver. White's position is even better than the standard passive lines because Black wasted a move on a6." }
       ],
-      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 a6 4. d4 Nf6 5. Bd3 d6 6. O-O Be7 7. Nbd2 O-O 8. Nf1"
+      "full_pgn": "1. e4 e5 2. Nf3 Nc6 3. c3 a6 4. d4 Nf6 5. Bd3 d6 6. O-O Be7 7. Nbd2 O-O 8. Re1"
     },
     {
       "id": "fraser_defence",
@@ -604,7 +606,7 @@
                           "deep_main_line": {
                             "variation_id": "main_line_deep",
                             "note": "After 8.O-O, extended to move 14",
-                            "continues": "Be7 Re1 O-O Nbd2 Nxe5 Rxe5 Bf6 Re1"
+                            "continues": "Be7 Re1 O-O Nd2 Nxe5 Rxe5 d6 Re1"
                           }
                         }
                       },
@@ -652,7 +654,7 @@
               "deep_steinitz": {
                 "variation_id": "countergambit_d5_deep",
                 "note": "Extended Steinitz line to move 14",
-                "continues": "O-O e4 Nd2 f5 Re1"
+                "continues": "O-O e4 Nfd2 f5 Re1"
               }
             }
           },
@@ -701,7 +703,7 @@
       "Be7": {
         "variation_id": "passive_be7",
         "white_response": "d4",
-        "continues": "d6 Bd3 Nf6 O-O O-O Nbd2 Re8 Nf1 Bf8 Ng3"
+        "continues": "d6 Bd3 Nf6 O-O O-O Nbd2 Re8 Re1 Bf8 Nf1"
       },
       "Bc5": {
         "variation_id": "bc5_main",
@@ -730,7 +732,7 @@
       "a6": {
         "variation_id": "waiting_a6",
         "white_response": "d4",
-        "continues": "Nf6 Bd3 d6 O-O Be7 Nbd2 O-O Nf1"
+        "continues": "Nf6 Bd3 d6 O-O Be7 Nbd2 O-O Re1"
       },
       "Nge7": {
         "variation_id": "countergambit_nge7",
