@@ -26,9 +26,16 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
 #line-name{font-size:.82em;color:#aaa;text-align:center;min-height:1.3em;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #board-wrapper{position:relative;width:100%;margin:0 auto}
 #board{width:100%}
-.highlight-last{box-shadow:inset 0 0 0 3px #e94560!important}
+#board-arrows{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#intro-card{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;background:rgba(0,0,0,0.85);color:#fff;padding:20px 28px;border-radius:14px;text-align:center;max-width:85%;min-width:200px}
+#intro-card .intro-name{font-size:1.1em;font-weight:700;margin-bottom:6px;color:#e94560}
+#intro-card .intro-desc{font-size:.82em;color:#ccc;line-height:1.4;margin-bottom:6px}
+#intro-card .intro-trap{display:inline-block;background:#ff5252;color:#fff;font-size:.7em;font-weight:700;padding:2px 10px;border-radius:10px;letter-spacing:1px;margin-top:4px}
+.board-b72b1 .white-1e1d7{background-color:#EEEED2 !important}
+.board-b72b1 .black-3c85d{background-color:#769656 !important}
+.highlight-last{box-shadow:inset 0 0 0 100px rgba(255,255,0,0.3)!important}
 .highlight-hint{box-shadow:inset 0 0 0 4px #00d2ff!important}
-.highlight-selected{box-shadow:inset 0 0 0 3px #ffd700!important}
+.highlight-selected{box-shadow:inset 0 0 0 100px rgba(255,255,0,0.4)!important}
 .highlight-legal{background-image:radial-gradient(circle,rgba(0,0,0,.2) 24%,transparent 25%)!important;background-size:100% 100%!important}
 .highlight-legal-capture{box-shadow:inset 0 0 0 5px rgba(0,0,0,.2)!important;border-radius:0!important}
 #status{text-align:center;padding:8px;font-size:.95em;min-height:2.5em;display:flex;align-items:center;justify-content:center}
@@ -103,7 +110,7 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     </div>
   </header>
   <div id="line-name"></div>
-  <div id="board-wrapper"><div id="board"></div></div>
+  <div id="board-wrapper"><div id="board"></div><svg id="board-arrows" xmlns="http://www.w3.org/2000/svg"></svg><div id="intro-card"><div class="intro-name"></div><div class="intro-desc"></div></div></div>
   <div id="status" class="neutral">Tap a piece to make your move</div>
   <div id="explanation-box"></div>
   <div class="controls" id="drill-controls">
@@ -118,6 +125,7 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     <div class="stats-row"><span class="stats-label">Session Accuracy</span><span class="stats-value" id="stat-accuracy">--</span></div>
     <div class="stats-row"><span class="stats-label">Lines Completed</span><span class="stats-value" id="stat-completed">0</span></div>
     <div class="stats-row"><span class="stats-label">Perfect Streak</span><span class="stats-value" id="stat-streak">0</span></div>
+    <div class="stats-row"><span class="stats-label">Avg Speed</span><span class="stats-value" id="stat-speed">--</span></div>
     <div class="accuracy-bar"><div class="accuracy-fill" id="accuracy-fill" style="width:0%"></div></div>
   </div>
   <div id="line-selector"></div>
@@ -440,6 +448,22 @@ function selectWeightedLine(lines){
   return lines[lines.length-1];
 }
 
+// ===================== SOUND ENGINE =====================
+var Sound=(function(){
+  var ctx=null;
+  function getCtx(){if(!ctx)try{ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}return ctx}
+  function play(type){
+    var c=getCtx();if(!c)return;
+    if(c.state==='suspended')c.resume();
+    if(type==='move'){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=600;g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.1);o.start(c.currentTime);o.stop(c.currentTime+0.1)}
+    else if(type==='capture'){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';o.frequency.value=300;g.gain.setValueAtTime(0.25,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.15);o.start(c.currentTime);o.stop(c.currentTime+0.15)}
+    else if(type==='correct'){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.setValueAtTime(880,c.currentTime);o.frequency.setValueAtTime(1100,c.currentTime+0.08);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);o.start(c.currentTime);o.stop(c.currentTime+0.2)}
+    else if(type==='wrong'){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';o.frequency.value=180;g.gain.setValueAtTime(0.18,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);o.start(c.currentTime);o.stop(c.currentTime+0.3)}
+    else if(type==='complete'){[660,880,1100,1320].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;var t=c.currentTime+i*0.1;g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.start(t);o.stop(t+0.15)})}
+  }
+  return{play:play};
+})();
+
 // ===================== APP =====================
 var app=(function(){
   var board,game,currentLine,moveIndex,selectedSquare;
@@ -449,6 +473,63 @@ var app=(function(){
   var isAnimating=false;
   var lineSelectMode=false;
   var autoAdvanceTimer=null;
+  var moveStartTime=0,sessionMoveTimeTotal=0,sessionMoveCount=0;
+  var lineMoveTimeTotal=0,lineMoveCount=0;
+
+  // ===================== ARROW SYSTEM =====================
+  function getSquareCenter(sq){
+    var boardEl=$('#board');
+    var boardW=boardEl.width();
+    var sqSize=boardW/8;
+    var file=sq.charCodeAt(0)-97;
+    var rank=parseInt(sq[1])-1;
+    var orient=board.orientation();
+    var x,y;
+    if(orient==='white'){x=file*sqSize+sqSize/2;y=(7-rank)*sqSize+sqSize/2}
+    else{x=(7-file)*sqSize+sqSize/2;y=rank*sqSize+sqSize/2}
+    return{x:x,y:y};
+  }
+  function drawArrow(from,to,color){
+    var svg=$('#board-arrows')[0];
+    var boardEl=$('#board');
+    var boardW=boardEl.width();
+    svg.setAttribute('viewBox','0 0 '+boardW+' '+boardW);
+    var f=getSquareCenter(from),t=getSquareCenter(to);
+    var dx=t.x-f.x,dy=t.y-f.y;
+    var len=Math.sqrt(dx*dx+dy*dy);
+    var ux=dx/len,uy=dy/len;
+    var headLen=boardW/8*0.35;
+    var shaftW=boardW/8*0.18;
+    var headW=boardW/8*0.35;
+    var tipX=t.x,tipY=t.y;
+    var baseX=t.x-ux*headLen,baseY=t.y-uy*headLen;
+    var px=-uy,py=ux;
+    var points=[
+      (f.x+px*shaftW/2)+','+(f.y+py*shaftW/2),
+      (baseX+px*shaftW/2)+','+(baseY+py*shaftW/2),
+      (baseX+px*headW/2)+','+(baseY+py*headW/2),
+      tipX+','+tipY,
+      (baseX-px*headW/2)+','+(baseY-py*headW/2),
+      (baseX-px*shaftW/2)+','+(baseY-py*shaftW/2),
+      (f.x-px*shaftW/2)+','+(f.y-py*shaftW/2)
+    ].join(' ');
+    var poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points',points);
+    poly.setAttribute('fill',color||'rgba(255,170,0,0.8)');
+    svg.appendChild(poly);
+  }
+  function clearArrows(){$('#board-arrows').empty()}
+
+  // ===================== INTRO CARD =====================
+  function showIntroCard(line,cb){
+    var card=$('#intro-card');
+    card.find('.intro-name').text(line.name);
+    card.find('.intro-desc').text(line.description);
+    card.find('.intro-trap').remove();
+    if(line.isTrap)card.append('<div class="intro-trap">TRAP</div>');
+    card.fadeIn(200);
+    setTimeout(function(){card.fadeOut(300,function(){if(cb)cb()})},2000);
+  }
 
   function init(){
     game=new Chess();
@@ -469,10 +550,10 @@ var app=(function(){
 
   function selectPiece(sq){
     clearHighlights();
+    clearArrows();
     selectedSquare=sq;
     highlightSquare(sq,'highlight-selected');
     game.moves({square:sq,verbose:true}).forEach(function(m){
-      // Show ring for captures, dot for empty squares (like chess.com)
       highlightSquare(m.to,m.captured?'highlight-legal-capture':'highlight-legal');
     });
   }
@@ -483,12 +564,10 @@ var app=(function(){
     if(moveIndex>=currentLine.moves.length)return;
     var piece=game.get(sq);
     if(selectedSquare){
-      if(sq===selectedSquare){clearHighlights();selectedSquare=null;return}
-      // Clicking another own piece: reselect
+      if(sq===selectedSquare){clearHighlights();clearArrows();selectedSquare=null;return}
       if(piece&&piece.color===currentLine.playerColor){selectPiece(sq);return}
-      // Try to move to this square
       tryMove(selectedSquare,sq,currentLine.moves[moveIndex]);
-      clearHighlights();
+      clearHighlights();clearArrows();
       selectedSquare=null;
     }else{
       if(piece&&piece.color===currentLine.playerColor){selectPiece(sq)}
@@ -507,11 +586,11 @@ var app=(function(){
   function startDrill(specificLine){
     if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null}
     hideResult();hideLineSelector();
-    game.reset();clearHighlights();
+    game.reset();clearHighlights();clearArrows();
     selectedSquare=null;hintUsed=false;hintsUsedCount=0;
     playerMoveCount=0;playerCorrectCount=0;moveIndex=0;
+    lineMoveTimeTotal=0;lineMoveCount=0;moveStartTime=0;
     var src=specificLine||selectWeightedLine(getLines());
-    // Clone the line so flexible reordering doesn't modify the original
     currentLine={id:src.id,name:src.name,description:src.description,result:src.result,
       isTrap:src.isTrap,cat:src.cat,opening:src.opening,playerColor:src.playerColor,
       baseMoves:src.baseMoves,flexible:src.flexible,
@@ -523,7 +602,7 @@ var app=(function(){
     $('#explanation-box').hide();
     $('#btn-next').hide();$('#btn-retry').hide();
     setStatus('Setting up position...','info');
-    setTimeout(function(){playBaseMoves()},300);
+    showIntroCard(currentLine,function(){playBaseMoves()});
   }
 
   function playBaseMoves(){
@@ -553,11 +632,14 @@ var app=(function(){
         if(!m){console.error('Invalid auto move:',san,moveIndex,game.fen());finishLine();return}
         board.position(game.fen());
         highlightLastMove(m);
+        drawArrow(m.from,m.to,'rgba(255,170,0,0.8)');
+        Sound.play(m.captured?'capture':'move');
         updateMoveList(m,moveIndex);
         moveIndex++;isAnimating=false;
         playNextAutoOrWait();
       },400);
     }else{
+      moveStartTime=Date.now();
       setStatus('Your turn -- find the best move!','neutral');
     }
   }
@@ -571,12 +653,12 @@ var app=(function(){
     var userMove=testGame.move({from:source,to:target,promotion:'q'});
     if(!userMove)return'snapback';
     playerMoveCount++;
+    // Track speed
+    if(moveStartTime>0){var elapsed=(Date.now()-moveStartTime)/1000;lineMoveTimeTotal+=elapsed;lineMoveCount++;sessionMoveTimeTotal+=elapsed;sessionMoveCount++;moveStartTime=0}
     var isCorrect=userMove.san===expectedMove.san;
-    // Flexible move order: accept if user's move matches any future move of their color
     if(!isCorrect&&currentLine.flexible){
       for(var fi=moveIndex+2;fi<currentLine.moves.length;fi+=2){
         if(currentLine.moves[fi]===userMove.san){
-          // Swap moves and explanations in the cloned sequence
           currentLine.moves[fi]=expectedSan;
           currentLine.moves[moveIndex]=userMove.san;
           var tmpExp=currentLine.explanations[fi];
@@ -594,6 +676,8 @@ var app=(function(){
       updateMoveList(userMove,moveIndex);
       playerCorrectCount++;sessionCorrect++;sessionTotal++;
       moveIndex++;
+      Sound.play(userMove.captured?'capture':'move');
+      Sound.play('correct');
       setStatus('Correct!','correct');
       updateSessionStats();
       $('#explanation-box').hide();
@@ -601,6 +685,7 @@ var app=(function(){
       return;
     }else{
       sessionTotal++;
+      Sound.play('wrong');
       setStatus('Not quite. The correct move is '+expectedSan,'wrong');
       updateSessionStats();
       showCorrectMoveOnBoard(expectedSan);
@@ -611,12 +696,13 @@ var app=(function(){
   function showCorrectMoveOnBoard(san){
     var testGame=new Chess(game.fen());
     var m=testGame.move(san);
-    if(m){highlightSquare(m.from,'highlight-hint');highlightSquare(m.to,'highlight-hint')}
+    if(m){highlightSquare(m.from,'highlight-hint');highlightSquare(m.to,'highlight-hint');drawArrow(m.from,m.to,'rgba(0,180,0,0.8)')}
     setTimeout(function(){
-      clearHighlights();
+      clearHighlights();clearArrows();
       game.move(san);
       board.position(game.fen());
       highlightLastMove(m);
+      Sound.play(m&&m.captured?'capture':'move');
       updateMoveList(m||{san:san},moveIndex);
       moveIndex++;
       setTimeout(playNextAutoOrWait,600);
@@ -628,41 +714,33 @@ var app=(function(){
     var isPerfect=accuracy===100&&!hintUsed;
     sessionCompleted++;
     perfectStreak=isPerfect?perfectStreak+1:0;
-
-    // Update line stats
     var ls=updateLineStats(currentLine.id,playerMoveCount,playerCorrectCount);
-
-    // Calculate XP
     var xpBase=isPerfect?100:accuracy>=70?60:30;
     var streakBonus=Math.min(perfectStreak*5,50);
     var hintPenalty=hintsUsedCount*10;
     var xpEarned=Math.max(10,xpBase+streakBonus-hintPenalty);
-
-    // Award XP and check level
     checkDailyStreak();
     var result=awardXP(xpEarned);
-
-    // Update displays
     updateSessionStats();
     updateXPDisplay();
     updateDailyStreakDisplay();
 
-    // Show result screen
+    Sound.play(isPerfect?'complete':'correct');
+
     $('#result-title').text(isPerfect?'Perfect!':accuracy>=70?'Good effort!':'Keep practicing!');
     $('#result-desc').text(currentLine.result);
     $('#result-accuracy').text(accuracy+'%').attr('class','result-stat '+(isPerfect?'perfect':accuracy>=70?'good':'needs-work'));
     var detail=playerCorrectCount+'/'+playerMoveCount+' moves correct';
+    if(lineMoveCount>0)detail+=' | Avg '+(lineMoveTimeTotal/lineMoveCount).toFixed(1)+'s/move';
     if(hintUsed)detail+=' (hints used)';
     if(ls.mastery>=3)detail+=' | MASTERED';
     $('#result-detail').text(detail);
 
-    // XP animation
     var xpMsg='+'+xpEarned+' XP';
     if(streakBonus>0)xpMsg+=' (+'+streakBonus+' streak bonus)';
     $('#xp-gained').text(xpMsg).addClass('show');
     setTimeout(function(){$('#xp-gained').removeClass('show')},2000);
 
-    // Level up
     if(result.leveledUp){
       $('#level-up').show();
       $('#levelup-title').text('Level Up! '+LEVELS[result.newLevel].name);
@@ -671,13 +749,10 @@ var app=(function(){
       $('#level-up').hide();
     }
 
-    // Brief status + auto-advance like chess.com puzzles
     var statusMsg=isPerfect?'Perfect! '+xpMsg:accuracy>=70?'Good! '+xpMsg:'Keep practicing. '+xpMsg;
     setStatus(statusMsg,isPerfect?'correct':accuracy>=70?'info':'wrong');
-    // Auto-advance to next line after a short pause
     var delay=isPerfect?1500:accuracy>=70?2500:3500;
     autoAdvanceTimer=setTimeout(function(){startDrill()},delay);
-    // Show result briefly (user can tap Retry to cancel auto-advance)
     $('#result-screen').fadeIn(200);
     $('#drill-controls').hide();
   }
@@ -742,7 +817,7 @@ var app=(function(){
 
   function highlightSquare(sq,cls){$('#board .square-55d63[data-square="'+sq+'"]').addClass(cls)}
   function highlightLastMove(m){clearHighlights();if(m){highlightSquare(m.from,'highlight-last');highlightSquare(m.to,'highlight-last')}}
-  function clearHighlights(){$('#board .square-55d63').removeClass('highlight-last highlight-hint highlight-selected highlight-legal highlight-legal-capture')}
+  function clearHighlights(){clearArrows();$('#board .square-55d63').removeClass('highlight-last highlight-hint highlight-selected highlight-legal highlight-legal-capture')}
 
   function updateMoveList(m,idx){
     var list=$('#move-list');
@@ -759,6 +834,7 @@ var app=(function(){
     $('#stat-completed').text(sessionCompleted);
     $('#stat-streak').text(perfectStreak);
     $('#accuracy-fill').css('width',(sessionTotal>0?acc:0)+'%');
+    $('#stat-speed').text(sessionMoveCount>0?(sessionMoveTimeTotal/sessionMoveCount).toFixed(1)+'s/move':'--');
   }
 
   function updateXPDisplay(){
