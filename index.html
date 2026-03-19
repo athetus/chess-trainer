@@ -432,22 +432,13 @@ var app=(function(){
   function init(){
     game=new Chess();
     board=Chessboard('board',{
-      draggable:true,position:'start',
-      pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-      onDragStart:onDragStart,onDrop:onDrop,onSnapEnd:onSnapEnd
+      draggable:false,position:'start',
+      pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
     });
     $(window).on('resize',function(){board.resize()});
-    // Tap-to-move: use touchend on squares for mobile, click for desktop
-    // chessboard.js eats touch events on pieces (for drag), but onDrop handles taps on pieces
-    // This handler catches taps on empty squares and opponent pieces (destinations)
-    var tapTarget=null;
-    $('#board').on('touchstart mousedown','.square-55d63',function(e){
-      tapTarget=$(this).attr('data-square');
-    });
-    $('#board').on('touchend mouseup','.square-55d63',function(e){
-      var sq=$(this).attr('data-square');
-      if(sq&&sq===tapTarget){handleSquareClick(sq)}
-      tapTarget=null;
+    // Pure tap-to-move: tap piece to select, tap destination to move
+    $('#board').on('click','.square-55d63',function(){
+      handleSquareClick($(this).attr('data-square'));
     });
     checkDailyStreak();
     updateXPDisplay();
@@ -544,28 +535,6 @@ var app=(function(){
     }
   }
 
-  function onDragStart(source,piece){
-    if(isAnimating||!currentLine)return false;
-    if(game.turn()!==currentLine.playerColor)return false;
-    if(moveIndex>=currentLine.moves.length)return false;
-    if((currentLine.playerColor==='w'&&piece.search(/^b/)!==-1)||(currentLine.playerColor==='b'&&piece.search(/^w/)!==-1))return false;
-    return true;
-  }
-
-  function onDrop(source,target){
-    if(isAnimating)return'snapback';
-    // Tap on piece (no drag movement) = select it for tap-to-move
-    if(source===target){
-      if(selectedSquare===source){clearHighlights();selectedSquare=null}
-      else{selectPiece(source)}
-      return'snapback';
-    }
-    // Real drag to different square
-    clearHighlights();selectedSquare=null;
-    return tryMove(source,target,currentLine.moves[moveIndex]);
-  }
-
-  function onSnapEnd(){board.position(game.fen())}
 
   function tryMove(source,target,expectedSan){
     var testGame=new Chess(game.fen());
