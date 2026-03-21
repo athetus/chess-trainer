@@ -820,6 +820,8 @@ var app=(function(){
     }
   }
 
+  var ERROR_BLOB='https://jsonblob.com/api/jsonBlob/019d10cb-be8b-7251-8664-094554953b6b';
+
   function reportError(){
     if(!currentLine)return;
     var report={
@@ -832,11 +834,18 @@ var app=(function(){
       timestamp:new Date().toISOString(),
       status:'pending'
     };
+    // Save locally
     var errors=[];
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
     errors.push(report);
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
-    setStatus('Reported! (#'+errors.length+')','info');
+    // Also send to cloud so Claude Code can fetch it
+    fetch(ERROR_BLOB).then(function(r){return r.json()}).then(function(data){
+      data.errors=data.errors||[];
+      data.errors.push(report);
+      return fetch(ERROR_BLOB,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    }).catch(function(){});
+    setStatus('Reported!','info');
     Sound.play('correct');
   }
 
