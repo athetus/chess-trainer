@@ -819,8 +819,6 @@ var app=(function(){
     }
   }
 
-  var ERROR_BLOB='https://jsonblob.com/api/jsonBlob/019d10cb-be8b-7251-8664-094554953b6b';
-
   function reportError(){
     if(!currentLine)return;
     var report={
@@ -838,14 +836,14 @@ var app=(function(){
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
     errors.push(report);
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
-    // Also send to cloud so Claude Code can fetch it
-    fetch(ERROR_BLOB).then(function(r){return r.json()}).then(function(data){
-      data.errors=data.errors||[];
-      data.errors.push(report);
-      return fetch(ERROR_BLOB,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    }).catch(function(){});
-    setStatus('Reported!','info');
     Sound.play('correct');
+    // Auto-share on mobile (one tap to Copy from share sheet)
+    var text=report.lineName+'\nMove '+report.moveIndex+' | Expected: '+report.expectedMove+'\nMoves: '+report.movesPlayed+'\nFEN: '+report.fen;
+    if(navigator.share){
+      navigator.share({title:'Chess Error',text:text}).then(function(){setStatus('Shared!','correct')}).catch(function(){setStatus('Reported!','info')});
+    }else{
+      navigator.clipboard.writeText(text).then(function(){setStatus('Copied!','correct')}).catch(function(){setStatus('Reported!','info')});
+    }
   }
 
   function showErrorLog(){
