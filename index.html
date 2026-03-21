@@ -176,9 +176,9 @@ L('ponz-main-positional','Positional: Nxg6 Qd4 Qxe4+ (Win Knight!)','After Nxg6 
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Nxg6','hxg6','Qd4','Qf6','Qxe4+','Qe7','Qxe7+','Bxe7','Bf4'],
 {6:'Push d4 to seize the center.',8:'Kick the knight away and gain space.',10:'Recapture on e5.',12:'Trade the knight to clear the diagonal.',14:'Centralize the queen.',16:'Qxe4+! Don\'t trade queens! Capture the knight WITH CHECK. Free piece!',18:'Trade queens now. White is up a full knight.',20:'Develop the bishop. White is winning.'}),
 
-L('ponz-gotham-qb3','GothamChess Main: 5.e5 Nd5 6.Qb3','THE GothamChess Ponziani line. After exd4, push e5 and Qb3 for massive center.','White has a dream center (d4+e5), active queen, and Black\'s knight is stuck on b6.',0,'main',
-['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','Qb3','Nb6','cxd4','d5','exd6','Bxd6','Bd3','O-O','O-O'],
-{6:'Push d4! The whole point of the Ponziani.',8:'Push e5! Kick the knight and grab space.',10:'Qb3! GothamChess\'s key move. Pressures b7 and eyes d5. Black\'s knight is displaced.',12:'Recapture. Massive center on d4+e5.',14:'Capture en passant. Open the position while Black is cramped.',16:'Develop to d3. Natural and strong.',18:'Castle. White has a dream position with huge center.'}),
+L('ponz-gotham-qb3','GothamChess Main: Qb3 + Greek Gift Bxh7+!','THE GothamChess line. After Qb3 and Bd3, the Greek Gift Bxh7+ is devastating!','GREEK GIFT! Bxh7+ Kxh7 Ng5+ Kg8 Qh3 threatens Qh7# and Qh8#. Crushing!',0,'main',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','Qb3','Nb6','cxd4','d5','exd6','Bxd6','Bd3','O-O','Bxh7+','Kxh7','Ng5+','Kg8','Qh3'],
+{6:'Push d4! The whole point of the Ponziani.',8:'Push e5! Kick the knight and grab space.',10:'Qb3! GothamChess\'s key move. Pressures b7 and d5.',12:'Recapture. Massive center.',14:'Capture en passant. Open the position.',16:'Develop to d3 -- aiming at h7!',18:'GREEK GIFT! Bxh7+!! Sacrifice the bishop to rip open the king!',20:'Ng5+! Classic follow-up. King is in a mating net.',22:'Qh3! Threatens Qh7# and Qh8#. Devastating attack.'}),
 
 L('ponz-gotham-exd4-bc5-trap','TRAP: 5.e5 Bc5?? 6.Qa4! (GothamChess)','After 5.e5, Black develops Bc5 but Qa4 is a devastating double attack.','TRAP! Qa4 hits both Nc6 and the bishop. Black loses material.',1,'trap',
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Bc5','Qa4'],
@@ -351,8 +351,8 @@ L('hippo-vs-h4-storm','Hippo vs h4 Pawn Storm','White storms with h4-h5. Don\'t 
 {1:'Start with ...g6.',3:'Fianchetto.',5:'Play ...d6. Don\'t panic about h4.',7:'Continue with ...a6. The h4 push isn\'t threatening yet.',9:'Keep building with ...b6. Let White waste tempi.',11:'Recapture ...fxg6! Keeps a pawn on g6 and opens the f-file.',13:'Complete fianchetto.',15:'Play ...e6 to block Bc4 and solidify.',17:'Continue developing.',19:'Second knight to e7.',21:'Strike with ...d5! Challenge the center.'}),
 
 L('hippo-vs-bh6','Hippo vs Bh6 (Bishop Trade)','White trades the dark bishop. Allow it -- compensate with solid center.','After trade, half-open g-file and strong Bb7 compensate.',0,'threats',
-['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Bh6','Bxh6','Qxh6','Ne7','Qd2','O-O','Rad1','h6','Rfe1','d5'],
-{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'Prophylactic ...a6.',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight.',17:'Allow the trade with ...Bxh6. Compensation is good enough.',19:'Develop knight to e7.',21:'Castle first! Get the king safe before pushing pawns.',23:'Now ...h6. Queen already left h6 so it\'s safe.',25:'Push ...d5! Challenge the center -- the key break after the bishop trade.'}),
+['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','d5','Ne7','Bh6','Bxh6','Qxh6','Nf5','Qd2','O-O','Rad1','h6','Rfe1','exd5'],
+{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'Prophylactic ...a6.',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight to d7.',17:'Develop the OTHER knight to e7 BEFORE the bishop trade. Critical -- if g8 knight is still there, Nxh6 wins the queen after Qxh6!',19:'Now allow the trade. ...Bxh6 is safe because our knight left g8.',21:'...Nf5! Chase the queen away from h6. Strong outpost.',23:'Castle now that the queen is gone from h6.',25:'...h6 completes the pawn wall.',27:'...exd5! Open the center. Black has good compensation for the lost bishop.'}),
 
 // === MIDDLEGAME PLANS ===
 L('hippo-f5-attack','Middlegame: ...f5 Kingside Attack','After d5/e5 lock, launch ...f5 followed by ...Nf6, ...g5.','Powerful kingside attack. Knight on f5 is a monster.',0,'plans',
@@ -826,15 +826,15 @@ var app=(function(){
       fen:game.fen(),
       expectedMove:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
       movesPlayed:currentLine.moves.slice(0,moveIndex).join(' '),
-      timestamp:new Date().toISOString()
+      timestamp:new Date().toISOString(),
+      status:'pending'
     };
     var errors=[];
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
     errors.push(report);
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
-    setStatus('Error reported! ('+errors.length+' total)','info');
+    setStatus('Reported! (#'+errors.length+')','info');
     Sound.play('correct');
-    showErrorLog();
   }
 
   function showErrorLog(){
@@ -842,22 +842,47 @@ var app=(function(){
     if(el.is(':visible')){el.slideUp(200);return}
     var errors=[];
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
-    if(!errors.length){$('#error-list').html('<div style="padding:8px;color:#666">No errors reported yet.</div>');el.slideDown(200);return}
+    // Also load resolutions
+    var resolutions={};
+    try{resolutions=JSON.parse(localStorage.getItem('chess-trainer-resolutions'))||{}}catch(e){}
+    if(!errors.length&&!Object.keys(resolutions).length){$('#error-list').html('<div style="padding:8px;color:#666">No errors reported yet.</div>');el.slideDown(200);return}
     var html='';
+    // Show resolutions first (processed errors)
+    var resKeys=Object.keys(resolutions);
+    if(resKeys.length){
+      html+='<div style="color:#00e676;font-size:.8em;font-weight:600;margin:6px 0">Processed</div>';
+      resKeys.forEach(function(k){
+        var r=resolutions[k];
+        var color=r.wasError?'#ffd700':'#00e676';
+        var icon=r.wasError?'Fixed':'Not a bug';
+        html+='<div style="background:#16213e;padding:8px;margin:3px 0;border-radius:6px;border-left:3px solid '+color+'">';
+        html+='<div style="color:'+color+';font-weight:600;font-size:.85em">'+icon+': '+r.lineName+'</div>';
+        html+='<div style="color:#aaa;font-size:.8em">'+r.explanation+'</div>';
+        html+='</div>';
+      });
+    }
+    // Show pending errors
+    var pending=errors.filter(function(e){return e.status==='pending'});
+    if(pending.length){
+      html+='<div style="color:#ff8a80;font-size:.8em;font-weight:600;margin:6px 0">Pending Review ('+pending.length+')</div>';
+    }
     errors.forEach(function(e,i){
-      html+='<div style="background:#16213e;padding:8px;margin:4px 0;border-radius:6px;border-left:3px solid #ff8a80">';
-      html+='<div style="color:#ff8a80;font-weight:600">#'+(i+1)+' '+e.lineName+'</div>';
-      html+='<div>Move '+e.moveIndex+' | Expected: <b>'+e.expectedMove+'</b></div>';
-      html+='<div style="color:#666;font-size:.9em">'+e.movesPlayed+'</div>';
-      html+='<div style="color:#555;font-size:.85em">'+e.timestamp.slice(0,16).replace('T',' ')+'</div>';
+      if(e.status!=='pending')return;
+      html+='<div style="background:#16213e;padding:8px;margin:3px 0;border-radius:6px;border-left:3px solid #ff8a80">';
+      html+='<div style="color:#ff8a80;font-weight:600;font-size:.85em">#'+(i+1)+' '+e.lineName+'</div>';
+      html+='<div style="font-size:.8em">Move '+e.moveIndex+' | Expected: <b>'+e.expectedMove+'</b></div>';
+      html+='<div style="color:#666;font-size:.75em">'+e.movesPlayed+'</div>';
+      html+='<div style="color:#555;font-size:.7em">'+e.timestamp.slice(0,16).replace('T',' ')+'</div>';
       html+='</div>';
     });
+    if(!pending.length&&!resKeys.length)html+='<div style="padding:8px;color:#666">All clear!</div>';
     $('#error-list').html(html);
     el.slideDown(200);
   }
 
   function clearErrors(){
     localStorage.removeItem('chess-trainer-errors');
+    localStorage.removeItem('chess-trainer-resolutions');
     $('#error-list').html('<div style="padding:8px;color:#666">Cleared.</div>');
   }
 
