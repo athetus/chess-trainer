@@ -558,6 +558,7 @@ var app=(function(){
     checkDailyStreak();
     updateXPDisplay();
     updateDailyStreakDisplay();
+    loadExplanations();
     startDrill();
   }
 
@@ -700,7 +701,13 @@ var app=(function(){
     }else{
       sessionTotal++;
       Sound.play('wrong');
-      setStatus('Not quite. The correct move is '+expectedSan,'wrong');
+      var customExpl=getWrongMoveExplanation(currentLine.id,moveIndex,userMove.san);
+      if(customExpl){
+        setStatus(expectedSan+' is correct. '+customExpl,'wrong');
+        $('#explanation-box').text(customExpl).fadeIn(200);
+      }else{
+        setStatus('Not quite. The correct move is '+expectedSan,'wrong');
+      }
       updateSessionStats();
       showCorrectMoveOnBoard(expectedSan);
       return'snapback';
@@ -823,6 +830,22 @@ var app=(function(){
 
   var SUPABASE_URL='https://oomuupminexahfipgktd.supabase.co';
   var SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbXV1cG1pbmV4YWhmaXBna3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMDE4MzAsImV4cCI6MjA4OTY3NzgzMH0.SrOKNj7mh_UtP_6PdWx4G7gwR98ya56xL_6e0k3Hxrk';
+  var moveExplanations={};
+
+  function loadExplanations(){
+    fetch(SUPABASE_URL+'/rest/v1/move_explanations?select=line_id,move_index,wrong_move,explanation',{
+      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+    }).then(function(r){return r.json()}).then(function(data){
+      data.forEach(function(e){
+        var key=e.line_id+'|'+e.move_index+'|'+e.wrong_move;
+        moveExplanations[key]=e.explanation;
+      });
+    }).catch(function(){});
+  }
+
+  function getWrongMoveExplanation(lineId,moveIdx,wrongSan){
+    return moveExplanations[lineId+'|'+moveIdx+'|'+wrongSan]||null;
+  }
 
   function reportError(){
     if(!currentLine)return;
