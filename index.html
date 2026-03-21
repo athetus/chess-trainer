@@ -821,17 +821,19 @@ var app=(function(){
     }
   }
 
+  var SUPABASE_URL='https://oomuupminexahfipgktd.supabase.co';
+  var SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbXV1cG1pbmV4YWhmaXBna3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMDE4MzAsImV4cCI6MjA4OTY3NzgzMH0.SrOKNj7mh_UtP_6PdWx4G7gwR98ya56xL_6e0k3Hxrk';
+
   function reportError(){
     if(!currentLine)return;
     var report={
-      lineId:currentLine.id,
-      lineName:currentLine.name,
-      moveIndex:moveIndex,
+      line_id:currentLine.id,
+      line_name:currentLine.name,
+      move_index:moveIndex,
       fen:game.fen(),
-      expectedMove:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
-      userPlayed:lastUserAttempt||'(none)',
-      movesPlayed:currentLine.moves.slice(0,moveIndex).join(' '),
-      timestamp:new Date().toISOString(),
+      expected_move:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
+      user_played:lastUserAttempt||'(none)',
+      moves_played:currentLine.moves.slice(0,moveIndex).join(' '),
       status:'pending'
     };
     // Save locally
@@ -839,14 +841,12 @@ var app=(function(){
     try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
     errors.push(report);
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
+    // Send to Supabase (CORS-friendly, fire-and-forget)
+    fetch(SUPABASE_URL+'/rest/v1/error_reports',{
+      method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},
+      body:JSON.stringify(report)
+    }).then(function(){setStatus('Reported & synced!','correct')}).catch(function(){setStatus('Reported locally!','info')});
     Sound.play('correct');
-    // Auto-share on mobile (one tap to Copy from share sheet)
-    var text=report.lineName+'\nMove '+report.moveIndex+' | Expected: '+report.expectedMove+' | You played: '+report.userPlayed+'\nMoves: '+report.movesPlayed+'\nFEN: '+report.fen;
-    if(navigator.share){
-      navigator.share({title:'Chess Error',text:text}).then(function(){setStatus('Shared!','correct')}).catch(function(){setStatus('Reported!','info')});
-    }else{
-      navigator.clipboard.writeText(text).then(function(){setStatus('Copied!','correct')}).catch(function(){setStatus('Reported!','info')});
-    }
   }
 
   function showErrorLog(){
