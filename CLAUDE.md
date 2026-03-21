@@ -51,22 +51,29 @@ Everything is inline in `index.html`:
 - Always look for material-winning captures before quiet moves (dxc6, Qxe4+, etc.)
 - GothamChess Qb3 line is the primary recommendation after 4.d4 exd4 5.e5 Nd5
 
-### Hippo
+### Hippo (The Chess Giant / Solomon Ruddell style)
 - Flexible move order — setup moves can be played in any order
-- Always start with ...g6, then ...Bg7
+- Always start with ...g6, then ...Bg7 (auto-played, baseMoves=4)
+- **...a6 is CONDITIONAL** — only play when Nc3 can reach b5. Skip if no knight threat.
+- **...h6 is CONDITIONAL** — only play when Ng5 or Bg5 is a real threat. Skip if not needed.
+- **Castling is FLEXIBLE** — delay or skip in closed positions. 5 lines show delayed/no castling.
+- **Be OPPORTUNISTIC** — if White overextends, exploit it instead of blindly completing the setup
 - Against Austrian Attack (f4): transpose to Pirc with ...Nf6, NOT pure Hippo
 - Break timing: ...e5 after d5, ...d5 after e5, ...f5 for kingside attack
-- Castle before pushing ...h6 (avoid Qxh6)
 - Don't put knight on f5 if exf5 captures it
 
 ## Error Reporting
 Users report suspect moves via the "Report" button. Reports are stored in localStorage AND synced to a cloud endpoint automatically.
 
-**Cloud endpoint:** `https://jsonblob.com/api/jsonBlob/019d10cb-be8b-7251-8664-094554953b6b`
+**Cloud endpoint (Supabase):**
+- Project: `oomuupminexahfipgktd` (chess-trainer, ap-southeast-1)
+- Table: `error_reports` (line_id, line_name, move_index, fen, expected_move, user_played, moves_played, status)
+- Table: `move_explanations` (line_id, move_index, wrong_move, explanation) — personalized wrong-move feedback
+- Anon key used in frontend (safe, designed for client-side use with RLS)
 
 **Workflow:**
-1. User taps Report on phone → saved locally + sent to cloud
-2. Claude Code session starts → auto-fetches cloud endpoint
+1. User taps Report on phone → saved locally + sent to Supabase
+2. Claude Code session starts → fetches pending errors from Supabase
 3. Claude processes errors, pushes fixes, marks as resolved
 
 Each report contains:
