@@ -135,7 +135,10 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
   </div>
   <div id="line-selector"></div>
   <div id="error-log" style="display:none;padding:8px;margin:6px 0">
-    <h3 style="font-size:.85em;color:#ff8a80;margin-bottom:6px">Error Reports <button onclick="app.clearErrors()" style="float:right;background:#2a1a1a;color:#ff8a80;border:1px solid #ff8a80;border-radius:6px;padding:3px 8px;font-size:.75em;cursor:pointer">Clear All</button></h3>
+    <h3 style="font-size:.85em;color:#ff8a80;margin-bottom:6px">Error Reports
+      <button onclick="app.shareErrors()" style="float:right;background:#0f3460;color:#00d2ff;border:none;border-radius:6px;padding:4px 10px;font-size:.78em;cursor:pointer;font-weight:600;margin-left:4px">Share</button>
+      <button onclick="app.clearErrors()" style="float:right;background:#2a1a1a;color:#ff8a80;border:1px solid #ff8a80;border-radius:6px;padding:3px 8px;font-size:.75em;cursor:pointer">Clear</button>
+    </h3>
     <div id="error-list" style="font-size:.72em;color:#aaa"></div>
   </div>
   <div id="result-screen">
@@ -880,6 +883,29 @@ var app=(function(){
     el.slideDown(200);
   }
 
+  function shareErrors(){
+    var errors=[];
+    try{errors=JSON.parse(localStorage.getItem('chess-trainer-errors'))||[]}catch(e){}
+    var pending=errors.filter(function(e){return e.status==='pending'});
+    if(!pending.length){setStatus('No pending errors to share.','info');return}
+    var text='Chess Trainer Error Reports:\n\n';
+    pending.forEach(function(e,i){
+      text+='#'+(i+1)+' '+e.lineName+'\n';
+      text+='Move '+e.moveIndex+' | Expected: '+e.expectedMove+'\n';
+      text+='Moves: '+e.movesPlayed+'\n';
+      text+='FEN: '+e.fen+'\n\n';
+    });
+    if(navigator.share){
+      navigator.share({title:'Chess Trainer Errors',text:text}).catch(function(){});
+    }else{
+      navigator.clipboard.writeText(text).then(function(){setStatus('Copied to clipboard!','correct')}).catch(function(){
+        // Fallback: select all in a textarea
+        var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+        setStatus('Copied to clipboard!','correct');
+      });
+    }
+  }
+
   function clearErrors(){
     localStorage.removeItem('chess-trainer-errors');
     localStorage.removeItem('chess-trainer-resolutions');
@@ -968,7 +994,7 @@ var app=(function(){
 
   $(document).ready(function(){init()});
 
-  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine,undo:undo,reportError:reportError,showErrorLog:showErrorLog,clearErrors:clearErrors};
+  return{switchOpening:switchOpening,hint:hint,explain:explain,nextLine:nextLine,retryLine:retryLine,showLineSelector:showLineSelector,selectLine:selectLine,undo:undo,reportError:reportError,showErrorLog:showErrorLog,shareErrors:shareErrors,clearErrors:clearErrors};
 })();
 </script>
 </body>
