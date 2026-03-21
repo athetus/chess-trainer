@@ -763,10 +763,9 @@ var app=(function(){
 
     var statusMsg=isPerfect?'Perfect! '+xpMsg:accuracy>=70?'Good! '+xpMsg:'Keep practicing. '+xpMsg;
     setStatus(statusMsg,isPerfect?'correct':accuracy>=70?'info':'wrong');
-    var delay=isPerfect?1500:accuracy>=70?2500:3500;
-    autoAdvanceTimer=setTimeout(function(){startDrill()},delay);
+    // Show OK/Report buttons instead of auto-advancing — let user confirm last move
+    $('#drill-controls').html('<button class="btn-next" onclick="app.nextLine()" style="flex:1;padding:14px;font-size:1em">OK</button><button class="btn-report" onclick="app.reportError();app.nextLine()" style="flex:1;padding:14px;font-size:.9em">Report &amp; Next</button>').show();
     $('#result-screen').fadeIn(200);
-    $('#drill-controls').hide();
   }
 
   function hint(){
@@ -953,7 +952,8 @@ var app=(function(){
     if(line)startDrill(line);
   }
 
-  function hideResult(){$('#result-screen').hide();$('#drill-controls').show()}
+  var defaultControls='<button class="btn-hint" onclick="app.hint()">Hint</button><button class="btn-explain" onclick="app.explain()">Why?</button><button class="btn-undo" onclick="app.undo()">Undo</button><button class="btn-menu" onclick="app.showLineSelector()">Lines</button><button class="btn-report" onclick="app.reportError()">Report</button><button class="btn-report" onclick="app.showErrorLog()">Errors</button>';
+  function hideResult(){$('#result-screen').hide();$('#drill-controls').html(defaultControls).show()}
 
   function setStatus(msg,cls){$('#status').text(msg).attr('class',cls||'neutral')}
 
