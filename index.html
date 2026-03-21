@@ -487,6 +487,7 @@ var app=(function(){
   var autoAdvanceTimer=null;
   var moveStartTime=0,sessionMoveTimeTotal=0,sessionMoveCount=0;
   var lineMoveTimeTotal=0,lineMoveCount=0;
+  var lastUserAttempt=null;
 
   // ===================== ARROW SYSTEM =====================
   function getSquareCenter(sq){
@@ -664,6 +665,7 @@ var app=(function(){
     testGame.undo();
     var userMove=testGame.move({from:source,to:target,promotion:'q'});
     if(!userMove)return'snapback';
+    lastUserAttempt=userMove.san;
     playerMoveCount++;
     // Track speed
     if(moveStartTime>0){var elapsed=(Date.now()-moveStartTime)/1000;lineMoveTimeTotal+=elapsed;lineMoveCount++;sessionMoveTimeTotal+=elapsed;sessionMoveCount++;moveStartTime=0}
@@ -827,6 +829,7 @@ var app=(function(){
       moveIndex:moveIndex,
       fen:game.fen(),
       expectedMove:moveIndex<currentLine.moves.length?currentLine.moves[moveIndex]:'(end)',
+      userPlayed:lastUserAttempt||'(none)',
       movesPlayed:currentLine.moves.slice(0,moveIndex).join(' '),
       timestamp:new Date().toISOString(),
       status:'pending'
@@ -838,7 +841,7 @@ var app=(function(){
     localStorage.setItem('chess-trainer-errors',JSON.stringify(errors));
     Sound.play('correct');
     // Auto-share on mobile (one tap to Copy from share sheet)
-    var text=report.lineName+'\nMove '+report.moveIndex+' | Expected: '+report.expectedMove+'\nMoves: '+report.movesPlayed+'\nFEN: '+report.fen;
+    var text=report.lineName+'\nMove '+report.moveIndex+' | Expected: '+report.expectedMove+' | You played: '+report.userPlayed+'\nMoves: '+report.movesPlayed+'\nFEN: '+report.fen;
     if(navigator.share){
       navigator.share({title:'Chess Error',text:text}).then(function(){setStatus('Shared!','correct')}).catch(function(){setStatus('Reported!','info')});
     }else{
