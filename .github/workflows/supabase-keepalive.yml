@@ -1,0 +1,23 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 8 */3 * *'  # every 3 days at 08:00 UTC
+  workflow_dispatch:         # allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase DB
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://oomuupminexahfipgktd.supabase.co/rest/v1/move_explanations?select=line_id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbXV1cG1pbmV4YWhmaXBna3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMDE4MzAsImV4cCI6MjA4OTY3NzgzMH0.SrOKNj7mh_UtP_6PdWx4G7gwR98ya56xL_6e0k3Hxrk" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbXV1cG1pbmV4YWhmaXBna3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMDE4MzAsImV4cCI6MjA4OTY3NzgzMH0.SrOKNj7mh_UtP_6PdWx4G7gwR98ya56xL_6e0k3Hxrk")
+          echo "Supabase response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "WARNING: Expected 200, got $STATUS - project may be paused"
+            exit 1
+          fi
+          echo "OK - Supabase is alive, 7-day timer reset"
