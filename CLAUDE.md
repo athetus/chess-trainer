@@ -37,10 +37,11 @@ Everything is inline in `index.html`:
 - **Chess.com green board** — #EEEED2 / #769656 square colors with yellow highlights
 
 ## Opening Lines
-- **29 Ponziani lines** — main lines, GothamChess tricks, traps, countergambit, beginner punishments
+- **30 Ponziani lines** — main lines, GothamChess Qb3 attack, traps, countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
 - **18 Hippo lines** — vs 1.e4/d4/c4/Nf3, handling threats, middlegame plans
-- All lines validated with chess.js (`test/validate.js`)
-- Deep tactical audit performed (`test/deep-audit*.js`) — every position checked for missed captures/forks/pins
+- All lines validated with chess.js (`test/validate.js`) — **48 lines total, 0 issues**
+- Opus subagent tactical audit run across all lines — two independent audits cross-confirmed bugs
+- Deep audit scripts (`test/deep-audit*.js`) also available but produce false positives; Opus audits are more reliable
 
 ## Key Principles Enforced
 ### Ponziani (GothamChess style)
@@ -49,7 +50,8 @@ Everything is inline in `index.html`:
 - After d5 Ne7, play Bg5 to poison the e4 pawn (Qa4+ fork trap)
 - If e7 is blocked (by Be7 or Qe7), d5 forces knight to b8/d8 — even worse
 - Always look for material-winning captures before quiet moves (dxc6, Qxe4+, etc.)
-- GothamChess Qb3 line is the primary recommendation after 4.d4 exd4 5.e5 Nd5
+- GothamChess Qb3 line is the primary recommendation after 4.d4 exd4 5.e5 Nd5 -- drill ends at O-O (Greek Gift Bxh7+ was removed: unsound because Bxh3 wins White's queen)
+- After O-O in the main Nxe4 line, play Re1 immediately -- the Ne5 hangs to Nxe5 without it
 
 ### Hippo (The Chess Giant / Solomon Ruddell style)
 - Flexible move order — setup moves can be played in any order
@@ -106,13 +108,28 @@ git push origin main
 ## Adding New Lines
 Use the `L()` helper function:
 ```js
-L(id, name, description, result, isTrap, category, moves, explanations)
+L(id, name, description, result, isTrap, category, moves, explanations, baseMoves)
 ```
 - `moves`: array of SAN strings from move 1
 - `explanations`: object mapping move index to explanation string
   - Ponziani: even indices (White's moves)
   - Hippo: odd indices (Black's moves)
-- After adding, run `node test/validate.js` to verify legality
-- Then run `node test/deep-audit.js` to check for missed tactics
+- `baseMoves` (optional 9th param): override auto-play count. Ponziani default=5, Hippo default=4. Use for deviation lines where the user must respond to an unexpected Black move (e.g., baseMoves=1 so user sees 1...Nf6 and must play e5!)
+- After adding, **also add the line to `test/validate.js`** — it does NOT auto-sync from index.html
+- Run `node test/validate.js` to verify legality (must show 0 issues)
 - Categories: main, counter, trap, other, beginner (Ponziani) / vs-e4, vs-d4, vs-cf, threats, plans (Hippo)
-- Hippo lines: add `flexible:true` (set automatically via ALL_LINES mapping)
+- Hippo lines: `flexible:true` is set automatically via ALL_LINES mapping
+
+## Tactical Audit Process
+When adding or modifying lines, or after a batch of user error reports:
+1. Run `node test/validate.js` — confirms move legality only
+2. Run two independent Opus subagent audits in parallel — each checks for hanging pieces, illegal castling, false result descriptions, principle violations
+3. Cross-confirm: only fix bugs both audits agree on (or that chess.js confirms)
+4. After any moves change, update `test/validate.js` to match
+
+**Common bugs to watch for:**
+- Knight on f5 when e-pawn can capture (exf5 with no recapture available)
+- Castling after queen controls the castling path
+- Result descriptions claiming "up a piece" or "mate in N" without verifying
+- Lines ending mid-trade (position looks wrong cosmetically)
+- validate.js missing a line that exists in index.html
