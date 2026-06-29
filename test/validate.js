@@ -3,7 +3,7 @@ function L(id,name,desc,result,trap,cat,moves,expl){return{id:id,name:name,moves
 
 var PONZIANI_LINES=[
 L('ponz-main-nxe4','Main Line: Nxe4','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Bd3','Nf6','O-O'],{}),
-L('ponz-main-deep','Main Line Deep','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Bd3','Nf6','O-O','Be7','Re1','O-O','Nd2','Nxe5','Rxe5','d6','Re1'],{}),
+L('ponz-main-deep','Main Line Deep','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Bd3','Nf6','O-O','Be7','Re1','O-O','Nd2'],{}),
 L('ponz-main-positional','Positional Qd4','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe4','d5','Ne7','Nxe5','Ng6','Nxg6','hxg6','Qd4','Qf6','Qxf6','gxf6','Be3'],{}),
 L('ponz-main-exd4','Main Line exd4','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','cxd4','Bb4+','Bd2','Bxd2+','Qxd2','d6'],{}),
 L('ponz-nf6-d4-d6','Solid d6','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','Bd3','Be7','O-O','O-O','Nbd2','Re8','Re1','Bf8','Nf1','h6','Ng3'],{}),
@@ -27,6 +27,8 @@ L('ponz-fraser','Fraser','','',0,'o',['e4','e5','Nf3','Nc6','c3','Nf6','d4','Nxe
 L('ponz-qf6','Qf6','','',0,'b',['e4','e5','Nf3','Nc6','c3','Qf6','d4','exd4','cxd4','Bb4+','Nc3','Nge7','d5','Nd8','Bd3'],{}),
 L('ponz-qe7','Qe7','','',0,'b',['e4','e5','Nf3','Nc6','c3','Qe7','d4','d6','Bd3','Nf6','O-O','g6','Nbd2','Bg7','Re1'],{}),
 L('ponz-a6','a6','','',0,'b',['e4','e5','Nf3','Nc6','c3','a6','d4','Nf6','Bd3','d6','O-O','Be7','Nbd2','O-O','Re1'],{}),
+L('ponz-gotham-qb3','GothamChess Qb3','','',0,'main',['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Nd5','Qb3','Nb6','cxd4','d5','exd6','Bxd6','Bd3','O-O','O-O'],{}),
+L('ponz-gotham-bc5-trap','GothamChess Bc5 Trap','','',1,'trap',['e4','e5','Nf3','Nc6','c3','Nf6','d4','exd4','e5','Bc5','Qa4'],{}),
 L('ponz-deviation-petrov','Petrov','','',0,'o',['e4','e5','Nf3','Nf6','Nxe5','d6','Nf3','Nxe4','d4','d5','Bd3','Nc6','O-O','Be7','c4'],{}),
 L('ponz-deviation-alekhine','Alekhine','','',0,'o',['e4','Nf6','e5','Nd5','d4','d6','Nf3','Bg4','Be2','e6','O-O','Be7','c4','Nb6','Nc3'],{}),
 L('ponz-deviation-sicilian','Sicilian Alapin','','',0,'o',['e4','c5','c3','d5','exd5','Qxd5','d4','Nf6','Nf3','e6','Be2','Nc6','O-O','Be7','Be3','O-O','Nbd2'],{})
@@ -34,7 +36,7 @@ L('ponz-deviation-sicilian','Sicilian Alapin','','',0,'o',['e4','c5','c3','d5','
 
 var HIPPO_LINES=[
 L('h1','e4 main','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Rad1','Ne7','Rfe1','h6','d5','e5','Bc4','O-O'],{}),
-L('h2','e4 deep f5','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Rad1','Ne7','Rfe1','h6','d5','e5','Bc4','f5','exf5','Nxf5','Bd3','Nf6','Ne4','Nxe4'],{}),
+L('h2','e4 deep f5','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','Rad1','Ne7','Rfe1','h6','d5','e5','Bc4','f5','exf5','Nxf5','Bd3','Nf6','Ne4','Nxe4','Bxe4'],{}),
 L('h3','e4 e5 push','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','e6','e5','d5','Be2','Ne7','O-O','Nd7','Be3','b6','Nd2','Bb7','f4','c5'],{}),
 L('h4','e4 e5 deep c5','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','e6','e5','d5','Be2','Ne7','O-O','Nd7','Be3','b6','Nd2','Bb7','f4','c5','dxc5','bxc5','Nb3','O-O','Bf2','Nf5','Qd2','a5'],{}),
 L('h5','d4 main','','',0,'',['d4','g6','c4','Bg7','Nc3','d6','e4','Nd7','Nf3','e6','Be2','b6','O-O','Bb7','Be3','Ne7','Qd2','h6','Rad1','O-O','d5','e5'],{}),
@@ -48,7 +50,7 @@ L('h12','austrian','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','f4','Nf6','Nf3',
 L('h13','bc4','','',0,'',['e4','g6','d4','Bg7','Bc4','d6','Nf3','e6','O-O','Ne7','Nc3','Nd7','Be3','b6','Qd2','Bb7','Rad1','a6','Bb3','h6','Rfe1','O-O'],{}),
 L('h14','h4 storm','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','h4','a6','h5','b6','hxg6','fxg6','Nf3','Bb7','Bc4','e6','Be3','Nd7','Qd2','Ne7','O-O-O','d5'],{}),
 L('h15','bh6','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','d5','Ne7','Rad1','O-O','Bh6','Bxh6','Qxh6','Nf6','Qd2','exd5','Nxd5'],{}),
-L('h16','f5 attack','','',0,'',['d4','g6','c4','Bg7','Nc3','d6','e4','Nd7','Nf3','e6','Be2','b6','O-O','Bb7','Be3','Ne7','Qd2','h6','Rad1','O-O','d5','e5','Na4','f5','exf5','Nxf5','Bd3','Nf6','Nc3','g5'],{}),
+L('h16','f5 attack','','',0,'',['d4','g6','c4','Bg7','Nc3','d6','e4','Nd7','Nf3','e6','Be2','b6','O-O','Bb7','Be3','Ne7','Qd2','h6','Rad1','O-O','d5','e5','Na4','f5','exf5','Nxf5','Bd3','Nf6','Nc3','Nd4'],{}),
 L('h17','c5 break','','',0,'',['e4','g6','d4','Bg7','Nc3','d6','Nf3','e6','Be2','Nd7','O-O','Ne7','Be3','b6','e5','d5','Nd2','Bb7','f4','c5','dxc5','bxc5','Nb3','O-O','Bf2','Nf5','Qe1','Rc8'],{}),
 L('h18','b5 expand','','',0,'',['d4','g6','c4','Bg7','Nc3','d6','e4','Nd7','Nf3','e6','Be2','b6','O-O','Bb7','Be3','Ne7','Qd2','a6','d5','e5','Na4','h6','Qc2','b5','cxb5','axb5','Nc3','b4','Na4','O-O'],{})
 ];
