@@ -23,9 +23,18 @@ Broken lines fixed to the engine's best (verified before + after editing):
 - **ponz-fraser**: honest reframe — White grabs material but Black has full comp (~-0.4); no false "winning" claim
 Text-only softens (position is equal, not "White advantage"): ponz-gotham-bg5-nontrap, ponz-countergambit-f6
 
+## Hippo Engine Audit (2026-07-06, same session)
+Ran the Stockfish audit across all 18 Hippo lines. Found a systemic problem worse than the Ponziani: many lines ended on a Black blunder (usually ...O-O walking into d5+Bxh6/Bc4), and result text wildly overclaimed ("monster knight", "safely handled") while Black was -2 or -3. Fixed 9 lines (verified before+after); all now reach the honest Hippo range (+0.3 to +1.2 White = solid but slightly cramped, the true assessment):
+- 6 ending-swaps (replace blunder ...O-O / premature ...f5 with the engine move): e4-main (...e5), d4-main (...g5), c4-english (...g5), bc4 (...Nf6), c4-quiet (...Ne5), nf3-reti (...Kh7)
+- 2 tail rebuilds: h4-storm (+3.06 -> +0.47, go Pirc ...Nf6/...h5 not slow Hippo); bh6 (fake -1.78 -> honest +0.32, break ...exd5 before castling)
+- f5-attack: ...Nd4 (loses) -> ...Ng4; honest text
+- 3 text-only honest reframes: d4-e5-push, c5-break, b5-expand
+Residuals (left for a future deeper rebuild): f5-attack keeps a mid-line ...O-O in its break demo; bh6 depends on White's move order. Both end honestly.
+The 2 model lines that were already correct: hippo-spassky-deep (+0.13), hippo-vs-austrian (+0.20) — active ...Kh7+...f5 play, the template for the rest.
+
 ## Key Learning
-- The Ponziani mostly EQUALIZES rather than crushes. Result text must match the engine, not hype.
-- Stockfish 18 (`brew install stockfish`) via UCI is the reliable tactical oracle — see CLAUDE.md Tactical Audit Process.
+- The Ponziani mostly EQUALIZES and the Hippo is slightly WORSE for Black (~+0.8 White) but solid. Result text must match the engine, not hype. The Hippo works when Black plays ACTIVELY (Kh7+f5 breaks), not passively (castle-and-wait).
+- Stockfish 18 (`brew install stockfish`) via UCI is the reliable tactical oracle — see CLAUDE.md Tactical Audit Process. Ponziani = White (even indices); Hippo = Black (odd indices), judge finals from Black's side.
 
 ## Next Steps
 - Continue drilling and report any suspect positions via the Report button
