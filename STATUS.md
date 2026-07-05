@@ -5,29 +5,27 @@ Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) 
 
 ## Done
 - Single-file HTML app hosted on GitHub Pages (no build step, no backend)
-- **48 lines total: 30 Ponziani + 18 Hippo, all tactically validated by 2x independent Opus audits**
+- **51 lines total: 33 Ponziani + 18 Hippo, all move-legal and Stockfish 18 engine-audited**
 - Gamification (XP, levels, streaks), spaced repetition via localStorage
 - Error reporting synced to Supabase (project: oomuupminexahfipgktd, ap-southeast-1)
 - `move_explanations` table for personalized wrong-move feedback
 - GitHub Actions keep-alive workflow to prevent Supabase free-tier pause
-- Double Opus subagent audit pipeline: both audits confirmed same bugs, all fixed
+- `test/validate.js` rewritten to parse index.html directly — can no longer drift out of sync
 
-## Session Fixes (comprehensive)
-- Leonhardt: Be2 (quiet) → Qxc6+ Ke7 Qxa8 (wins free rook; Bc8 blocks recapture)
-- hippo-vs-bh6: restructured to castle before bishop trade; Nf5 → Nf6 (not hanging)
-- hippo-vs-e4-main: Nf5 → O-O (Nf5 hangs to exf5)
-- hippo-f5-attack: g5 → Nd4 (g5 hangs the Nf5 to Bxf5 with no recapture)
-- hippo-vs-e4-deep-f5: added White Bxe4 final move to complete the equal trade
-- ponz-gotham-qb3: removed unsound Greek Gift (Bxh7+/Qh3 loses queen to Bxh3); now ends at O-O
-- ponz-nxf2-trap: updated result/explanation (b4# not forced due to Qe8+; attack is still winning)
-- ponz-qh4-trap: fixed explanations; real threat is Bxe4/Nf6+ fork, not "attacks queen"
-- ponz-main-nxe4: added critical Re1 warning (Ne5 hangs after O-O)
-- ponz-main-deep: shortened to 19 moves (Re1 ending allowed Nxd5)
-- ponz-fraser: "up a piece" → "+1 net material (knight for two pawns)"
-- ponz-qh4-trap: "forking king and queen" → accurate Bxe4/Nf6+ description
-- Added 3 deviation lines: Petrov (2...Nf6), Alekhine (1...Nf6), Sicilian Alapin (1...c5)
-- Added 2 previously-missing lines to validate.js: ponz-gotham-qb3, ponz-gotham-bc5-trap
-- Cleared all 7 pending Supabase error reports
+## Session Fixes (Stockfish 18 engine audit, 2026-07-06)
+Processed 22 pending Supabase reports; engine-audited all reported lines + all 5 Gotham lines.
+Broken lines fixed to the engine's best (verified before + after editing):
+- **ponz-qh4-trap**: `8.Ng4` threw the win (ended -1.46) → `8.g3!` refutation (+2.48). User had reported playing g3 — they were right.
+- **ponz-gotham-exd4-bc5-trap**: `6.Qa4` didn't win (-0.02) → `6.exf6!` wins a clean piece (+3.13)
+- **ponz-aggressive-f5**: `8.d5` blunder (-0.49) → `8.Nxf6+!` wrecks Black's kingside, regains pawn (+0.72)
+- **ponz-gotham-qb3** (flagship): kept the Qb3 identity, fixed `8.exd6`→`8.Bb5` (−0.64 → +0.22) + honest text (no more "crushing attack, Black cramped")
+- **ponz-passive-be7**: passive `Nbd2` frittered the edge (0.00) → `c4` keeps the space bind (+0.85)
+- **ponz-fraser**: honest reframe — White grabs material but Black has full comp (~-0.4); no false "winning" claim
+Text-only softens (position is equal, not "White advantage"): ponz-gotham-bg5-nontrap, ponz-countergambit-f6
+
+## Key Learning
+- The Ponziani mostly EQUALIZES rather than crushes. Result text must match the engine, not hype.
+- Stockfish 18 (`brew install stockfish`) via UCI is the reliable tactical oracle — see CLAUDE.md Tactical Audit Process.
 
 ## Next Steps
 - Continue drilling and report any suspect positions via the Report button

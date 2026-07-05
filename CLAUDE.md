@@ -37,11 +37,13 @@ Everything is inline in `index.html`:
 - **Chess.com green board** — #EEEED2 / #769656 square colors with yellow highlights
 
 ## Opening Lines
-- **30 Ponziani lines** — main lines, GothamChess Qb3 attack, traps, countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
+- **33 Ponziani lines** — main lines, GothamChess Qb3 attack, traps, countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
 - **18 Hippo lines** — vs 1.e4/d4/c4/Nf3, handling threats, middlegame plans
-- All lines validated with chess.js (`test/validate.js`) — **48 lines total, 0 issues**
-- Opus subagent tactical audit run across all lines — two independent audits cross-confirmed bugs
-- Deep audit scripts (`test/deep-audit*.js`) also available but produce false positives; Opus audits are more reliable
+- All lines validated with chess.js (`test/validate.js`) — **51 lines total, 0 issues**
+- `test/validate.js` now parses line definitions DIRECTLY from index.html (cannot drift out of sync)
+- Stockfish 18 engine audit is the gold standard for tactical correctness (`brew install stockfish`) — objective evals beat LLM chess judgment; harness pattern in session scratchpad drives it via UCI
+- Opus subagent tactical audit also available — two independent audits cross-confirmed bugs
+- Deep audit scripts (`test/deep-audit*.js`) produce false positives; Stockfish/Opus audits are more reliable
 
 ## Key Principles Enforced
 ### Ponziani (GothamChess style)
@@ -115,21 +117,25 @@ L(id, name, description, result, isTrap, category, moves, explanations, baseMove
   - Ponziani: even indices (White's moves)
   - Hippo: odd indices (Black's moves)
 - `baseMoves` (optional 9th param): override auto-play count. Ponziani default=5, Hippo default=4. Use for deviation lines where the user must respond to an unexpected Black move (e.g., baseMoves=1 so user sees 1...Nf6 and must play e5!)
-- After adding, **also add the line to `test/validate.js`** — it does NOT auto-sync from index.html
+- `test/validate.js` now auto-parses index.html — no need to hand-copy lines anymore. Just run it.
 - Run `node test/validate.js` to verify legality (must show 0 issues)
 - Categories: main, counter, trap, other, beginner (Ponziani) / vs-e4, vs-d4, vs-cf, threats, plans (Hippo)
 - Hippo lines: `flexible:true` is set automatically via ALL_LINES mapping
 
 ## Tactical Audit Process
 When adding or modifying lines, or after a batch of user error reports:
-1. Run `node test/validate.js` — confirms move legality only
-2. Run two independent Opus subagent audits in parallel — each checks for hanging pieces, illegal castling, false result descriptions, principle violations
-3. Cross-confirm: only fix bugs both audits agree on (or that chess.js confirms)
-4. After any moves change, update `test/validate.js` to match
+1. Run `node test/validate.js` — confirms move legality only (auto-parses index.html)
+2. **Run a Stockfish 18 engine audit (gold standard).** `brew install stockfish`. Drive it via UCI from node: for each line, walk every ply, eval the position before each move, flag any WHITE move that drops significantly vs the engine's best, and record the final eval from White's perspective. Compare the final eval to the line's result text. (Harness pattern: scratchpad `audit.js` in the session that built this process.)
+3. Interpretation rules:
+   - `3.c3` always looks like a ~0.5 "drop" vs Ruy/Italian — that's the Ponziani premise, NOT a bug. Ignore it.
+   - In TRAP lines, Black's blunder is intentional — only White's refutation must match engine best.
+   - Fix a move only when it's a real inaccuracy/blunder (meaningful drop) with a better move that keeps the line's pedagogical intent.
+   - Result text must match the engine eval — no "winning/crushing/up a piece" when the eval is equal or worse.
+4. Re-run the engine on the corrected sequences BEFORE editing index.html, then `node test/validate.js` after.
 
 **Common bugs to watch for:**
 - Knight on f5 when e-pawn can capture (exf5 with no recapture available)
 - Castling after queen controls the castling path
-- Result descriptions claiming "up a piece" or "mate in N" without verifying
+- Result descriptions claiming "up a piece" / "winning" / "excellent attack" when the engine says equal-or-worse (esp. the Ponziani, which mostly equalizes rather than crushes)
+- Trap lines whose refutation isn't actually the engine's best (e.g. Qa4 vs exf6, Ng4 vs g3)
 - Lines ending mid-trade (position looks wrong cosmetically)
-- validate.js missing a line that exists in index.html
