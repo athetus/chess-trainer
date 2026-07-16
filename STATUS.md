@@ -19,7 +19,13 @@ User asked for verification against DBs and the actual source repertoires (not e
 - **ponz-gotham-bg5-nontrap + ponz-d6-d5-bg5-safe**: `7.Bh4?` (-0.99, ...g5/...h5 buries the bishop) → `7.Bxf6!` (-0.35, honest "balanced" text)
 - **hippo-vs-bh6**: moves contradicted the line's own lesson — ...Ne7 before ...exd5 allows dxe6! (+1.80) → ...exd5 immediately (+0.35)
 Confirmed CORRECT vs sources/DB: gotham-qb3 8.Bb5 (engine-best; Gotham's own Bd3 is slightly worse), hippo-vs-austrian + h4-storm (diverge from Ruddell stylistically but chessdb ranks every move #1-4).
-Open architecture decisions (user to decide): (1) main-line complex 7.Bd3 → 7.Nxg6! hxg6 8.Qf3 rebuild (engine + DB + Gotham all agree; affects main-nxe4/main-deep and would orphan the Bd3-premised nxf2/qh4 traps); (2) hippo e5-push family ...d5 lock → ...dxe5 capture (engine +1.73 vs +0.08; Ruddell + DB agree; affects 3-4 lines); (3) missing Gotham lines: 5...Qe7 6.cxd4! d6 7.Bb5! (+0.48 verified) and the 4...Bd7 ...Bg4 9.Bb5+!! queen-sac trap (+0.85 verified).
+All three architecture decisions were approved and executed same session (see next section).
+
+## Approved Restructure (2026-07-16, same session) — 50 lines now (32 Ponziani + 18 Hippo)
+- **Main-line complex rebuilt to Gotham's actual line**: main-nxe4 + main-deep now play 7.Nxg6! hxg6 8.Qf3! (threatens Qxf7# MATE + hits e4; +0.18/+0.19 verified) instead of the refutable 7.Bd3 (...Nxe5! -0.25). Retired the 3 Bd3/Qd4-premised lines whose positions can no longer occur: ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional.
+- **Hippo e5-push family rebuilt to ...dxe5 capture** (Ruddell + DB + engine all agree; the ...d5 lock gave White +1.7): e5-push (+0.20, queens trade), e5-deep-c5 → "Queenless Middlegame" with ...Bd7-c6 regroup (+0.10), d4-e5-push (-0.47, Black better!), c5-break → "Meet e5 with ...dxe5" (-0.30, Black better). Every tail depth-24 verified.
+- **2 new Gotham lines added**: ponz-gotham-qe7 (5...Qe7 6.cxd4! d6 7.Bb5! "must be memorized"; +0.46) and ponz-bd7-queensac-trap (the famous Bb5+!! c6 dxc6 Bxf3 c7+! queen-sac; honest +0.85, two pawns up minus c7).
+- 8 more muscle-memory wrong-move explanations seeded (old Bd3/Qd4/...d5 moves).
 
 ## Session Fixes (report batch #2 + Supabase keep-alive hardening, 2026-07-16)
 Processed 13 new user reports (ids 27-39) via the Stockfish 18 audit process. 3 real bugs found and fixed (each verified before + after editing):

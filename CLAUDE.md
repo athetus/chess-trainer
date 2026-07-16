@@ -37,9 +37,10 @@ Everything is inline in `index.html`:
 - **Chess.com green board** — #EEEED2 / #769656 square colors with yellow highlights
 
 ## Opening Lines
-- **33 Ponziani lines** — main lines, GothamChess Qb3 attack, traps, countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
-- **18 Hippo lines** — vs 1.e4/d4/c4/Nf3, handling threats, middlegame plans
-- All lines validated with chess.js (`test/validate.js`) — **51 lines total, 0 issues**
+- **32 Ponziani lines** — main lines (Nxg6+Qf3 mate threat), GothamChess Qb3 attack, traps (incl. the Bd7/Bg4 queen-sac), countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
+- **18 Hippo lines** — vs 1.e4/d4/c4/Nf3, handling threats, middlegame plans (vs e5 push: CAPTURE dxe5, never lock with ...d5)
+- All lines validated with chess.js (`test/validate.js`) — **50 lines total, 0 issues**
+- Retired 2026-07-16: ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional (all premised on 7.Bd3, which ...Nxe5! refutes; mains now play Gotham's 7.Nxg6! hxg6 8.Qf3)
 - `test/validate.js` now parses line definitions DIRECTLY from index.html (cannot drift out of sync)
 - Stockfish 18 engine audit is the gold standard for tactical correctness (`brew install stockfish`) — objective evals beat LLM chess judgment; harness pattern in session scratchpad drives it via UCI
 - Opus subagent tactical audit also available — two independent audits cross-confirmed bugs
@@ -54,7 +55,8 @@ Everything is inline in `index.html`:
 - If e7 is blocked (by Be7 or Qe7), d5 forces knight to b8/d8 — even worse
 - Always look for material-winning captures before quiet moves (dxc6, Qxe4+, etc.)
 - GothamChess Qb3 line is the primary recommendation after 4.d4 exd4 5.e5 Nd5 -- drill ends at O-O (Greek Gift Bxh7+ was removed: unsound because Bxh3 wins White's queen)
-- After O-O in the main Nxe4 line, play Re1 immediately -- the Ne5 hangs to Nxe5 without it
+- Main Nxe4 line: after 5.d5 Ne7 6.Nxe5 Ng6, play 7.Nxg6! hxg6 8.Qf3! (threatens Qxf7# + hits e4) -- NEVER 7.Bd3? (refuted by ...Nxe5!). This is Gotham's actual line; the old Bd3/O-O/Re1 structure is retired.
+- 5...Qe7 (after 4.d4 exd4 5.e5): 6.cxd4! then 7.Bb5! must be memorized -- 6.Qe2? loses e5 to the ...d3! deflection
 
 ### Hippo (The Chess Giant / Solomon Ruddell style)
 - Flexible move order — setup moves can be played in any order
