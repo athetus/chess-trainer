@@ -49,7 +49,8 @@ Everything is inline in `index.html`:
 ### Ponziani (GothamChess style)
 - "If Black doesn't play ...d5, we play d4"
 - After d4, push d5 whenever possible to kick the Nc6
-- After d5 Ne7, play Bg5 to poison the e4 pawn (Qa4+ fork trap)
+- After d5 Ne7, play Bg5 to poison the e4 pawn (Qa4+ fork trap); if Black defends ...h6, trade Bxf6! (doubled f-pawns) — NEVER retreat Bh4 (...g5/...h5 buries the bishop)
+- In the 3...a6 waiting line, d5 Ne7 leaves e5 HANGING (no ...d6 played) — Nxe5! wins a pawn; Bg5 there is a mistake
 - If e7 is blocked (by Be7 or Qe7), d5 forces knight to b8/d8 — even worse
 - Always look for material-winning captures before quiet moves (dxc6, Qxe4+, etc.)
 - GothamChess Qb3 line is the primary recommendation after 4.d4 exd4 5.e5 Nd5 -- drill ends at O-O (Greek Gift Bxh7+ was removed: unsound because Bxh3 wins White's queen)
@@ -62,7 +63,7 @@ Everything is inline in `index.html`:
 - **...h6 is CONDITIONAL** — only play when Ng5 or Bg5 is a real threat. Skip if not needed.
 - **Castling is FLEXIBLE** — delay or skip in closed positions. 5 lines show delayed/no castling.
 - **Be OPPORTUNISTIC** — if White overextends, exploit it instead of blindly completing the setup
-- Against Austrian Attack (f4): transpose to Pirc with ...Nf6, NOT pure Hippo
+- Against Austrian Attack (f4): the app transposes to Pirc with ...Nf6 — NOTE: this diverges from Ruddell (he keeps pure Hippo: delay Nd7/Bb7, keep Bc8+Ne7+e6 covering f5, b6 only to support ...c5) but chessdb ranks every app move #1-3, so it's kept as the engine-approved choice
 - Break timing: ...e5 after d5, ...d5 after e5, ...f5 for kingside attack
 - Don't put knight on f5 if exf5 captures it
 
@@ -132,6 +133,8 @@ When adding or modifying lines, or after a batch of user error reports:
    - Fix a move only when it's a real inaccuracy/blunder (meaningful drop) with a better move that keeps the line's pedagogical intent.
    - Result text must match the engine eval — no "winning/crushing/up a piece" when the eval is equal or worse.
 4. Re-run the engine on the corrected sequences BEFORE editing index.html, then `node test/validate.js` after.
+5. Cross-check vs external DBs and sources (added 2026-07-16): chessdb.cn (`cdb.php?action=queryall&board=<FEN>&json=1`, no auth) ranks every candidate move — flags our moves the engine walk missed (an engine walk only tests our moves against the SCRIPTED replies; chessdb catches lines refuted by better opponent replies). Lichess opening explorer (human game stats) now requires a personal API token. Also verify "Gotham says"/"Ruddell says" claims against their actual videos before attributing.
+6. NEVER hand-build FEN strings for engine checks — generate them from move lists via chess.js (hand-built FENs produced phantom-piece garbage twice).
 
 **Common bugs to watch for:**
 - Knight on f5 when e-pawn can capture (exf5 with no recapture available)

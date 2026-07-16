@@ -195,9 +195,9 @@ L('ponz-gotham-bg5-trap','TRAP: Bg5 Poisoned e4 (GothamChess)','After 3...Nf6 4.
 ['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','d5','Ne7','Bg5','Nxe4','Qa4+','Bd7','Qxe4'],
 {6:'Push d4 (if Black doesn\'t play d5, we play d4!).',8:'Push d5! Kick the knight and grab space.',10:'Bg5! THE GothamChess trick. Pins the f6 knight and poisons the e4 pawn.',12:'Qa4+! Fork the king and the knight on e4. Black can\'t save both.',14:'Win the knight back. White is up a clean pawn with a better position.'}),
 
-L('ponz-gotham-bg5-nontrap','Bg5 Line: Black Doesn\'t Take (GothamChess)','After 6.Bg5, if Black plays correctly with ...h6, White gets an easy, playable game.','White has easy development and the bishop pair. Roughly balanced -- the Bg5-h4-g3 maneuver keeps a pleasant, comfortable game (not a forced advantage).',0,'main',
-['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
-{6:'Push d4.',8:'Push d5! Kick the knight.',10:'Bg5! Even if Black doesn\'t take e4, the pin is annoying.',12:'Retreat to h4, maintaining the pin on the knight.',14:'Retreat to g3. The bishop is well-placed here, controlling e5.',16:'Develop to d3. Aiming at the kingside.',18:'Castle. White has space and the classic kingside attack setup.'}),
+L('ponz-gotham-bg5-nontrap','Bg5 Line: Black Doesn\'t Take (GothamChess)','After 6.Bg5, if Black plays correctly with ...h6, trade on f6 -- do NOT retreat.','Bxf6! wrecks Black\'s kingside pawns (doubled f-pawns). Honest eval: Black is slightly better (-0.4) -- ...h6 is the correct defense to the Bg5 trap try. Bxf6 is damage control; play against the doubled pawns.',0,'main',
+['e4','e5','Nf3','Nc6','c3','Nf6','d4','d6','d5','Ne7','Bg5','h6','Bxf6','gxf6','Nbd2','f5','Bb5+','Bd7','Qb3'],
+{6:'Push d4.',8:'Push d5! Kick the knight.',10:'Bg5! Even if Black doesn\'t take e4, the pin is annoying.',12:'Bxf6! Take and double Black\'s f-pawns. (NOT Bh4? -- ...g5 Bg3 h5! and the bishop gets buried while Black attacks.)',14:'Nbd2, developing toward c4/e4.',16:'Bb5+! Force the trade of Black\'s good bishop.',18:'Qb3, hitting b7 and eyeing the queenside. Balanced game -- play against the shattered kingside pawns.'}),
 
 L('ponz-gotham-bc5-qa4','GothamChess: 3...Bc5 4.d4 with Qa4+','After 3...Bc5, White gets a huge center. d5 kicks the knight and Qa4+ creates threats.','White has a massive center and the queen creates tactical threats.',0,'main',
 ['e4','e5','Nf3','Nc6','c3','Bc5','d4','exd4','cxd4','Bb4+','Nc3','Nf6','d5','Ne7','Bd3','d6','Qa4+'],
@@ -216,9 +216,9 @@ L('ponz-countergambit-bd7','Countergambit: 3...d5 Qa4 Bd7 (Gambit)','Black\'s co
 ['e4','e5','Nf3','Nc6','c3','d5','Qa4','Bd7','exd5','Nd4','Qd1','Nxf3+','Qxf3','Nf6','Bc4','e4','Qe2'],
 {6:'Pin the knight.',8:'Capture the center pawn.',10:'Retreat queen to d1 -- safest square.',12:'Recapture with queen (keeps pawn structure).',14:'Develop bishop actively, defending d5.',16:'Retreat queen. Up a pawn with a good position.'}),
 
-L('ponz-leonhardt','Leonhardt: 3...d5 4.Qa4 Nf6','Black develops the knight aggressively. White grabs e5.','QUEEN RAID! Qxc6+ wins a free rook -- Bc8 blocks Black from recapturing!',0,'counter',
-['e4','e5','Nf3','Nc6','c3','d5','Qa4','Nf6','Nxe5','Bd6','Nxc6','bxc6','e5','Be7','exf6','Bxf6','Qxc6+','Ke7','Qxa8'],
-{6:'Pin the knight.',8:'Grab the free e5 pawn! The pin on c6 makes it safe.',10:'Capture the knight, destroying Black\'s pawn structure.',12:'Push e5 with tempo, attacking the bishop.',14:'Capture the knight -- White has a clear advantage.',16:'QUEEN RAID! Qxc6+ checks the king and wins the c6 pawn.',18:'Win the rook! Bc8 blocks Black\'s queen from recapturing. White is up a full exchange.'}),
+L('ponz-leonhardt','Leonhardt: 3...d5 4.Qa4 Nf6','Black develops the knight aggressively. White grabs e5 and consolidates the extra pawn.','White is up a clean pawn. Black gets activity for it, so consolidate: d3 protects e4, develop simply, keep the pawn. (The old e5? push loses the edge to ...Bxe5!)',0,'counter',
+['e4','e5','Nf3','Nc6','c3','d5','Qa4','Nf6','Nxe5','Bd6','Nxc6','bxc6','d3','O-O','Be2','Re8','Nd2'],
+{6:'Pin the knight.',8:'Grab the free e5 pawn! The pin on c6 makes it safe.',10:'Capture the knight, destroying Black\'s pawn structure.',12:'d3! Protect e4 and consolidate the extra pawn. (NOT e5? -- ...Bxe5! just takes it back with a better game.)',14:'Be2, calm development. The extra pawn is what matters.',16:'Nd2, solid. White is a pawn up; weather Black\'s activity and win the endgame.'}),
 
 // === TRAPS ===
 L('ponz-nxf2-trap','TRAP: Nxf2 (Famous King Hunt)','Black tries to fork queen and rook with Nxf2 -- devastating trap!','TRAP SPRUNG! White ignores the queen and launches a ferocious king hunt. The exposed king and active pieces give White a winning attack.',1,'trap',
@@ -250,9 +250,9 @@ L('ponz-d6-d5-bg5-trap','TRAP: 3...d6 4.d4 Nf6 5.d5! Bg5 (Poisoned e4)','After 3
 ['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','Nxe4','Qa4+','Bd7','Qxe4'],
 {6:'Push d4! Two pawns in the center.',8:'Push d5! Kick the knight -- gain space. GothamChess rule: push d5 when you can!',10:'Bg5! Poison the e4 pawn. If Black takes it, Qa4+ wins it back and more.',12:'Qa4+! Fork the king and the knight on e4.',14:'Win the knight. White is up a clean pawn.'}),
 
-L('ponz-d6-d5-bg5-safe','3...d6: d5 Bg5 (Black Plays Safe)','After d5 Bg5, if Black doesn\'t take the poisoned e4 pawn.','White has space, active bishops, and the classic kingside setup.',0,'other',
-['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
-{6:'Push d4.',8:'Push d5! Kick the knight and grab space.',10:'Bg5! Even if Black doesn\'t bite, the pin is annoying.',12:'Retreat to h4, maintaining pressure on f6.',14:'Retreat to g3. Bishop controls e5 nicely.',16:'Develop to d3, aiming at the kingside.',18:'Castle. Space advantage and easy kingside attack.'}),
+L('ponz-d6-d5-bg5-safe','3...d6: d5 Bg5 (Black Plays Safe)','After d5 Bg5, if Black defends with ...h6, trade on f6 -- do NOT retreat.','Bxf6! doubles Black\'s f-pawns. Honest eval: Black is slightly better (-0.35) -- ...h6 refutes the trap try cleanly. Bxf6 is damage control; target the doubled pawns. (Bh4? is much worse: ...g5/...h5.)',0,'other',
+['e4','e5','Nf3','Nc6','c3','d6','d4','Nf6','d5','Ne7','Bg5','h6','Bxf6','gxf6','Nbd2','f5','Bb5+','Bd7','Qb3'],
+{6:'Push d4.',8:'Push d5! Kick the knight and grab space.',10:'Bg5! Even if Black doesn\'t bite, the pin is annoying.',12:'Bxf6! Take and wreck the pawns. (NOT Bh4? -- ...g5 Bg3 h5! traps the bishop\'s prospects and hands Black the attack.)',14:'Nbd2, heading for c4 or e4.',16:'Bb5+! Trade off Black\'s good bishop with tempo.',18:'Qb3 -- pressure on b7. Balanced; target the doubled f-pawns long-term.'}),
 
 L('ponz-passive-be7','Passive: 3...Be7 4.d4 d6 5.d5!','Safety-first by Black. Push d5 — knight retreats to b8 (e7 is blocked by bishop)!','d5 kicks the knight to b8 (e7 blocked!). White expands with c4 for a genuine, lasting space advantage (~+0.8).',0,'other',
 ['e4','e5','Nf3','Nc6','c3','Be7','d4','d6','d5','Nb8','Bd3','Nf6','O-O','O-O','c4','Nbd7','Nc3'],
@@ -300,9 +300,9 @@ L('ponz-beginner-qe7','Beginner: 3...Qe7 (Blocks Bishop)','Black blocks their ow
 ['e4','e5','Nf3','Nc6','c3','Qe7','d4','d6','d5','Nd8','Bd3','Nf6','O-O','g6','Nbd2','Bg7','Re1','O-O','Nf1'],
 {6:'Push d4.',8:'Push d5! Knight can\'t go to e7 (queen is there!) so it retreats to d8. Devastating.',10:'Develop to d3.',12:'Castle.',14:'Develop knight.',16:'Rook to e1.',18:'Nf1 heading to g3. Huge space advantage.'}),
 
-L('ponz-waiting-a6','Waiting: 3...a6 (Wastes Tempo)','Black wastes a move. Punish with d5 immediately -- even more space!','d5 kicks the knight. Black wasted a tempo on ...a6 and is totally cramped.',0,'beginner',
-['e4','e5','Nf3','Nc6','c3','a6','d4','Nf6','d5','Ne7','Bg5','h6','Bh4','Ng6','Bg3','Be7','Bd3','O-O','O-O'],
-{6:'Push d4. Black wasted a move on ...a6.',8:'Push d5! Punish the wasted tempo. Kick the knight and grab space.',10:'Bg5! Poison the e4 pawn -- same trick as always.',12:'Retreat to h4, maintaining pressure.',14:'Retreat to g3.',16:'Develop to d3.',18:'Castle. White has a huge space advantage.'})
+L('ponz-waiting-a6','Waiting: 3...a6 (Wastes Tempo)','Black wastes a move. Punish with d5, then Nxe5! -- the e5 pawn hangs because ...a6 replaced ...d6.','Nxe5! wins a clean pawn (+1). Because Black wasted time on ...a6 instead of ...d6, the e5 pawn simply hangs after the knight retreats to e7.',0,'beginner',
+['e4','e5','Nf3','Nc6','c3','a6','d4','Nf6','d5','Ne7','Nxe5','Nxe4','Qe2','f5','Nd2','Nf6','Ndf3','d6','Nd3'],
+{6:'Push d4. Black wasted a move on ...a6.',8:'Push d5! Punish the wasted tempo. Kick the knight and grab space.',10:'Nxe5! Just take -- unlike the ...d6 lines, nothing defends e5 here. (Bg5? instead loses the initiative to ...Nxe4 and ...g5.)',12:'Qe2! Pin the e4 knight against the king.',14:'Nd2, adding an attacker to the pinned knight.',16:'Ndf3, keeping the extra pawn and solid control.',18:'Nd3. White is a clean pawn up with the better position.'})
 ];
 
 var HIPPO_LINES=[
@@ -366,9 +366,9 @@ L('hippo-vs-h4-storm','Hippo vs h4 Pawn Storm','White storms with h4. Do NOT pla
 ['e4','g6','d4','Bg7','Nc3','d6','h4','Nf6','f3','h5','Be3','c6','a4','O-O','Nge2','e5'],
 {1:'Start with ...g6.',3:'Fianchetto.',5:'Play ...d6.',7:'...Nf6! Against the h4 storm, go Pirc-style. The slow ...a6/...b6 Hippo gets run over by h5 -- develop and challenge the center instead.',9:'...h5! Stop the h-pawn dead. White\'s storm is blunted before it starts.',11:'...c6, preparing ...d5 or ...Qa5 and giving the king a haven.',13:'Castle -- with the h-file jammed by ...h5, the king is safe on g8.',15:'...e5! Strike the center. Fully equal, storm neutralized.'}),
 
-L('hippo-vs-bh6','Hippo vs Bh6 Threat -- Break with ...exd5','Don\'t allow a favorable Bh6 trade. Break the center with ...exd5 FIRST.','Break with ...exd5 before castling -- this defuses White\'s Bh6-trade plan. After Nxd5 O-O Bg5 Bxd5 exd5 Nf6, Black is solid and roughly equal, keeping the g7 bishop.',0,'threats',
-['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','d5','Ne7','Rad1','exd5','Nxd5','O-O','Bg5','Bxd5','exd5','Nf6'],
-{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'...a6 prevents Nb5 -- the Nc3 can jump to b5. Needed here!',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight to d7.',17:'Second knight to e7.',19:'...exd5! Break in the center BEFORE castling. This is the key -- it stops White getting a good Bh6 trade against a castled king.',21:'Now castle -- the position is clarified and the king is safe.',23:'Recapture on d5. Black keeps a solid structure AND the g7 bishop stays on the board.',25:'...Nf6, developing calmly. Roughly equal -- the Bh6 threat is defused.'}),
+L('hippo-vs-bh6','Hippo vs Bh6 Threat -- Break with ...exd5','Don\'t allow a favorable Bh6 trade. Break the center with ...exd5 IMMEDIATELY when White plays d5.','...exd5 the moment White plays d5 -- this defuses the Bh6-trade plan AND avoids dxe6. Black stays solid (engine +0.35 White, normal Hippo range), keeping the g7 bishop.',0,'threats',
+['e4','g6','d4','Bg7','Nc3','d6','Nf3','a6','Be2','b6','O-O','Bb7','Be3','e6','Qd2','Nd7','d5','exd5','exd5','Ne7','Bg5','O-O','Rfe1','Nf6'],
+{1:'Start with ...g6.',3:'Fianchetto.',5:'Establish d6.',7:'...a6 prevents Nb5 -- the Nc3 can jump to b5. Needed here!',9:'Prepare fianchetto.',11:'Complete fianchetto.',13:'Place e6.',15:'Develop knight to d7.',17:'...exd5 IMMEDIATELY! (Not ...Ne7? first -- White plays dxe6! fxe6 Ng5 and Black\'s position collapses.) Capture the moment the pawn arrives on d5.',19:'NOW the knight comes to e7, with the center already clarified.',21:'Castle -- king safe, structure sound.',23:'...Nf6, developing calmly. Solid, roughly equal -- the Bh6 threat never materialized.'}),
 
 // === MIDDLEGAME PLANS ===
 L('hippo-f5-attack','Middlegame: ...f5 Kingside Attack','After the d5/e5 lock, execute the ...f5 break and keep the pieces active.','Black has carried out the ...f5 break and reached a roughly balanced, dynamic middlegame. ...Ng4 hits the e3-bishop and keeps the initiative -- typical Hippo activity.',0,'plans',
@@ -851,7 +851,12 @@ var app=(function(){
     'ponz-countergambit-f6|8|d4':'d4? loses a pawn: ...dxe4 hits the f3-knight and the e4 pawn falls (engine -1.4). Bb5 keeps the pin and the balance.',
     'ponz-bc5-trap|10|Qa4':'Qa4?? (the old line!) now loses to ...Nxf2! forking queen and rook (engine -2.9). Just take the knight: dxc6.',
     'ponz-beginner-qf6|14|Bd3':'Bd3?? (the old line!) hangs material: ...Bxc3+ bxc3 Qxc3+ hits the king AND the d3-bishop; after the forced Qd2 block, ...Qxa1 grabs the rook (engine -1.3). Be2 sidesteps everything.',
-    'ponz-deviation-sicilian|16|Nbd2':'Nbd2 (the old line) lets Black equalize completely (engine 0.0). dxc5! trades queens and keeps a small, risk-free pull (+0.5).'
+    'ponz-deviation-sicilian|16|Nbd2':'Nbd2 (the old line) lets Black equalize completely (engine 0.0). dxc5! trades queens and keeps a small, risk-free pull (+0.5).',
+    'ponz-waiting-a6|10|Bg5':'Bg5? (the old line) loses the thread: ...Nxe4! then ...g5 and Black takes over (engine -0.8). Nxe5! just wins the hanging pawn (+0.9) -- ...a6 left e5 undefended.',
+    'ponz-leonhardt|12|e5':'e5? (the old line) loses the extra pawn to ...Bxe5! -- the bishop simply takes (engine -1.0). d3 protects e4 and consolidates (+0.2 and a clean pawn up).',
+    'ponz-gotham-bg5-nontrap|12|Bh4':'Bh4? (the old line) walks into ...g5 Bg3 h5! -- the bishop gets buried and Black attacks (engine -1.0). Bxf6! takes the structural win: doubled f-pawns.',
+    'ponz-d6-d5-bg5-safe|12|Bh4':'Bh4? (the old line) walks into ...g5 Bg3 h5! -- the bishop gets buried and Black attacks (engine -1.0). Bxf6! takes the structural win: doubled f-pawns.',
+    'hippo-vs-bh6|17|Ne7':'...Ne7? first (the old line) lets White play dxe6! fxe6 Ng5 with a big edge (+1.8). Capture ...exd5 the MOMENT the pawn arrives -- then ...Ne7.'
   };
 
   function loadExplanations(){

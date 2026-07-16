@@ -12,6 +12,15 @@ Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) 
 - GitHub Actions keep-alive workflow to prevent Supabase free-tier pause
 - `test/validate.js` rewritten to parse index.html directly — can no longer drift out of sync
 
+## Full Repertoire Cross-Check (2026-07-16, same session)
+User asked for verification against DBs and the actual source repertoires (not engine-only). Method: chessdb.cn sweep of all 51 lines (engine-consensus DB, no auth; Lichess explorer now needs a token) + researched GothamChess's actual Ponziani video/study and The Chess Giant's actual Hippo videos + Stockfish 18 depth-24 checks of every flag. 5 more real bugs found and fixed (all tails engine-verified before + after):
+- **ponz-waiting-a6**: `6.Bg5?` (-0.80) → `6.Nxe5!` (+0.97) — with ...a6 instead of ...d6, e5 simply hangs
+- **ponz-leonhardt**: `7.e5?` refuted by ...Bxe5! (-1.04) → `7.d3` (+0.16, clean pawn up); "QUEEN RAID wins a rook" claim removed (needed Black's ...Be7?? blunder)
+- **ponz-gotham-bg5-nontrap + ponz-d6-d5-bg5-safe**: `7.Bh4?` (-0.99, ...g5/...h5 buries the bishop) → `7.Bxf6!` (-0.35, honest "balanced" text)
+- **hippo-vs-bh6**: moves contradicted the line's own lesson — ...Ne7 before ...exd5 allows dxe6! (+1.80) → ...exd5 immediately (+0.35)
+Confirmed CORRECT vs sources/DB: gotham-qb3 8.Bb5 (engine-best; Gotham's own Bd3 is slightly worse), hippo-vs-austrian + h4-storm (diverge from Ruddell stylistically but chessdb ranks every move #1-4).
+Open architecture decisions (user to decide): (1) main-line complex 7.Bd3 → 7.Nxg6! hxg6 8.Qf3 rebuild (engine + DB + Gotham all agree; affects main-nxe4/main-deep and would orphan the Bd3-premised nxf2/qh4 traps); (2) hippo e5-push family ...d5 lock → ...dxe5 capture (engine +1.73 vs +0.08; Ruddell + DB agree; affects 3-4 lines); (3) missing Gotham lines: 5...Qe7 6.cxd4! d6 7.Bb5! (+0.48 verified) and the 4...Bd7 ...Bg4 9.Bb5+!! queen-sac trap (+0.85 verified).
+
 ## Session Fixes (report batch #2 + Supabase keep-alive hardening, 2026-07-16)
 Processed 13 new user reports (ids 27-39) via the Stockfish 18 audit process. 3 real bugs found and fixed (each verified before + after editing):
 - **ponz-bc5-trap**: `6.Qa4` was itself a blunder (-3.03; refuted by `...Nxf2!` forking queen and rook) → rebuilt as `6.dxc6! bxc6 7.Be3` (+1.85, all engine-best). 5...Bc5 is NOT "piece lost" objectively — 6...Bxf2+ is the Fraser with comp; the text now says so.
