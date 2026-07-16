@@ -1,8 +1,14 @@
 name: Supabase Keep-Alive
 
+# Supabase's pause criterion (docs): "a few user requests to the database EACH DAY
+# over the previous week." The old every-3-days ping failed the "each day" part and
+# triggered a pause warning (Jul 2026). 3 runs/day x 3 DB queries, spread across the
+# day, clears "a few each day" with margin.
 on:
   schedule:
-    - cron: '0 8 * * *'  # daily at 08:00 UTC (every-3-days ping was flagged as "insufficient activity" by Supabase's scan, Jul 2026)
+    - cron: '0 6 * * *'   # 06:00 UTC
+    - cron: '0 13 * * *'  # 13:00 UTC
+    - cron: '0 20 * * *'  # 20:00 UTC
   workflow_dispatch:       # allow manual trigger
 
 env:
