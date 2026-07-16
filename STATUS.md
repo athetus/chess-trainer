@@ -12,6 +12,14 @@ Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) 
 - GitHub Actions keep-alive workflow to prevent Supabase free-tier pause
 - `test/validate.js` rewritten to parse index.html directly — can no longer drift out of sync
 
+## Session Fixes (report batch #2 + Supabase keep-alive hardening, 2026-07-16)
+Processed 13 new user reports (ids 27-39) via the Stockfish 18 audit process. 3 real bugs found and fixed (each verified before + after editing):
+- **ponz-bc5-trap**: `6.Qa4` was itself a blunder (-3.03; refuted by `...Nxf2!` forking queen and rook) → rebuilt as `6.dxc6! bxc6 7.Be3` (+1.85, all engine-best). 5...Bc5 is NOT "piece lost" objectively — 6...Bxf2+ is the Fraser with comp; the text now says so.
+- **ponz-beginner-qf6**: `8.Bd3??` (-3.67 drop; `...Bxc3+ bxc3 Qxc3+` hits d3 and wins the a1-rook) → `8.Be2` (+2.15)
+- **ponz-deviation-sicilian**: final `9.Nbd2` let Black equalize (0.06) → `9.dxc5` keeps a real pull (+0.55) + honest text
+User's rejected moves engine-checked — the app was RIGHT each time (d4 -1.41 / c4 -1.14 / Be3 +0.79 vs the app's moves); added local wrong-move explanations in index.html (anon key can't write move_explanations, so they're seeded client-side and cloud rows merge on top).
+Supabase keep-alive hardened: every-3-days read wasn't "sufficient activity" for Supabase's new scan (warning email Jul 15 despite green runs) → now daily + reads both tables + does a real DB write (keepalive row into error_reports, status resolved).
+
 ## Session Fixes (Stockfish 18 engine audit, 2026-07-06)
 Processed 22 pending Supabase reports; engine-audited all reported lines + all 5 Gotham lines.
 Broken lines fixed to the engine's best (verified before + after editing):
@@ -38,6 +46,8 @@ The 2 model lines that were already correct: hippo-spassky-deep (+0.13), hippo-v
 
 ## Next Steps
 - Continue drilling and report any suspect positions via the Report button
+- Re-drill the 3 rebuilt lines: bc5-trap (now dxc6/Be3), beginner-qf6 (now Be2), deviation-sicilian (now dxc5)
 
 ## Blockers / Decisions
-- GitHub Actions keep-alive is in place; Supabase should stay active
+- **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User must run once in Supabase SQL editor: `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
+- Keep-alive now daily + real write (Jul 16). If Supabase still sends a pause warning, next escalation is a service key or moving error sync off Supabase

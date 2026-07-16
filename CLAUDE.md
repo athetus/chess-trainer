@@ -137,5 +137,5 @@ When adding or modifying lines, or after a batch of user error reports:
 - Knight on f5 when e-pawn can capture (exf5 with no recapture available)
 - Castling after queen controls the castling path
 - Result descriptions claiming "up a piece" / "winning" / "excellent attack" when the engine says equal-or-worse (esp. the Ponziani, which mostly equalizes rather than crushes)
-- Trap lines whose refutation isn't actually the engine's best (e.g. Qa4 vs exf6, Ng4 vs g3)
+- Trap lines whose refutation isn't actually the engine's best (e.g. Qa4 vs exf6, Ng4 vs g3, Qa4 vs dxc6 in bc5-trap -- Qa4 lost outright to ...Nxf2!)
 - Lines ending mid-trade (position looks wrong cosmetically)
