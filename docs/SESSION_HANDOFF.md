@@ -1,80 +1,71 @@
-# Session Handoff - 2026-07-06
+# Session Handoff - 2026-07-16
 
 ## What We Were Doing
-Processing a batch of user error reports, which turned into a full Stockfish 18 engine audit of BOTH openings. The user pushed hard on the GothamChess/Ponziani lines being inaccurate ("you missed a bunch of gotham chess lines"), then asked to audit the Hippo side too. Root theme: the app was overclaiming - selling equal-or-worse positions as "winning/crushing/monster knight."
+Started as "read handoff + a Supabase pause-warning email + user feels many lines are wrong." Turned into: (1) diagnosing/hardening the Supabase keep-alive, (2) processing 13 new error reports, and (3) a full user-requested repertoire cross-check ("look at DBs, don't judge for yourself") of all lines against external databases AND the actual GothamChess/Ruddell source repertoires — which surfaced real bugs that prior engine-only audits had passed, then a user-approved structural rewrite of the main lines.
 
-## What Was Completed This Session
-Installed Stockfish 18 (`brew install stockfish`) and built a UCI audit harness (drives the engine from node, walks every ply, flags moves that drop vs best, reports final eval). This is now the gold-standard tactical process (documented in CLAUDE.md).
+Grand goal unchanged: stay sharp on the Ponziani (White) + Hippo (Black) via daily spaced-repetition drilling. User is ~700 chess.com, aiming for 1000 — so lines are optimized for aggressive, engine-sound, GothamChess-faithful play that wins at club level, not just objective equality.
 
-**Ponziani (commit d2724f8):** audited all reported + all 5 Gotham lines. Fixed 6 to the engine's best, each verified before + after:
-- ponz-qh4-trap: `8.Ng4` threw the win (-1.46) -> `8.g3!` (+2.48). The user had reported playing g3 and being rejected - they were right.
-- ponz-gotham-exd4-bc5-trap: `6.Qa4` didn't win (-0.02) -> `6.exf6!` (+3.13)
-- ponz-aggressive-f5: `8.d5` blunder (-0.49) -> `8.Nxf6+` (+0.72)
-- ponz-gotham-qb3 (flagship): kept Qb3 identity, fixed `8.exd6`->`8.Bb5` (-0.64 -> +0.22) + honest text
-- ponz-passive-be7: passive Nbd2 (0.00) -> `c4` bind (+0.85)
-- ponz-fraser: honest reframe (up material but Black has full comp)
-- Text-only softens: gotham-bg5-nontrap, countergambit-f6
+## What Was Completed This Session (6 commits, all pushed to main)
+1. **c927197** — report batch #2 (3 line fixes) + keep-alive daily+write
+2. **3948554** — keep-alive to 3 runs/day (Supabase's real criterion: "a few DB requests EACH DAY")
+3. **cc83ac2** — keep-alive self-re-enable (survives GitHub's 60-day cron auto-disable)
+4. **9377e53** — DB+source cross-check: 5 more line fixes
+5. **cc348e4** — approved restructure: Nxg6 mains + Hippo dxe5 family + 2 new Gotham lines, 3 retirements
+6. **762dfa1** — STATUS.md doc-depth pass
 
-**Hippo (commit 9706e2a):** audited all 18 lines. Fixed 9, each re-audited:
-- 6 ending-swaps (blunder ...O-O -> engine move): e4-main(...e5), d4-main(...g5), c4-english(...g5), bc4(...Nf6), c4-quiet(...Ne5), nf3-reti(...Kh7)
-- 2 tail rebuilds: h4-storm (+3.06->+0.47, go Pirc ...Nf6/...h5); bh6 (fake -1.78 -> honest +0.32, break ...exd5 first)
-- f5-attack: ...Nd4 (loses) -> ...Ng4
-- 3 text-only reframes: d4-e5-push, c5-break, b5-expand
+### Supabase pause warning (the email in the first message)
+NOT a failure — keep-alive runs were all green. Supabase tightened its activity scan: an anon read every 3 days no longer counts as "sufficient activity." Their documented criterion is "a few user requests to the database EACH DAY over the previous week." Hardened the workflow to: 3 runs/day (06/13/20 UTC), each doing 2 table reads + 1 real DB write (keepalive row into error_reports, status resolved — ignored by the pending-report fetch), and a self-re-enable API call so GitHub's 60-day inactivity auto-disable can't silently kill the cron. Verified end-to-end (all steps green, anon insert = HTTP 201). Project is NOT paused.
 
-**Infrastructure:** rewrote `test/validate.js` to parse line definitions DIRECTLY from index.html (via the L() helper + PONZIANI_LINES/HIPPO_LINES arrays) so it can never drift again. This exposed the true count: **51 lines (33 Ponziani + 18 Hippo)**, not the 48 the docs claimed - the old hand-copied validator had mismatched ids and stale sequences.
+### Line fixes — 8 real bugs total this session (all Stockfish-verified before AND after)
+Report batch (3): ponz-bc5-trap (6.Qa4?? -3.03, refuted by ...Nxf2! → 6.dxc6! +1.85), ponz-beginner-qf6 (8.Bd3?? -3.67 → 8.Be2 +2.19), ponz-deviation-sicilian (9.Nbd2 equal → 9.dxc5 +0.63).
+Cross-check batch (5): ponz-waiting-a6 (6.Bg5? → 6.Nxe5! +1.13, e5 hangs), ponz-leonhardt (7.e5? refuted by ...Bxe5! → 7.d3, removed false "wins a rook"), ponz-gotham-bg5-nontrap + ponz-d6-d5-bg5-safe (7.Bh4? → 7.Bxf6!), hippo-vs-bh6 (moves contradicted the line's own lesson → ...exd5 immediately).
+User's 10 rejected moves were engine-checked — the app was RIGHT each time (they were losing moves). Seeded 14 client-side wrong-move explanations so the app explains WHY, not just rejects.
+
+### Approved structural rewrite (user chose all 3 via AskUserQuestion)
+- **Mains → Gotham's actual line**: ponz-main-nxe4 + ponz-main-deep now 7.Nxg6! hxg6 8.Qf3! (threatens Qxf7# MATE + hits e4). Old 7.Bd3 is refuted by ...Nxe5!. Retired 3 Bd3/Qd4-premised lines (ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional) — their positions can't occur anymore.
+- **Hippo e5-push family → ...dxe5 capture** (Ruddell + chessdb + engine unanimous; old ...d5 lock was +1.7 White): e5-push, e5-deep-c5, d4-e5-push, c5-break. Two now have Black objectively BETTER.
+- **2 new Gotham lines**: ponz-gotham-qe7 (5...Qe7 6.cxd4! 7.Bb5! "must memorize", 6.Qe2? loses e5 to ...d3!) and ponz-bd7-queensac-trap (Bb5+!! ... c7+! queen-sac, +0.78).
 
 ## Current State
 | Metric | Value |
 |--------|-------|
-| Total lines | 51 (33 Ponziani + 18 Hippo) |
-| validate.js | 51 lines, 0 issues (now auto-parses index.html) |
-| Git | Clean, pushed to main (9706e2a) |
-| Live app | Deployed |
-| Supabase error_reports | 22 STILL PENDING - see blocker |
+| Total lines | 50 (32 Ponziani + 18 Hippo) |
+| validate.js | 50 lines, 0 issues |
+| Git | Clean, pushed to main (762dfa1) |
+| Live app | Deployed + verified (new lines present, retired lines gone) |
+| Keep-alive | 3x/day + write + self-re-enable, verified green |
+| Supabase pending reports | 35 STILL PENDING — user will clear next session |
 
-## The Open Bug / Blocker
-**22 Supabase error reports are still marked `pending`.** They are all processed (fixed or confirmed user-error), but I cannot flip their status: the anon key is RLS-blocked from UPDATE (correct security), and no service-role key exists in the repo, `~/Documents/dotenv`, or the GitHub keep-alive workflow (which also only uses the anon key). The user must run this once in the Supabase SQL editor (project oomuupminexahfipgktd):
+## The Open Item / Blocker
+**35 error_reports rows still `pending`** (all processed — fixed or confirmed user-error). Anon key is RLS-blocked from UPDATE. User explicitly said "I'll do this next time." When they're ready, one line in the Supabase SQL editor (project oomuupminexahfipgktd):
 ```sql
 UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';
 ```
-To automate future sessions: drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`.
-
-## Residual imperfections (left deliberately, noted honestly)
-- **hippo-f5-attack**: keeps a mid-line ...O-O in its break demo (relies on White cooperating). Ends honestly at +0.41, but not engine-perfect.
-- **hippo-vs-bh6**: the +0.32 assumes White replies Rad1, not the stronger dxe6. Lesson (break ...exd5 before castling) still holds.
-- These belong to the "full active rebuild" option the user explicitly declined this session.
+To automate: drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`.
 
 ## Next Steps (in order)
-1. User runs the Supabase SQL to clear the 22 reports.
-2. Drill the fixed lines on the live app (especially ponz-qh4-trap where `g3` should now be accepted, and the flagship gotham-qb3). Report anything that still feels off.
-3. Fetch any NEW pending reports at next session start and run them through the Stockfish audit process (CLAUDE.md Tactical Audit Process).
-4. Optional: full active rebuild of the Hippo middlegame lines toward the Kh7+f5 model (hippo-spassky-deep +0.13 and hippo-vs-austrian +0.20 are the templates). This is a multi-session repertoire re-authoring.
-5. Optional repertoire conversation: the Ponziani only equalizes and the Hippo is slightly worse; if the user wants openings that objectively press, that's a bigger discussion.
+1. Fetch any NEW pending reports (id > 39) at next session start; run the full audit process on them.
+2. User re-drills the many changed answers (see STATUS.md Next Steps) — the app now rejects old muscle memory and explains why. Report anything that still feels off.
+3. Optional: free Lichess API token (lichess.org/account/oauth/token) unlocks human masters/club-game stats for future audits — chessdb.cn covered this session but Lichess explorer now needs auth.
+4. Optional: deeper Hippo rebuild toward the active Kh7+f5 model on remaining passive lines (spassky-deep, vs-austrian are templates).
+5. Optional: user runs the Supabase SQL to clear the 35 reports.
 
 ## Key Files Changed
-- `index.html` - 15 lines edited (6 Ponziani + 9 Hippo move-arrays + text; plus 5 text-only reframes across both)
-- `test/validate.js` - full rewrite to auto-parse index.html (drift-proof)
-- `CLAUDE.md` - counts 48->51 / 30->33 Ponziani, new Stockfish Tactical Audit Process, validate.js note
-- `STATUS.md` - both audits' results, key learnings
-
-## Commands To Know
-```bash
-brew install stockfish                 # engine (gold standard for tactical audits)
-node test/validate.js                  # legality of all 51 lines (auto-parses index.html)
-git push origin main                   # deploy to GitHub Pages (~1 min)
-```
-Audit harness lives in the session scratchpad (audit.js / pv*.js) - drives Stockfish via UCI, walks each ply, flags drops, reports final eval. Rebuild from CLAUDE.md's Tactical Audit Process if the scratchpad is gone.
+- `index.html` — 13 line rebuilds/adds + 3 retirements + 14 moveExplanations seed map + honest result texts
+- `.github/workflows/supabase-keepalive.yml` — 3x/day cron, dual read + write, self-re-enable, permissions block
+- `CLAUDE.md` — counts (50), Nxg6/Qf3 + dxe5 + Qe7 principles, retirements, audit process steps 5-6 (chessdb cross-check, no hand-built FENs), Austrian attribution corrected
+- `STATUS.md` — 3 new session sections + refreshed Done/Key Learning/Next Steps/Blockers
+- `tasks/lessons.md` — NEW: 2 lessons (cross-check vs DBs+source, never hand-build FENs)
 
 ## Decisions Made
-- **Stockfish 18 is now the tactical gold standard**, replacing the unreliable LLM-judgment and false-positive deep-audit scripts. Engine evals are objective; LLM chess judgment is not.
-- **Fix policy: correct to the engine's best line**, but keep pedagogical identity where the move is merely book-ish (e.g. gotham-qb3 kept Qb3, only fixed the one bad follow-up).
-- **Honest framing over hype**: result text must match the engine. The Ponziani EQUALIZES, the Hippo is slightly WORSE but solid and needs ACTIVE play. Said so in the text.
-- **validate.js auto-parses index.html** - no more hand-copying lines (the recurring drift gotcha is now structurally impossible).
-- **Hippo scope was capped at "fix blunder-endings + honest text"** per the user; the full active rebuild was declined for now.
+- **DB + source cross-check is now mandatory**, not engine-only. An engine walk validates our moves against the SCRIPTED replies but misses better opponent replies (that refute the line) and source divergence. This found 5 bugs three prior engine audits missed. (chessdb.cn: `cdb.php?action=queryall&board=<FEN>&json=1`, no auth.)
+- **Optimize for the user's 700→1000 goal**: keep aggressive, practical, GothamChess-faithful lines (the Qf3 mate threat wins club games) even where the objective eval is only equal.
+- **Retire lines whose premise is refuted** rather than keep contradictory drilling (the 3 Bd3/Qd4 lines).
+- **Never hand-build FEN strings** — generate from move lists via chess.js (two hand-built FENs produced phantom-piece garbage this session; caught and re-run).
 
 ## Warnings / Gotchas
-- **Ponziani = White, even move-indices = White's moves. Hippo = Black, odd indices = Black's moves.** Judge Hippo finals from Black's perspective (the audit prints White's perspective, so +0.8 = normal Hippo, not a bug).
-- **In TRAP lines, Black's blunder is intentional** - only White's refutation must be engine-best. Don't "fix" the scripted Black blunder.
-- **`3.c3` always shows a ~0.5 "drop" vs Ruy/Italian** - that's the Ponziani premise, NOT a bug. Ignore it.
-- **The Hippo is objectively ~+0.8 for White.** Don't chase "equal" on every line; +0.3 to +1.2 is the honest, expected range. Only the active Kh7+f5 lines reach true equality.
+- **Ponziani = White, even move-indices = White's moves. Hippo = Black, odd indices = Black's moves.** The audit prints White's perspective, so a +0.8 Hippo final is normal (Black slightly worse), NOT a bug — but the rebuilt e5-push Hippo lines are now genuinely ≤0 (Black equal/better).
+- **`3.c3` always shows a ~0.5 "drop" vs Ruy/Italian** — that's the Ponziani premise, NOT a bug. In trap lines, Black's blunder is intentional; only White's refutation must be engine-best.
+- **Lichess opening explorer (explorer.lichess.ovh) now returns 401 without a personal API token.** Use chessdb.cn for auth-free DB checks until a token is added.
+- **Audit harness lives in the session scratchpad** (audit.js walks plies + flags drops; compare.js / seq.js for candidate positions; chessdb-check.js sweeps the DB; verify*.sh generate FENs via chess.js then drive the engine). Rebuild from CLAUDE.md's Tactical Audit Process if the scratchpad is gone.
 - **validate.js reads index.html between the `function L(...)` marker and the `];` closing HIPPO_LINES.** If you restructure those, update the markers in validate.js.
