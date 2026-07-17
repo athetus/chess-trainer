@@ -5,12 +5,13 @@ Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) 
 
 ## Done
 - Single-file HTML app hosted on GitHub Pages (no build step, no backend)
-- **51 lines total: 33 Ponziani + 18 Hippo, all move-legal and Stockfish 18 engine-audited**
+- **50 lines total: 32 Ponziani + 18 Hippo, all move-legal, Stockfish 18 engine-audited AND cross-checked vs chessdb.cn + the actual GothamChess/Ruddell source repertoires**
+- Ponziani mains follow GothamChess's real line (7.Nxg6! 8.Qf3! with the Qxf7# threat); Hippo captures ...dxe5 against every e5 push (never the old ...d5 lock)
 - Gamification (XP, levels, streaks), spaced repetition via localStorage
 - Error reporting synced to Supabase (project: oomuupminexahfipgktd, ap-southeast-1)
-- `move_explanations` table for personalized wrong-move feedback
-- GitHub Actions keep-alive workflow to prevent Supabase free-tier pause
-- `test/validate.js` rewritten to parse index.html directly — can no longer drift out of sync
+- `move_explanations` table for personalized wrong-move feedback — plus a client-side seed map in index.html (anon key can't write the table; cloud rows merge on top)
+- GitHub Actions keep-alive: 3 runs/day, reads both tables + real DB write, self-re-enables to survive GitHub's 60-day cron auto-disable
+- `test/validate.js` parses index.html directly — can no longer drift out of sync
 
 ## Full Repertoire Cross-Check (2026-07-16, same session)
 User asked for verification against DBs and the actual source repertoires (not engine-only). Method: chessdb.cn sweep of all 51 lines (engine-consensus DB, no auth; Lichess explorer now needs a token) + researched GothamChess's actual Ponziani video/study and The Chess Giant's actual Hippo videos + Stockfish 18 depth-24 checks of every flag. 5 more real bugs found and fixed (all tails engine-verified before + after):
@@ -22,9 +23,9 @@ Confirmed CORRECT vs sources/DB: gotham-qb3 8.Bb5 (engine-best; Gotham's own Bd3
 All three architecture decisions were approved and executed same session (see next section).
 
 ## Approved Restructure (2026-07-16, same session) — 50 lines now (32 Ponziani + 18 Hippo)
-- **Main-line complex rebuilt to Gotham's actual line**: main-nxe4 + main-deep now play 7.Nxg6! hxg6 8.Qf3! (threatens Qxf7# MATE + hits e4; +0.18/+0.19 verified) instead of the refutable 7.Bd3 (...Nxe5! -0.25). Retired the 3 Bd3/Qd4-premised lines whose positions can no longer occur: ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional.
-- **Hippo e5-push family rebuilt to ...dxe5 capture** (Ruddell + DB + engine all agree; the ...d5 lock gave White +1.7): e5-push (+0.20, queens trade), e5-deep-c5 → "Queenless Middlegame" with ...Bd7-c6 regroup (+0.10), d4-e5-push (-0.47, Black better!), c5-break → "Meet e5 with ...dxe5" (-0.30, Black better). Every tail depth-24 verified.
-- **2 new Gotham lines added**: ponz-gotham-qe7 (5...Qe7 6.cxd4! d6 7.Bb5! "must be memorized"; +0.46) and ponz-bd7-queensac-trap (the famous Bb5+!! c6 dxc6 Bxf3 c7+! queen-sac; honest +0.85, two pawns up minus c7).
+- **Main-line complex rebuilt to Gotham's actual line**: main-nxe4 + main-deep now play 7.Nxg6! hxg6 8.Qf3! (threatens Qxf7# MATE + hits e4; final audit +0.15/0.00) instead of the refutable 7.Bd3 (...Nxe5! -0.25). Retired the 3 Bd3/Qd4-premised lines whose positions can no longer occur: ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional.
+- **Hippo e5-push family rebuilt to ...dxe5 capture** (Ruddell + DB + engine all agree; the ...d5 lock gave White +1.7): e5-push (0.00, queens trade), e5-deep-c5 → "Queenless Middlegame" with ...Bd7-c6 regroup (-0.03), d4-e5-push (-0.45, Black better!), c5-break → "Meet e5 with ...dxe5" (-0.32, Black better). Every tail depth-24 verified, full audit clean.
+- **2 new Gotham lines added**: ponz-gotham-qe7 (5...Qe7 6.cxd4! d6 7.Bb5! "must be memorized", 6.Qe2? loses e5 to ...d3!; final audit +0.42) and ponz-bd7-queensac-trap (the famous Bb5+!! c6 dxc6 Bxf3 c7+! queen-sac; honest +0.78, two pawns up minus c7).
 - 8 more muscle-memory wrong-move explanations seeded (old Bd3/Qd4/...d5 moves).
 
 ## Session Fixes (report batch #2 + Supabase keep-alive hardening, 2026-07-16)
@@ -56,13 +57,17 @@ Residuals (left for a future deeper rebuild): f5-attack keeps a mid-line ...O-O 
 The 2 model lines that were already correct: hippo-spassky-deep (+0.13), hippo-vs-austrian (+0.20) — active ...Kh7+...f5 play, the template for the rest.
 
 ## Key Learning
-- The Ponziani mostly EQUALIZES and the Hippo is slightly WORSE for Black (~+0.8 White) but solid. Result text must match the engine, not hype. The Hippo works when Black plays ACTIVELY (Kh7+f5 breaks), not passively (castle-and-wait).
-- Stockfish 18 (`brew install stockfish`) via UCI is the reliable tactical oracle — see CLAUDE.md Tactical Audit Process. Ponziani = White (even indices); Hippo = Black (odd indices), judge finals from Black's side.
+- **An engine walk of the scripted moves is NOT enough.** It only tests our moves against the scripted opponent replies; it misses (a) stronger opponent replies that refute the whole line and (b) divergence from the named source's actual repertoire. The 2026-07-16 DB+source cross-check found 5 bugs that three prior pure-engine audits had passed. Always cross-check vs chessdb.cn AND the real source (Gotham video/study, Ruddell videos).
+- The Ponziani mostly EQUALIZES but gives easy, aggressive club-level play (the Qf3 mate threat wins games at 700-1000). The Hippo is solid and, in the rebuilt e5-push lines, even slightly BETTER for Black after ...dxe5 — it works when Black plays ACTIVELY, not passively.
+- Stockfish 18 (`brew install stockfish`) via UCI is the tactical oracle — see CLAUDE.md Tactical Audit Process. Ponziani = White (even indices); Hippo = Black (odd indices), judge finals from Black's side. NEVER hand-build FENs — generate from move lists via chess.js (hand-built FENs produced phantom-piece garbage twice this session).
 
 ## Next Steps
 - Continue drilling and report any suspect positions via the Report button
-- Re-drill the 3 rebuilt lines: bc5-trap (now dxc6/Be3), beginner-qf6 (now Be2), deviation-sicilian (now dxc5)
+- Re-drill the many changed answers: bc5-trap (dxc6/Be3), beginner-qf6 (Be2), deviation-sicilian (dxc5), waiting-a6 (Nxe5), leonhardt (d3), bg5 lines (Bxf6), mains (Nxg6/Qf3), all hippo e5-push lines (dxe5). App now rejects old habits and explains why.
+- Optional: get a free Lichess API token (lichess.org/account/oauth/token) to add human masters/club-games stats to future audits (chessdb covered this session; the Lichess explorer now requires auth).
+- Optional: deeper Hippo rebuild toward the active Kh7+f5 model on the remaining passive lines (spassky-deep +0.13 and vs-austrian are the templates).
 
 ## Blockers / Decisions
-- **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User must run once in Supabase SQL editor: `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
-- Keep-alive now daily + real write (Jul 16). If Supabase still sends a pause warning, next escalation is a service key or moving error sync off Supabase
+- **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User said they'll run it next time. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
+- Keep-alive hardened Jul 16 (3x/day + real write + self-re-enable). If Supabase still sends a pause warning, next escalation is a service key, an Edge Function heartbeat, or moving error sync off Supabase.
+- Decision (Jul 16): retired ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional — all premised on 7.Bd3, which ...Nxe5! refutes. Their positions can't occur once the mains play Nxg6. This is intentional, not a regression.
