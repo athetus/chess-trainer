@@ -95,7 +95,7 @@ Printed summary, grouped by line id:
   ```json
   {
     "ponz-main-nxe4": { "boost": 1.5, "reason": "deviated at move 8 (Qf3) in 2 real games", "lastRun": "<ISO date, passed in, not computed by the script>" },
-    "hippo-e5-push":  { "boost": 1.5, "reason": "played passively instead of ...dxe5 in 1 real game", "lastRun": "..." }
+    "hippo-vs-e4-e5-push":  { "boost": 1.5, "reason": "played passively instead of ...dxe5 in 1 real game", "lastRun": "..." }
   }
   ```
 - Small addition to `index.html`'s existing weight-selection code
