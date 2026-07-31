@@ -1,0 +1,74 @@
+// test/lib/tactics-classifier.js
+
+const BLUNDER_THRESHOLD_PAWNS = 1.5;
+const MISSED_WIN_CP_THRESHOLD = 3.0;
+
+// Encodes a {cp, mate} eval as one comparable number, in pawn units. Mates are
+// encoded far outside any realistic cp range (which rarely exceeds +-20) so they
+// always dominate comparisons, while still ordering faster mates as more extreme
+// than slower ones (mate in 1 > mate in 5, in absolute value).
+function scoreToPawns({ cp, mate }) {
+  if (mate !== null && mate !== undefined) {
+    const magnitude = 1000 - Math.abs(mate);
+    return mate > 0 ? magnitude : -magnitude;
+  }
+  return cp / 100;
+}
+
+// Stockfish evals are produced White-perspective (see stockfish-engine.js).
+// Flip to the user's own color so "positive = good for the user" always holds.
+function toUserPerspective(evalWhite, userColor) {
+  if (userColor === 'w') return evalWhite;
+  return {
+    cp: evalWhite.cp === null ? null : -evalWhite.cp,
+    mate: evalWhite.mate === null || evalWhite.mate === undefined ? null : -evalWhite.mate,
+  };
+}
+
+function isWinningFor(evalUser) {
+  if (evalUser.mate !== null && evalUser.mate !== undefined && evalUser.mate > 0) return true;
+  return evalUser.cp !== null && evalUser.cp >= MISSED_WIN_CP_THRESHOLD * 100;
+}
+
+// Returns 'blunder', 'missed-win', or null. evalBefore/evalAfter are White-
+// perspective {cp, mate} objects (straight from stockfish-engine.js).
+function classifyPly({ evalBefore, evalAfter, userColor }) {
+  const before = toUserPerspective(evalBefore, userColor);
+  const after = toUserPerspective(evalAfter, userColor);
+
+  const wasWinningBig = isWinningFor(before);
+  const stillWinningBig = isWinningFor(after);
+  if (wasWinningBig && !stillWinningBig) return 'missed-win';
+  if (wasWinningBig && stillWinningBig) return null; // still winning by force/margin, not a mistake
+
+  const drop = scoreToPawns(before) - scoreToPawns(after);
+  if (drop >= BLUNDER_THRESHOLD_PAWNS) return 'blunder';
+  return null;
+}
+
+function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBefore, evalAfter, cat, gameMeta }) {
+  const prefix = sanMoves.slice(0, plyIndex);
+  const moves = prefix.concat([correctMoveSan]);
+  const before = toUserPerspective(evalBefore, userColor);
+  const after = toUserPerspective(evalAfter, userColor);
+  const dropPawns = scoreToPawns(before) - scoreToPawns(after);
+  const dropPawnsDisplay = dropPawns.toFixed(1);
+  const actualMoveSan = sanMoves[plyIndex];
+  const moveNumber = Math.floor(plyIndex / 2) + 1;
+
+  return {
+    id,
+    name: `Tactics: ${gameMeta.opponent}, ${new Date(gameMeta.endTime * 1000).toISOString().slice(0, 10)}`,
+    description: `From a real ${gameMeta.timeClass} game vs ${gameMeta.opponent}.`,
+    result: `Move ${moveNumber}: you played ${actualMoveSan} (drops ${dropPawnsDisplay} pawns, ${gameMeta.timeClass}). Correct was ${correctMoveSan}.`,
+    isTrap: false,
+    cat,
+    moves,
+    explanations: { [String(plyIndex)]: `You played ${actualMoveSan} here, dropping ${dropPawnsDisplay} pawns. ${correctMoveSan} was correct.` },
+    baseMoves: plyIndex,
+    playerColor: userColor,
+    dropPawns,
+  };
+}
+
+module.exports = { scoreToPawns, toUserPerspective, classifyPly, buildPuzzle, BLUNDER_THRESHOLD_PAWNS, MISSED_WIN_CP_THRESHOLD };
