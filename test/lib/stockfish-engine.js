@@ -10,16 +10,27 @@ class StockfishEngine {
   }
 
   async start() {
-    this.proc = spawn(STOCKFISH_PATH);
-    this.proc.stdout.on('data', d => { this.buffer += d.toString(); });
-    await this._send('uci', 'uciok');
+    return new Promise((resolve, reject) => {
+      this.proc = spawn(STOCKFISH_PATH);
+      this.proc.on('error', (err) => {
+        reject(new Error(`Failed to start Stockfish at ${STOCKFISH_PATH}: ${err.message}`));
+      });
+      this.proc.stdout.on('data', d => { this.buffer += d.toString(); });
+      this._send('uci', 'uciok').then(resolve).catch(reject);
+    });
   }
 
   // Send a command, resolve once a line starting with `waitFor` has been seen.
   _send(cmd, waitFor) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const timeoutMs = 30000; // 30 second timeout
+      const timeout = setTimeout(() => {
+        reject(new Error(`Stockfish did not respond with "${waitFor}" within ${timeoutMs / 1000}s`));
+      }, timeoutMs);
+
       const check = () => {
         if (this.buffer.includes(waitFor)) {
+          clearTimeout(timeout);
           resolve();
         } else {
           setTimeout(check, 20);
@@ -64,10 +75,19 @@ class StockfishEngine {
   }
 
   _waitForBestmove(fromIndex) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const timeoutMs = 30000; // 30 second timeout
+      const timeout = setTimeout(() => {
+        reject(new Error(`Stockfish did not respond with bestmove within ${timeoutMs / 1000}s`));
+      }, timeoutMs);
+
       const check = () => {
-        if (this.buffer.indexOf('bestmove', fromIndex) >= 0) resolve();
-        else setTimeout(check, 20);
+        if (this.buffer.indexOf('bestmove', fromIndex) >= 0) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          setTimeout(check, 20);
+        }
       };
       check();
     });

@@ -10,14 +10,16 @@ async function main() {
   assert(typeof startEval.cp === 'number' && Math.abs(startEval.cp) < 100,
     `expected small cp at startpos, got ${JSON.stringify(startEval)}`);
 
-  // Black has an undefended queen on d8 capturable by a White rook on d1 with a clear file.
-  // FEN generated via chess.js replay (per project convention), not hand-built:
-  // 1. e4 d5 2. exd5 Qxd5 3. Nc3 Qd8 4. Bc4 Nc6 5. Qh5 (threat is elsewhere; use a direct hang instead)
-  // Simpler, unambiguous hanging-queen position:
-  const hangingQueenFen = 'rnb1kbnr/ppp1pppp/8/3q4/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1'; // Black queen on d5, undefended, White queen can't take it directly but rook/bishop lines aren't set up either -- use a cleaner one below instead.
+  // Generate FEN with hanging queen via chess.js replay (per project convention, never hand-typed).
+  // Sequence: 1. e4 e5 2. Nf3 Qh4 — leaves Black queen hanging on h4.
+  const { Chess } = require('chess.js');
+  const board = new Chess();
+  board.move('e4');
+  board.move('e5');
+  board.move('Nf3');
+  board.move('Qh4');
+  const freeQueenFen = board.fen();
 
-  // Cleanest unambiguous case: White queen can capture Black's undefended queen on h4 for free.
-  const freeQueenFen = 'rnb1kbnr/pppp1ppp/8/4p3/6pq/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1';
   const freeQueenEval = await engine.evalFen(freeQueenFen, 15);
   assert(freeQueenEval.cp > 500, `expected White to be winning big (free queen), got ${JSON.stringify(freeQueenEval)}`);
 
