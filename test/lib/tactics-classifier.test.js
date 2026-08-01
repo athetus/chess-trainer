@@ -88,4 +88,46 @@ assert(typeof puzzle.dropPawns === 'number' && Math.abs(puzzle.dropPawns - 2.0) 
 assert(typeof puzzle.explanations['10'] === 'string' && puzzle.explanations['10'].length > 0,
   'must have an explanation keyed at the corrected-move index');
 
+// --- buildPuzzle: missed forced mate must not leak the sentinel number into text ---
+const missedMateEvalBefore = { cp: null, mate: 12 };
+const missedMateEvalAfter = { cp: 0, mate: null };
+const missedMatePuzzle = buildPuzzle({
+  id: 'tactics-missed-mate',
+  sanMoves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6', 'Ng3', 'd6', 'd3', 'Bg4'],
+  plyIndex: 8,
+  userColor: 'w',
+  correctMoveSan: 'Kh8',
+  evalBefore: missedMateEvalBefore,
+  evalAfter: missedMateEvalAfter,
+  cat: 'missed-win',
+  gameMeta: { opponent: 'someuser', endTime: 1783257898, timeClass: 'rapid', url: '' },
+});
+assert(!/\d{3,}/.test(missedMatePuzzle.result), `missed-mate result text must not contain a raw sentinel number, got: ${missedMatePuzzle.result}`);
+assert(missedMatePuzzle.result.includes('forced mate in 12'), `missed-mate result text should describe the missed mate, got: ${missedMatePuzzle.result}`);
+assert(missedMatePuzzle.explanations['8'].includes('forced mate in 12'), `missed-mate explanation should describe the missed mate, got: ${missedMatePuzzle.explanations['8']}`);
+assert(missedMatePuzzle.dropPawns > 900, `dropPawns must still carry the large sentinel-based number unchanged, got: ${missedMatePuzzle.dropPawns}`);
+
+// --- buildPuzzle: allowing a forced mate against the user must not leak the sentinel number into text ---
+const allowsMateEvalBefore = { cp: 30, mate: null };
+const allowsMateEvalAfter = { cp: null, mate: -4 };
+const allowsMatePuzzle = buildPuzzle({
+  id: 'tactics-allows-mate',
+  sanMoves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6', 'Ng3', 'd6', 'd3', 'Bg4'],
+  plyIndex: 8,
+  userColor: 'w',
+  correctMoveSan: 'Kh8',
+  evalBefore: allowsMateEvalBefore,
+  evalAfter: allowsMateEvalAfter,
+  cat: 'blunder',
+  gameMeta: { opponent: 'someuser', endTime: 1783257898, timeClass: 'rapid', url: '' },
+});
+assert(!/\d{3,}/.test(allowsMatePuzzle.result), `allows-mate result text must not contain a raw sentinel number, got: ${allowsMatePuzzle.result}`);
+assert(allowsMatePuzzle.result.includes('forced mate against you in 4'), `allows-mate result text should describe the mate allowed, got: ${allowsMatePuzzle.result}`);
+assert(allowsMatePuzzle.explanations['8'].includes('forced mate against you in 4'), `allows-mate explanation should describe the mate allowed, got: ${allowsMatePuzzle.explanations['8']}`);
+assert(allowsMatePuzzle.dropPawns > 900, `dropPawns must still carry the large sentinel-based number unchanged, got: ${allowsMatePuzzle.dropPawns}`);
+
+// --- buildPuzzle: plain cp-only swing text must be unchanged ---
+assert(puzzle.result.includes('drops 2.0 pawns'), `plain cp swing result text must keep the existing "drops N.N pawns" wording, got: ${puzzle.result}`);
+assert(puzzle.explanations['10'].includes('dropping 2.0 pawns'), `plain cp swing explanation text must keep the existing "dropping N.N pawns" wording, got: ${puzzle.explanations['10']}`);
+
 console.log('tactics-classifier.test.js: all assertions passed');

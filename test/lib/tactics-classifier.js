@@ -54,13 +54,45 @@ function classifyPly({ evalBefore, evalAfter, userColor }) {
   return null;
 }
 
+// Produces human-readable text for the before -> after eval swing. `before`/
+// `after` are already-user-perspective {cp, mate} objects (pre-sentinel).
+// scoreToPawns()/dropPawns stay numeric and untouched for ranking purposes
+// (see the comment there) -- this only controls the display text, so a mate
+// evaluation never leaks its ~1000-point sentinel into copy shown to a human.
+function describeSwing(before, after, dropPawns) {
+  const missedForcedMate =
+    before.mate != null && before.mate > 0 &&
+    !(after.mate != null && after.mate > 0);
+  if (missedForcedMate) {
+    return {
+      resultPhrase: `missed a forced mate in ${before.mate}`,
+      explanationPhrase: `missing a forced mate in ${before.mate}`,
+    };
+  }
+
+  const allowsForcedMate = after.mate != null && after.mate < 0;
+  if (allowsForcedMate) {
+    const n = Math.abs(after.mate);
+    return {
+      resultPhrase: `allows a forced mate against you in ${n}`,
+      explanationPhrase: `allowing a forced mate against you in ${n}`,
+    };
+  }
+
+  const display = dropPawns.toFixed(1);
+  return {
+    resultPhrase: `drops ${display} pawns`,
+    explanationPhrase: `dropping ${display} pawns`,
+  };
+}
+
 function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBefore, evalAfter, cat, gameMeta }) {
   const prefix = sanMoves.slice(0, plyIndex);
   const moves = prefix.concat([correctMoveSan]);
   const before = toUserPerspective(evalBefore, userColor);
   const after = toUserPerspective(evalAfter, userColor);
   const dropPawns = scoreToPawns(before) - scoreToPawns(after);
-  const dropPawnsDisplay = dropPawns.toFixed(1);
+  const swing = describeSwing(before, after, dropPawns);
   const actualMoveSan = sanMoves[plyIndex];
   const moveNumber = Math.floor(plyIndex / 2) + 1;
 
@@ -68,15 +100,15 @@ function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBe
     id,
     name: `Tactics: ${gameMeta.opponent}, ${new Date(gameMeta.endTime * 1000).toISOString().slice(0, 10)}`,
     description: `From a real ${gameMeta.timeClass} game vs ${gameMeta.opponent}.`,
-    result: `Move ${moveNumber}: you played ${actualMoveSan} (drops ${dropPawnsDisplay} pawns, ${gameMeta.timeClass}). Correct was ${correctMoveSan}.`,
+    result: `Move ${moveNumber}: you played ${actualMoveSan} (${swing.resultPhrase}, ${gameMeta.timeClass}). Correct was ${correctMoveSan}.`,
     isTrap: false,
     cat,
     moves,
-    explanations: { [String(plyIndex)]: `You played ${actualMoveSan} here, dropping ${dropPawnsDisplay} pawns. ${correctMoveSan} was correct.` },
+    explanations: { [String(plyIndex)]: `You played ${actualMoveSan} here, ${swing.explanationPhrase}. ${correctMoveSan} was correct.` },
     baseMoves: plyIndex,
     playerColor: userColor,
     dropPawns,
   };
 }
 
-module.exports = { scoreToPawns, toUserPerspective, classifyPly, buildPuzzle, BLUNDER_THRESHOLD_PAWNS, MISSED_WIN_CP_THRESHOLD };
+module.exports = { scoreToPawns, toUserPerspective, classifyPly, buildPuzzle, describeSwing, BLUNDER_THRESHOLD_PAWNS, MISSED_WIN_CP_THRESHOLD };
