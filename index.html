@@ -109,7 +109,6 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     <div class="tab-bar">
       <button id="tab-ponziani" class="active" onclick="app.switchOpening('ponziani')">Ponziani (White)</button>
       <button id="tab-hippo" onclick="app.switchOpening('hippo')">Hippo (Black)</button>
-      <button id="tab-tactics" onclick="app.switchOpening('tactics')">Tactics</button>
     </div>
   </header>
   <div id="line-name"></div>
@@ -159,7 +158,6 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-<script src="tactics-puzzles.js"></script>
 <script>
 'use strict';
 
@@ -385,8 +383,7 @@ L('hippo-b5-expand','Middlegame: ...b5 Queenside Expansion','Lock the center, th
 
 var ALL_LINES=[].concat(
   PONZIANI_LINES.map(function(l){l.opening='ponziani';l.playerColor='w';if(!l.baseMoves)l.baseMoves=5;return l}),
-  HIPPO_LINES.map(function(l){l.opening='hippo';l.playerColor='b';l.baseMoves=4;l.flexible=true;return l}),
-  TACTICS_PUZZLES.map(function(l){l.opening='tactics';return l})
+  HIPPO_LINES.map(function(l){l.opening='hippo';l.playerColor='b';l.baseMoves=4;l.flexible=true;return l})
 );
 
 // ===================== CATEGORIES =====================
@@ -404,10 +401,6 @@ var CATEGORIES={
     {key:'vs-cf',label:'vs 1.c4 / 1.Nf3'},
     {key:'threats',label:'Handling Threats'},
     {key:'plans',label:'Middlegame Plans'}
-  ],
-  tactics:[
-    {key:'blunder',label:'Blunders'},
-    {key:'missed-win',label:'Missed Wins'}
   ]
 };
 
@@ -609,7 +602,6 @@ var app=(function(){
     currentOpening=op;
     $('#tab-ponziani').toggleClass('active',op==='ponziani');
     $('#tab-hippo').toggleClass('active',op==='hippo');
-    $('#tab-tactics').toggleClass('active',op==='tactics');
     hideLineSelector();startDrill();
   }
 
@@ -622,18 +614,7 @@ var app=(function(){
     selectedSquare=null;hintUsed=false;hintsUsedCount=0;
     playerMoveCount=0;playerCorrectCount=0;moveIndex=0;
     lineMoveTimeTotal=0;lineMoveCount=0;moveStartTime=0;
-    var poolLines=getLines();
-    if(!poolLines.length){
-      currentLine=null;
-      board.orientation('white');board.position('start');
-      $('#line-name').text('No lines yet');
-      $('#move-list').html('');
-      $('#explanation-box').hide();
-      $('#btn-next').hide();$('#btn-retry').hide();
-      setStatus('No puzzles yet -- run a scan to generate some.','info');
-      return;
-    }
-    var src=specificLine||selectWeightedLine(poolLines);
+    var src=specificLine||selectWeightedLine(getLines());
     currentLine={id:src.id,name:src.name,description:src.description,result:src.result,
       isTrap:src.isTrap,cat:src.cat,opening:src.opening,playerColor:src.playerColor,
       baseMoves:src.baseMoves,flexible:src.flexible,
@@ -999,8 +980,7 @@ var app=(function(){
     lineSelectMode=true;
     var lines=getLines();
     var cats=CATEGORIES[currentOpening]||[];
-    var openingLabel=currentOpening==='ponziani'?'Ponziani':(currentOpening==='hippo'?'Hippo':'Tactics');
-    var html='<h3>'+openingLabel+' Lines ('+lines.length+')</h3>';
+    var html='<h3>'+(currentOpening==='ponziani'?'Ponziani':'Hippo')+' Lines ('+lines.length+')</h3>';
     cats.forEach(function(cat){
       var catLines=lines.filter(function(l){return l.cat===cat.key});
       if(!catLines.length)return;

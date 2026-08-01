@@ -1,7 +1,13 @@
 # Project Status
 
 ## End Goal
-Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) through daily spaced-repetition drilling. App lives at https://athetus.github.io/chess-trainer/
+**Reach 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026).
+
+Everything in this repo is a means to that, not the goal itself. The opening trainer
+(Ponziani as White, Hippopotamus as Black, https://athetus.github.io/chess-trainer/)
+and the diagnostic command are both judged on whether they move that number. See
+`docs/TRAINING_PLAN.md` for the measured plan — and note the evidence says the largest
+remaining lever requires **no more code**, just tactical reps.
 
 ## Done
 - Single-file HTML app hosted on GitHub Pages (no build step, no backend)
@@ -12,6 +18,36 @@ Stay sharp on chess openings (Ponziani as White, Hippopotamus Defense as Black) 
 - `move_explanations` table for personalized wrong-move feedback — plus a client-side seed map in index.html (anon key can't write the table; cloud rows merge on top)
 - GitHub Actions keep-alive: 3 runs/day, reads both tables + real DB write, self-re-enables to survive GitHub's 60-day cron auto-disable
 - `test/validate.js` parses index.html directly — can no longer drift out of sync
+
+## Diagnostic Command + Training Plan (2026-08-01)
+Built `test/chesscom-diagnostic.js` — one command that pulls the real chess.com archive,
+runs Stockfish over every one of the user's moves, and reports what is actually costing
+rating. `--report-only` replays instantly from a gitignored cache; `--months N` defaults
+to 1. Supporting libs: `test/lib/chesscom-fetch.js`, `stockfish-engine.js`,
+`tactics-classifier.js`, `diagnostic-analysis.js`.
+
+**What the first real run found** (109 games, 476 engine-confirmed mistakes):
+- 4.7 significant mistakes/game, median drop 2.5 pawns (a hanging piece)
+- **Blunder moves take 2x LONGER than clean moves** (13.5s vs 6.8s) — so "slow down /
+  blunder-check everything" is the wrong prescription for this player
+- **Blunder rate doubles below 4 min on the clock** (13% → 20-24%); 30% of games end
+  under 2 min. Moves 11-20 alone burn 3.4 of the 10 minutes.
+- **38% of mistakes involve a capture** (21% bad ones played, 17% good ones declined),
+  clustered on e5/d5/f6/c5/c4 — i.e. exchange counting
+- **First mistake lands at median move 10**, exactly where opening prep ends
+- Repertoire coverage is good: Hippo 51/51 Black games, Ponziani 17/17 whenever
+  opponents allowed it (Jaenisch line scoring 89% over 9 games)
+- Rating 662 → 822, but the rate collapsed from ~+6/game during a mid-month burst to
+  ~+0.4/game since. ELO is exponential; do not extrapolate monthly headline numbers.
+
+**Puzzle generation was built and then deliberately dropped.** Ranking by eval-swing
+severity meant all 15 slots filled with rare forced-mate positions while 195 instances
+of the most common error never surfaced. Beyond that, skill is stored patterns
+(Chase/Simon chunking; Gobet & Simon 1998) and needs thousands of reps — ~15-50
+positions/month cannot compete with Lichess's millions, which are already
+difficulty-rated and theme-filterable. Removed: `chesscom-tactics.js`,
+`puzzle-selection.js`, `puzzle-store.js`, `tactics-puzzles.js`, and the index.html
+Tactics tab. Recoverable from git history if ever revisited.
 
 ## Full Repertoire Cross-Check (2026-07-16, same session)
 User asked for verification against DBs and the actual source repertoires (not engine-only). Method: chessdb.cn sweep of all 51 lines (engine-consensus DB, no auth; Lichess explorer now needs a token) + researched GothamChess's actual Ponziani video/study and The Chess Giant's actual Hippo videos + Stockfish 18 depth-24 checks of every flag. 5 more real bugs found and fixed (all tails engine-verified before + after):
@@ -62,10 +98,36 @@ The 2 model lines that were already correct: hippo-spassky-deep (+0.13), hippo-v
 - Stockfish 18 (`brew install stockfish`) via UCI is the tactical oracle — see CLAUDE.md Tactical Audit Process. Ponziani = White (even indices); Hippo = Black (odd indices), judge finals from Black's side. NEVER hand-build FENs — generate from move lists via chess.js (hand-built FENs produced phantom-piece garbage twice this session).
 
 ## Next Steps
-- Continue drilling and report any suspect positions via the Report button
-- Re-drill the many changed answers: bc5-trap (dxc6/Be3), beginner-qf6 (Be2), deviation-sicilian (dxc5), waiting-a6 (Nxe5), leonhardt (d3), bg5 lines (Bxf6), mains (Nxg6/Qf3), all hippo e5-push lines (dxe5). App now rejects old habits and explains why.
-- Optional: get a free Lichess API token (lichess.org/account/oauth/token) to add human masters/club-games stats to future audits (chessdb covered this session; the Lichess explorer now requires auth).
-- Optional: deeper Hippo rebuild toward the active Kh7+f5 model on the remaining passive lines (spassky-deep +0.13 and vs-austrian are the templates).
+
+**The evidence says the next steps are mostly not code.** Per `docs/TRAINING_PLAN.md`,
+suggested split is ~70% tactical reps (Lichess, theme-filtered toward forks/pins/
+exchanges), ~20% reviewing your own losses, ~10% opening drills.
+
+Off-keyboard, in priority order:
+1. **Count the exchange before every capture.** 38% of measured mistakes involve a
+   capture in one direction or the other. Narrow, specific, highest-yield habit —
+   and distinct from blanket blunder-checking, which the timing data rules out.
+2. **Daily tactics volume.** The chunking mechanism; nothing in this repo substitutes.
+3. **Fewer games, more review.** 108 games/month without review repeats the same
+   mistake 108 times. The diagnostic names the worst games for exactly this.
+
+In this repo (all optional, none urgent):
+- Re-run `node test/chesscom-diagnostic.js optimizerprime --months 1` monthly and fill
+  in the tracking table in `docs/TRAINING_PLAN.md`. Judge progress on the leading
+  indicators (mistakes/game, clock at move 30) — at ~+0.4 rating/game a single month
+  of rating movement is mostly noise.
+- **Middlegame plan notes** for the 50 existing lines (pawn breaks, piece placement,
+  the target) — the one build item the research supports, because the first mistake
+  lands at median move 10 where the book ends, and no generic resource covers "what is
+  my plan in a Hippo structure." A day of chess thinking, not a software project.
+- Continue drilling and report suspect positions via the Report button.
+- Optional: free Lichess API token (lichess.org/account/oauth/token) for human
+  masters/club-game stats in future repertoire audits.
+- Optional: deeper Hippo rebuild toward the active Kh7+f5 model on remaining passive
+  lines (spassky-deep +0.13 and vs-austrian are the templates).
+
+**Explicitly not planned:** a custom puzzle engine, more opening lines, or GM
+masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
 
 ## Blockers / Decisions
 - **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User said they'll run it next time. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
