@@ -27,9 +27,13 @@ async function scanGame(game, username, deps) {
   const fenAfterLast = replay.fen();
 
   const engine = deps.makeEngine();
-  await engine.start();
   const flagged = [];
   try {
+    // start() lives inside the try so a startup failure (e.g. Stockfish's real
+    // start() can reject after up to a 30s handshake timeout) still routes
+    // through the finally below and quits the already-spawned process instead
+    // of leaking it.
+    await engine.start();
     for (let ply = 0; ply < sanMoves.length; ply++) {
       const turnColor = ply % 2 === 0 ? 'w' : 'b';
       if (turnColor !== userColor) continue;
@@ -88,20 +92,32 @@ async function runScan(username, { months = 1, limitGames = null, deps = null } 
   if (limitGames) games = games.slice(0, limitGames);
 
   let allFlagged = [];
+  const successfulGameIds = [];
+  let failedCount = 0;
   for (const game of games) {
-    const flagged = await scanGame(game, username, effectiveDeps);
-    allFlagged.push(...flagged);
+    try {
+      const flagged = await scanGame(game, username, effectiveDeps);
+      allFlagged.push(...flagged);
+      successfulGameIds.push(game.uuid);
+    } catch (err) {
+      // Isolate one flaky game (bad PGN, engine timeout, unexpected null eval)
+      // from the rest of a ~100-game run. Do NOT mark it processed -- it gets
+      // retried next run instead of being silently skipped forever, and the
+      // work already completed for earlier games is still persisted below.
+      failedCount++;
+      console.error(`Warning: failed to scan game ${game.url || game.uuid}: ${err && err.message ? err.message : err}`);
+    }
   }
 
   const { selected, overflow } = selectPuzzles(allFlagged);
   const newPuzzles = selected.map(s => s.puzzle);
   const mergedPuzzles = mergeNewPuzzles(existing.puzzles, newPuzzles);
-  const newProcessedIds = existing.processedGameIds.concat(games.map(g => g.uuid));
+  const newProcessedIds = existing.processedGameIds.concat(successfulGameIds);
 
   writeStore(storePath, { puzzles: mergedPuzzles, processedGameIds: newProcessedIds });
 
   const report = [
-    `Scanned ${games.length} games for ${username}.`,
+    `Scanned ${games.length} games (${failedCount} failed, skipped) for ${username}.`,
     `Flagged ${allFlagged.length} instances, kept ${selected.length} as puzzles, ${overflow.length} named but not built (cap reached).`,
     ...selected.map(s => `  - [${s.puzzle.cat}] ${s.puzzle.name}: ${s.puzzle.result}`),
     ...(overflow.length > 0
