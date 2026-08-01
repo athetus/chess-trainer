@@ -167,8 +167,17 @@ month to month; rating lags them and is noisy over any single month.
   feels productive and changes nothing at this level.
 - **More opening lines.** Coverage is already good (see above). Adding lines is the
   most tempting and least useful expansion available.
-- **Auto-generated puzzles from your own games.** Built and then dropped in Aug 2026:
-  the selection ranked by eval-swing severity, so all 15 slots filled with rare
-  forced-mate positions while 195 instances of your *most common* error never
-  surfaced. The scanner's diagnostic output was kept; the puzzle generation was not.
-  Lichess covers puzzle volume better than a home-grown set ever would.
+- **A puzzle engine that replaces daily Lichess volume.** Lichess still covers raw
+  puzzle *volume* (thousands of positions) at a scale this repo can't match — keep
+  doing daily Lichess reps as the primary lever (item 2 above). A first
+  auto-generated-puzzle attempt (Aug 2026) was built and dropped for exactly this
+  reason, plus a design flaw: ranking by eval-swing severity let mate-sentinel scores
+  dominate, so all 15 slots filled with rare forced-mate positions while 195 instances
+  of your *most common* error (the 1.5-3 pawn hang) never surfaced.
+
+  It was rebuilt the same day (see STATUS.md) as a **Tactics tab fed by fixed
+  category quotas** (~5 mate-related, ~5 catastrophic ≥3 pawns, ~5 of the common
+  1.5-3 pawn band) instead of pure severity ranking, and as a *consumer* of the
+  diagnostic's own cache rather than a second scan. It's a narrow supplement for
+  your own concentrated, repeating mistakes (captures clustered on e5/d5/f6/c5/c4),
+  not a substitute for Lichess volume.

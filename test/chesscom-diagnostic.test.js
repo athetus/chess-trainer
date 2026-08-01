@@ -110,6 +110,7 @@ async function main() {
           if (isMove20After) return { cp: -300, mate: null };
           return { cp: 10, mate: null };
         },
+        bestMoveSan: async () => 'Nc3',
         quit: () => {},
       }),
     };
@@ -119,6 +120,12 @@ async function main() {
     assert(move20, 'expected a moveRecord for move 20');
     assert(move20.phase === 'middlegame', `expected move 20 to be bucketed as middlegame, got ${move20.phase}`);
     assert(move20.cat === 'blunder', `expected the scripted move 20 to classify as a blunder, got ${move20.cat}`);
+    assert(move20.plyIndex === 38, `expected plyIndex 38 for white's move 20, got ${move20.plyIndex}`);
+    assert(move20.correctMoveSan === 'Nc3', `expected correctMoveSan from the engine mock, got ${move20.correctMoveSan}`);
+    assert(move20.evalBefore && move20.evalAfter, 'flagged plies should carry raw evalBefore/evalAfter for puzzle text');
+
+    const move19 = moveRecords.find(r => r.moveNumber === 19 && r.cat === null);
+    assert(move19 && !('correctMoveSan' in move19), 'clean plies must not carry correctMoveSan (keeps the cache lean and avoids extra engine calls)');
   }
 
   // --- 3. --report-only reads the cache without touching the engine or network ---
@@ -157,6 +164,40 @@ async function main() {
     assert(report.includes('opp1'), 'worst-games section should mention the opponent from the cache');
 
     fs.unlinkSync(tmpCachePath);
+  }
+
+  // --- regression: delivering checkmate on the user's own final ply must never
+  // be classified as a mistake. Stockfish reports "score mate 0" for ANY
+  // zero-legal-move position, ambiguous between checkmate and stalemate --
+  // without the in_checkmate() bypass this ply looks like "went from mate-in-1
+  // to mate 0", which classifyPly would score as a missed win. ---
+  {
+    const { Chess } = require('chess.js');
+    const g = new Chess();
+    g.move('f3'); g.move('e5'); g.move('g4'); g.move('Qh4'); // Fool's Mate -- Black delivers mate on ply 3
+    assert(g.in_checkmate(), 'fixture setup: this must actually be checkmate');
+    const fakeGame = {
+      uuid: 'foolsmate-fixture',
+      pgn: g.pgn(),
+      time_control: '600',
+      time_class: 'rapid',
+      end_time: 1783257898,
+      url: 'https://example.com/game/foolsmate-fixture',
+      white: { username: 'opponent1', result: 'checkmated' },
+      black: { username: 'FakeUser', result: 'win' },
+    };
+    let engineCalled = false;
+    const fakeDeps = {
+      makeEngine: () => ({
+        start: async () => {},
+        evalFen: async () => { engineCalled = true; return { cp: 0, mate: null }; },
+        bestMoveSan: async () => { throw new Error('bestMoveSan should never be reached for the mating ply'); },
+        quit: () => {},
+      }),
+    };
+    const { moveRecords } = await scanGameForDiagnostic(fakeGame, 'FakeUser', fakeDeps);
+    assert(moveRecords.length === 1, `expected only Black's move 1 (...e5) to be recorded -- the mating move 2 (...Qh4#) must be skipped entirely, got ${moveRecords.length} records`);
+    assert(!moveRecords.some(r => r.moveNumber === 2), 'the checkmating move itself must never appear as a moveRecord (would misclassify as a missed win via the mate-0 ambiguity)');
   }
 
   // --- repertoire check sanity (used by section 6, worth a direct unit test too) ---

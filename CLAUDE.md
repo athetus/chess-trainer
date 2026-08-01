@@ -8,10 +8,20 @@ things already built. See `docs/TRAINING_PLAN.md` for the measured plan.
 
 **The evidence says the biggest remaining lever needs no code.** Measured over 109 real
 games: 4.7 significant mistakes/game, blunder rate doubling below 4 min on the clock, and
-38% of mistakes involving a capture. Chess skill is stored patterns numbering in the
-thousands (Chase/Simon chunking) — that needs puzzle *volume*, which Lichess supplies
-free at a scale this repo never could. Do not propose building a puzzle engine; one was
-built in Aug 2026 and deliberately deleted (see STATUS.md for why).
+38% of mistakes involving a capture, clustered on five squares (e5/d5/f6/c5/c4). Chess
+skill is stored patterns numbering in the thousands (Chase/Simon chunking) — that needs
+puzzle *volume*, which Lichess supplies free at a scale this repo never could. **Daily
+Lichess puzzle volume remains the primary lever; do not deprioritize it in favor of this
+repo's own Tactics tab.**
+
+A first puzzle-engine attempt (Aug 2026) was built and deliberately deleted: ranking by
+eval-swing severity let mate-sentinel scores dominate, so all 15 slots filled with rare
+forced-mate positions while 195 instances of the common 1.5-3 pawn hang never surfaced —
+see STATUS.md. It was rebuilt (same day, user-approved after re-examination) as a
+**Tactics tab that consumes the diagnostic's own cache** rather than re-scanning, with
+fixed category quotas instead of pure severity ranking — see "Tactics Puzzles" below. It
+is a *supplement* to Lichess volume for the user's own concentrated, repeating mistakes,
+not a replacement for it.
 
 ## Project Overview
 Interactive chess opening trainer web app for drilling the **Ponziani Opening** (as White) and **Hippopotamus Defense** (as Black), plus a monthly diagnostic that measures what is actually costing the user rating.
@@ -119,9 +129,45 @@ Fill the tracking table in `docs/TRAINING_PLAN.md` after each run.
   on 1 Aug: it produced a one-game report.
 - A full scan is **60-90 minutes** (~0.6-1.0s per Stockfish eval, 2 evals per user ply).
   Run it in the background with output to a log; it prints nothing until the end.
-- Findings cache to `.chesscom-diagnostic-cache.json` (gitignored).
+- Findings cache to `.chesscom-diagnostic-cache.json` (gitignored). Since Aug 2026 this
+  cache also feeds the Tactics tab (see below) — flagged plies additionally carry
+  `plyIndex`, raw `evalBefore`/`evalAfter`, and `correctMoveSan` (the engine's best move,
+  fetched only for flagged plies — adds ~8 min to a full scan, not 2x).
 - Modules: `test/lib/chesscom-fetch.js`, `stockfish-engine.js`, `tactics-classifier.js`,
   `diagnostic-analysis.js`.
+
+## Tactics Puzzles (the user's own real mistakes)
+```bash
+node test/build-tactics-puzzles.js   # instant -- reads the diagnostic cache, no scan
+```
+Builds `tactics-puzzles.js` (committed, NOT gitignored — GitHub Pages serves it as a
+static `<script>` alongside `index.html`, unlike the diagnostic's own cache file) by
+selecting from the diagnostic's cached `moveRecords`, not by running its own Stockfish
+scan. Requires a
+cache produced by the *extended* diagnostic (has `plyIndex`/`correctMoveSan` on flagged
+records) — a stale pre-extension cache is skipped record-by-record with a warning, not
+crashed on.
+
+**Selection is fixed-quota, not pure severity ranking** (`test/lib/puzzle-selection.js`):
+three buckets — `mate` (allowed/missed a forced mate), `catastrophic` (≥3 pawn swing,
+non-mate), `common` (1.5-3 pawn swing, non-mate) — each gets its own ~5-slot quota, so the
+common band (the actual 38%-of-mistakes leak) can never be crowded out by mate-sentinel
+scores the way the first attempt was. Per-game cap of 2. Both `blunder` and `missed-win`
+categories are eligible in every bucket — this covers hung material, missed tactics, AND
+missed wins, not just blunders. Anything cut by the per-game cap or a full quota is
+reported as overflow, never silently dropped.
+
+Puzzle ids are stable (`tactics-<gameId>-ply<plyIndex>`), so re-running the build after a
+fresh monthly scan naturally preserves localStorage spaced-repetition progress for any
+puzzle that stays selected, and just leaves a harmless unused key for one that falls out.
+Every run fully regenerates `tactics-puzzles.js` from the current cache — no incremental
+merge bookkeeping, since building from an already-scanned cache is cheap and pure.
+
+`index.html` loads `tactics-puzzles.js` via `<script src="tactics-puzzles.js">` and merges
+`TACTICS_PUZZLES` into `ALL_LINES` as the third tab. Guarded with
+`typeof TACTICS_PUZZLES!=='undefined'` so a missing/not-yet-generated file degrades to an
+empty Tactics tab instead of crashing Ponziani/Hippo too. `test/validate.js` includes
+`tactics-puzzles.js` in the legality check when present.
 
 ## Testing
 ```bash
@@ -133,6 +179,10 @@ node test/chesscom-diagnostic.test.js
 node test/lib/tactics-classifier.test.js
 node test/lib/stockfish-engine.test.js     # spawns real Stockfish
 node test/lib/chesscom-fetch.test.js       # hits the real chess.com API
+
+# Tactics-puzzle build pipeline unit tests (stubbed cache, no network, no engine)
+node test/lib/puzzle-selection.test.js
+node test/build-tactics-puzzles.test.js
 
 # Deep audit for missed tactics (captures, checks, forks)
 node test/deep-audit.js

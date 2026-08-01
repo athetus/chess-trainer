@@ -11,7 +11,11 @@ remaining lever requires **no more code**, just tactical reps.
 
 ## Done
 - Single-file HTML app hosted on GitHub Pages (no build step, no backend)
-- **50 lines total: 32 Ponziani + 18 Hippo, all move-legal, Stockfish 18 engine-audited AND cross-checked vs chessdb.cn + the actual GothamChess/Ruddell source repertoires**
+- **50 opening lines + 15 Tactics puzzles (65 total), all move-legal**: 32 Ponziani + 18
+  Hippo, Stockfish 18 engine-audited AND cross-checked vs chessdb.cn + the actual
+  GothamChess/Ruddell source repertoires; the 15 Tactics puzzles are the user's own real
+  chess.com mistakes, generated from the diagnostic's cache (see "Diagnostic Command"
+  section below) — not yet drilled in a live browser, see that section for why
 - Ponziani mains follow GothamChess's real line (7.Nxg6! 8.Qf3! with the Qxf7# threat); Hippo captures ...dxe5 against every e5 push (never the old ...d5 lock)
 - Gamification (XP, levels, streaks), spaced repetition via localStorage
 - Error reporting synced to Supabase (project: oomuupminexahfipgktd, ap-southeast-1)
@@ -40,14 +44,42 @@ to 1. Supporting libs: `test/lib/chesscom-fetch.js`, `stockfish-engine.js`,
 - Rating 662 → 822, but the rate collapsed from ~+6/game during a mid-month burst to
   ~+0.4/game since. ELO is exponential; do not extrapolate monthly headline numbers.
 
-**Puzzle generation was built and then deliberately dropped.** Ranking by eval-swing
-severity meant all 15 slots filled with rare forced-mate positions while 195 instances
-of the most common error never surfaced. Beyond that, skill is stored patterns
-(Chase/Simon chunking; Gobet & Simon 1998) and needs thousands of reps — ~15-50
-positions/month cannot compete with Lichess's millions, which are already
-difficulty-rated and theme-filterable. Removed: `chesscom-tactics.js`,
-`puzzle-selection.js`, `puzzle-store.js`, `tactics-puzzles.js`, and the index.html
-Tactics tab. Recoverable from git history if ever revisited.
+**Puzzle generation: built, dropped, then rebuilt properly (Aug 2026, AFK session).**
+First attempt ranked by eval-swing severity, so all 15 slots filled with rare
+forced-mate positions while 195 instances of the most common error never surfaced —
+deleted (see git history for the original `chesscom-tactics.js`/`puzzle-selection.js`).
+Rebuilt the same day, user-approved after re-examination: their errors are
+**concentrated, not diffuse** (38% involve captures, clustered on e5/d5/f6/c5/c4), so a
+narrow targeted set is worthwhile *alongside* Lichess volume, not instead of it.
+
+The rebuild fixed the actual design flaw rather than repeating it:
+- **Consumes the diagnostic's own cache instead of re-scanning** — the diagnostic
+  already walks every user move with Stockfish; puzzle generation is now a cheap, pure
+  function over that cache (`test/build-tactics-puzzles.js`). The cache gained
+  `plyIndex`/raw evals/`correctMoveSan` (engine best move, fetched only for flagged
+  plies — ~476 of ~3263, adding ~8 min to a scan, not 2x).
+- **Fixed category quotas, not severity ranking** (`test/lib/puzzle-selection.js`):
+  `mate` / `catastrophic` (≥3 pawns) / `common` (1.5-3 pawns), ~5 each, per-game cap 2,
+  overflow reported not silently dropped. On the real 109-game archive: 75/161/237
+  instances available per bucket respectively — the common band that got crowded out
+  last time now has its own guaranteed slots.
+- **Both `blunder` and `missed-win` are eligible** in every bucket, per the user's
+  explicit ask to cover "mistakes, errors, blunders, missed wins" — not just severe
+  material drops.
+- **Bug found and fixed during real-data verification**: ~2% of flagged plies (10/483)
+  had the engine's own best move identical to the move actually played (eval-swing
+  classifier artifact in already-decided endgames — see `tasks/lessons.md`). One such
+  case ("you played Ke4, correct was Ke4") was in the first real-data build; filtered
+  out before the final 15 were generated.
+
+Shipped: 15 real puzzles from the user's own July-Aug 2026 games, wired into index.html
+as a third "Tactics" tab (`test/lib/tactics-classifier.js`'s `buildPuzzle` +
+`test/lib/puzzle-store.js` write `tactics-puzzles.js`, committed — GitHub Pages serves
+it as a static script like `index.html`). `node test/validate.js` — 65 lines (50 + 15
+tactics), 0 issues. **Not verified in a live browser** — no browser automation tool was
+available this session; verification was static (syntax check, chess.js legality check
+of every puzzle's full move sequence, element-id existence check for the wiring). Worth
+an actual drill-through next session before fully trusting the UI path.
 
 ## Full Repertoire Cross-Check (2026-07-16, same session)
 User asked for verification against DBs and the actual source repertoires (not engine-only). Method: chessdb.cn sweep of all 51 lines (engine-consensus DB, no auth; Lichess explorer now needs a token) + researched GothamChess's actual Ponziani video/study and The Chess Giant's actual Hippo videos + Stockfish 18 depth-24 checks of every flag. 5 more real bugs found and fixed (all tails engine-verified before + after):
@@ -132,14 +164,16 @@ masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
 ## Blockers / Decisions
 
 ### Decisions (2026-08-01)
-- **Puzzle generation deleted, then RE-APPROVED for rebuild (same day).** It was deleted
-  mid-session for the reasons above, but the user raised it three times and finally chose
-  to build it properly. They were right on a point I under-weighted: their errors are
+- **Puzzle generation deleted, then RE-APPROVED and rebuilt (same day, AFK follow-up
+  session).** Deleted mid-session for the reasons above; the user raised it three times
+  and chose to build it properly, then in a later AFK-mode session asked for it to
+  actually be built end-to-end without further check-ins ("analyze all my mistakes...
+  don't stop"). They were right on a point I under-weighted: their errors are
   **concentrated** (38% captures, five squares), and a narrow weakness is exactly where a
   targeted set beats generic volume — plus nothing off the shelf turns *your own* mistakes
-  into a repeatable spaced-repetition drill. **This is the next session's main task; the
-  full design is in `docs/SESSION_HANDOFF.md` under "START HERE NEXT SESSION."** It is a
-  supplement to Lichess volume, not a replacement. Do not re-litigate the decision.
+  into a repeatable spaced-repetition drill. **Done — see "Diagnostic Command" section
+  above for what shipped.** It is a supplement to Lichess volume, not a replacement. Do
+  not re-litigate the decision.
 - **The north star is 1000 ELO, not "a better app."** The measured conclusion is that
   the largest remaining lever needs no code — tactical reps, exchange counting, and game
   review. Future sessions should be willing to say "this feature doesn't serve the goal."
@@ -150,8 +184,18 @@ masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
 
 ### Open
 - **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User said they'll run it next time. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
-- **One game failed the diagnostic scan** on a 30s Stockfish timeout (of 108). Fault
-  isolation handled it — the game is skipped and not marked processed, so it retries next
-  run. If failures grow, raise the timeout in `test/lib/stockfish-engine.js`.
+- **One game failed the diagnostic scan** on a 30s Stockfish timeout (of 108, Jul 16).
+  Fault isolation handled it — the game is skipped and not marked processed, so it
+  retries next run. Did not recur on the Aug 1 re-scan (109/109 games, 0 failures), so
+  still just a watch item, not something worth fixing preemptively. If failures grow,
+  raise the timeout in `test/lib/stockfish-engine.js`.
+- **Live-browser verification of the new Tactics tab is still outstanding** — no browser
+  automation tool was available in the session that built it (Aug 1 AFK session).
+  Verified statically instead: `node test/validate.js` (65 lines incl. 15 puzzles, 0
+  legality issues), inline-script syntax check, and manual review that every DOM id the
+  wiring references (`#tab-tactics`, `#move-list`, `#explanation-box`, `#btn-next`,
+  `#btn-retry`, `#status`) actually exists. Drill at least one real Tactics puzzle in an
+  actual browser next session before fully trusting the UI path — see the acceptance
+  criteria this was built against in git history / this session's work.
 - Keep-alive hardened Jul 16 (3x/day + real write + self-re-enable). If Supabase still sends a pause warning, next escalation is a service key, an Edge Function heartbeat, or moving error sync off Supabase.
 - Decision (Jul 16): retired ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional — all premised on 7.Bd3, which ...Nxe5! refutes. Their positions can't occur once the mains play Nxg6. This is intentional, not a regression.

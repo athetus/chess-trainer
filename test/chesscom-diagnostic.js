@@ -57,12 +57,11 @@ const BASELINE = {
 
 // Walks every one of the user's own plies in a single game, evaluating before
 // and after with Stockfish and classifying each as blunder/missed-win/clean.
-// Mirrors scanGame() in chesscom-tactics.js (same checkmate-bypass guard,
-// same per-game engine lifecycle via try/finally) but records a diagnostic
-// moveRecord for EVERY user ply -- not just flagged ones -- because the
-// time-vs-blunders comparison needs the full population of clean moves too.
-// Unlike the puzzle scanner, this never asks the engine for a best move: the
-// report only needs eval swings and counts, not a "correct move" to display.
+// Records a diagnostic moveRecord for EVERY user ply -- not just flagged ones
+// -- because the time-vs-blunders comparison needs the full population of
+// clean moves too. The engine's best move (correctMoveSan) is only fetched
+// for flagged plies, since that's the one extra field puzzle construction
+// needs that the report itself doesn't -- see test/build-tactics-puzzles.js.
 async function scanGameForDiagnostic(game, username, deps) {
   const g = new Chess();
   g.load_pgn(game.pgn);
@@ -111,6 +110,11 @@ async function scanGameForDiagnostic(game, username, deps) {
       const mateAllowed = cat === 'blunder' && afterUser.mate != null && afterUser.mate < 0;
       const moveNumber = Math.floor(ply / 2) + 1;
 
+      // Only fetch the engine's best move for flagged plies -- puzzle
+      // construction needs it, the diagnostic report itself doesn't, and
+      // asking for it on every clean ply too would roughly double the scan.
+      const correctMoveSan = cat ? await engine.bestMoveSan(fenBefore, STOCKFISH_DEPTH) : null;
+
       moveRecords.push({
         gameId: game.uuid,
         moveNumber,
@@ -120,6 +124,7 @@ async function scanGameForDiagnostic(game, username, deps) {
         mateMissed,
         mateAllowed,
         secondsSpent: timingByMoveNumber.has(moveNumber) ? timingByMoveNumber.get(moveNumber) : null,
+        ...(cat ? { plyIndex: ply, evalBefore, evalAfter, correctMoveSan } : {}),
       });
     }
   } finally {
@@ -135,7 +140,10 @@ async function scanGameForDiagnostic(game, username, deps) {
     gameId: game.uuid,
     opponent: userIsWhite ? game.black.username : game.white.username,
     endTime: game.end_time,
+    timeClass: game.time_class,
     url: game.url,
+    userColor,
+    sanMoves,
     userWon,
     mistakeCount: moveRecords.filter(r => r.cat).length,
     clockLeftMinutes: clockLeftSeconds !== null ? clockLeftSeconds / 60 : null,
