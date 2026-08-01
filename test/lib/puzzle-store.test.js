@@ -4,7 +4,7 @@ const path = require('path');
 const { readStore, writeStore, mergeNewPuzzles } = require('./puzzle-store');
 
 function assert(cond, msg) {
-  if (!cond) { console.error('FAIL:', msg); process.exit(1); }
+  if (!cond) { throw new Error('FAIL: ' + msg); }
 }
 
 const tmpFile = path.join(os.tmpdir(), `puzzle-store-test-${Date.now()}.js`);
