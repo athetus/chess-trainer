@@ -1,8 +1,18 @@
 # Training Plan — → 1000 chess.com
 
 Derived from measured data, not general chess advice. Every claim below traces to a
-number in the July 2026 baseline. Re-measure monthly with
-`node test/chesscom-diagnostic.js optimizerprime --months 1` and update the table.
+number in the July 2026 baseline (109-game archive). Re-measure monthly and update the
+tracking table:
+
+```
+node test/chesscom-diagnostic.js optimizerprime --months 2
+```
+
+**Use `--months 2`, not `--months 1`.** The flag counts chess.com *archive months*, so
+running it early in a calendar month returns only the handful of games played so far —
+verified on 1 Aug, where `--months 1` yielded a single game and a meaningless report.
+Two months always gives a usable sample. Add `--report-only` to re-print the last
+report instantly instead of re-running the 60-90 minute engine scan.
 
 ## Read this first: still climbing, but the rate has dropped sharply
 
@@ -52,8 +62,8 @@ that assumes the July headline number repeats is wrong.
 | First mistake of the game | **median move 10** (25th pct move 8) | the moment prep runs out |
 | Mistakes involving a capture | **38%** | 21% bad captures made, 17% good captures missed |
 | Most common blunder squares | e5, d5, f6, c5, c4 | central contested squares |
-| Games ending under 2 min | **30%** | real time pressure in a third of games |
-| Games ending under 1 min | **21%** | |
+| Games ending under 2 min | **30%** (33/109) | real time pressure in a third of games |
+| Games ending under 1 min | **22%** (24/109) | |
 | Clock after move 40 | **1.1 min** median | long games become scrambles |
 
 **Finding 1 — you are not rushing.** You spend *twice as long* on the moves you get
@@ -114,10 +124,10 @@ times. Cut to 1-2/day and actually look at the one you lost. The monthly diagnos
 names your worst games specifically for this.
 
 **5. Keep drilling the openings, but extend the exit — don't add lines.**
-The Hippo appears in **100%** of your Black games (51/51, 55% win rate). The Ponziani
-appears in **35%** of White games — in **17 of 17** where the opponent allowed
-1.e4 e5 2.Nf3 Nc6 — and the Jaenisch Counterattack line specifically scores **89% over
-9 games**. This prep works.
+The Hippo appears in **100%** of your Black games (55/55, ~55% win rate). The Ponziani
+appears in **35%** of White games (19/54) — and in **19 of 19** where the opponent
+allowed 1.e4 e5 2.Nf3 Nc6 — with the Jaenisch Counterattack line scoring **89% over 9
+games**. This prep works.
 
 The gap is not coverage, it's the exit: your **first mistake comes at median move 10**,
 right where the book ends. Rather than adding new openings, know the *plan* for each
@@ -137,7 +147,7 @@ per game, a single month of rating movement is mostly noise.
 
 | Month | Rating (end) | Mistakes/game | Clock after move 30 | Games under 2 min | Allowed mates |
 |---|---|---|---|---|---|
-| Jul 2026 (baseline) | 822 | 4.7 | 3.2 min | 30% | 47 |
+| Jul 2026 (baseline) | 822 | 4.7 | 3.1 min | 30% | 47 |
 | | | | | | |
 
 **Targets for the next measurement:** mistakes/game under 4.0, clock after move 30
