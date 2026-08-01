@@ -25,6 +25,13 @@ async function scanGame(game, username, deps) {
     replay.move(sanMoves[i]);
   }
   const fenAfterLast = replay.fen();
+  // Checkmate can only ever occur on the true final move of a real game (the
+  // game ends the instant checkmate happens), so `replay` -- which now holds
+  // the position after the last move -- is the only place we need to check
+  // this. Stockfish's `mate: 0` eval signal is ambiguous between checkmate
+  // and stalemate (both are "zero legal moves"); chess.js's own game-state
+  // check disambiguates it using the actual board, not the eval.
+  const gameEndedInCheckmate = replay.in_checkmate();
 
   const engine = deps.makeEngine();
   const flagged = [];
@@ -37,6 +44,17 @@ async function scanGame(game, username, deps) {
     for (let ply = 0; ply < sanMoves.length; ply++) {
       const turnColor = ply % 2 === 0 ? 'w' : 'b';
       if (turnColor !== userColor) continue;
+
+      // The user's own move delivered checkmate on the very last ply of the
+      // game -- the best possible outcome, never a mistake. Skip
+      // classification entirely rather than let the classifier's eval-only
+      // view (which sees an ambiguous `mate: 0` after this move) misread it
+      // as "let the win slip". Stalemate endings are NOT bypassed here --
+      // they fall through to the classifier below, which already correctly
+      // treats a stalemate result as "not winning" (a legitimate missed win
+      // if the user had a real advantage).
+      const isFinalPly = ply === sanMoves.length - 1;
+      if (isFinalPly && gameEndedInCheckmate) continue;
 
       const fenBefore = fensBeforePly[ply];
       const fenAfter = ply + 1 < fensBeforePly.length ? fensBeforePly[ply + 1] : fenAfterLast;
