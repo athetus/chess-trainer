@@ -23,7 +23,13 @@ var block = html.slice(startIdx, afterHippo + 3); // include the "];"
 
 var extract = new Function(block + '\nreturn {P: PONZIANI_LINES, H: HIPPO_LINES};');
 var data = extract();
-var ALL = data.P.concat(data.H);
+
+var tacticsPath = path.join(__dirname, '..', 'tactics-puzzles.js');
+var tacticsSrc = fs.readFileSync(tacticsPath, 'utf8');
+var extractTactics = new Function(tacticsSrc + '\nreturn TACTICS_PUZZLES;');
+var tacticsPuzzles = extractTactics();
+
+var ALL = data.P.concat(data.H).concat(tacticsPuzzles);
 
 console.log('Validating ' + ALL.length + ' lines (' + data.P.length + ' Ponziani + ' + data.H.length + ' Hippo) parsed from index.html\n');
 
