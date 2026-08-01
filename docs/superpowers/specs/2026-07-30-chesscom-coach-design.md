@@ -1,5 +1,21 @@
 # Chess.com Coach — Design Spec
 
+> ## ⚠️ NEVER BUILT — SHELVED 2026-08-01
+>
+> This opening-discipline coach was designed, audited, then deprioritized and never
+> implemented. It still has two unresolved blocking design gaps (see "Known open issues"
+> at the end of this doc).
+>
+> **Do not build it without re-checking the premise.** The evidence collected since
+> says opening discipline is not where the rating is leaking: the Hippo appears in
+> **55/55** Black games and the Ponziani in **19/19** White games where opponents allowed
+> it, with the Jaenisch line scoring 89%. Coverage is already excellent.
+>
+> The real gap this spec was reaching for turned out to be different and simpler: the
+> user's **first mistake lands at median move 10**, right where the book ends. That is a
+> middlegame-*planning* gap, not an opening-*discipline* gap, and the cheap fix is plan
+> notes on the 50 existing lines — not this pipeline. See `docs/TRAINING_PLAN.md` item 5.
+
 Date: 2026-07-30
 
 ## Goal

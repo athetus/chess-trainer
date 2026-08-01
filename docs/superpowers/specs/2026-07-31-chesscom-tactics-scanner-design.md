@@ -1,5 +1,24 @@
 # Chess.com Tactics/Blunder Scanner — Design Spec
 
+> ## ⚠️ PARTIALLY SUPERSEDED — 2026-08-01
+>
+> Built, then the puzzle half was deleted. What survives is the *diagnosis* — shipped as
+> `test/chesscom-diagnostic.js`. See `docs/TRAINING_PLAN.md` for what replaced it and
+> STATUS.md for the reasoning.
+>
+> **Two severe bugs this spec did not anticipate, both found only by running against real
+> games — worth knowing if any of this is ever revisited:**
+> 1. Stockfish reports `score mate 0` for *any* position with zero legal moves, which is
+>    ambiguous between checkmate and stalemate. Every checkmate the user *delivered* was
+>    therefore classified as a "missed win." Fixed by disambiguating with chess.js's
+>    `in_checkmate()` on the game's true final move.
+> 2. The mate-severity sentinel (`1000 - mateDistance`) leaked into human-facing text as
+>    nonsense like "drops 988.3 pawns."
+>
+> Both are fixed in the surviving `tactics-classifier.js`. The lesson generalises: an
+> eval number alone cannot distinguish game-over states, and internal ranking sentinels
+> must never reach display text.
+
 Date: 2026-07-31
 
 ## Goal

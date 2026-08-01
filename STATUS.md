@@ -130,6 +130,23 @@ In this repo (all optional, none urgent):
 masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
 
 ## Blockers / Decisions
+
+### Decisions (2026-08-01)
+- **Puzzle generation deleted, diagnostic kept.** Reasoning in the section above and in
+  `docs/TRAINING_PLAN.md`. Recoverable from git history. Do not rebuild without
+  re-reading why.
+- **The north star is 1000 ELO, not "a better app."** The measured conclusion is that
+  the largest remaining lever needs no code — tactical reps, exchange counting, and game
+  review. Future sessions should be willing to say "this feature doesn't serve the goal."
+- **No GM masterclass / video-course content.** Wrong altitude for a player whose errors
+  are hanging pieces on move 22.
+- **No new opening lines.** Coverage is already 55/55 (Hippo) and 19/19 (Ponziani when
+  allowed). Add middlegame *plans* to existing lines instead if anything.
+
+### Open
 - **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User said they'll run it next time. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
+- **One game failed the diagnostic scan** on a 30s Stockfish timeout (of 108). Fault
+  isolation handled it — the game is skipped and not marked processed, so it retries next
+  run. If failures grow, raise the timeout in `test/lib/stockfish-engine.js`.
 - Keep-alive hardened Jul 16 (3x/day + real write + self-re-enable). If Supabase still sends a pause warning, next escalation is a service key, an Edge Function heartbeat, or moving error sync off Supabase.
 - Decision (Jul 16): retired ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional — all premised on 7.Bd3, which ...Nxe5! refutes. Their positions can't occur once the mains play Nxg6. This is intentional, not a regression.

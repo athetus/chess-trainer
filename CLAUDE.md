@@ -1,7 +1,20 @@
 # Chess Opening Trainer
 
+## The Actual Goal (read this before proposing work)
+**Get the user to 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026).
+The app is a means to that end, not the end itself. Judge every proposed feature against
+whether it moves that number — and be willing to say "this doesn't," including about
+things already built. See `docs/TRAINING_PLAN.md` for the measured plan.
+
+**The evidence says the biggest remaining lever needs no code.** Measured over 109 real
+games: 4.7 significant mistakes/game, blunder rate doubling below 4 min on the clock, and
+38% of mistakes involving a capture. Chess skill is stored patterns numbering in the
+thousands (Chase/Simon chunking) — that needs puzzle *volume*, which Lichess supplies
+free at a scale this repo never could. Do not propose building a puzzle engine; one was
+built in Aug 2026 and deliberately deleted (see STATUS.md for why).
+
 ## Project Overview
-Interactive chess opening trainer web app for drilling the **Ponziani Opening** (as White) and **Hippopotamus Defense** (as Black). Built for a ~700 rated chess.com player focused on repetition-based memorization.
+Interactive chess opening trainer web app for drilling the **Ponziani Opening** (as White) and **Hippopotamus Defense** (as Black), plus a monthly diagnostic that measures what is actually costing the user rating.
 
 **Live:** https://athetus.github.io/chess-trainer/
 
@@ -91,10 +104,35 @@ Each report contains:
 - `movesPlayed` — moves up to that point
 - `timestamp`
 
+## The Monthly Diagnostic
+```bash
+node test/chesscom-diagnostic.js optimizerprime --months 2
+node test/chesscom-diagnostic.js optimizerprime --report-only   # instant replay from cache
+```
+Pulls the real chess.com archive, runs Stockfish over every one of the user's moves, and
+reports what is actually costing rating: time-vs-blunder correlation, blunder rate by
+clock remaining, error phase distribution, severity, repertoire coverage, worst games.
+Fill the tracking table in `docs/TRAINING_PLAN.md` after each run.
+
+- **Use `--months 2`, not `--months 1`.** The flag counts chess.com *archive months*, so
+  early in a calendar month `--months 1` returns only the few games played so far. Verified
+  on 1 Aug: it produced a one-game report.
+- A full scan is **60-90 minutes** (~0.6-1.0s per Stockfish eval, 2 evals per user ply).
+  Run it in the background with output to a log; it prints nothing until the end.
+- Findings cache to `.chesscom-diagnostic-cache.json` (gitignored).
+- Modules: `test/lib/chesscom-fetch.js`, `stockfish-engine.js`, `tactics-classifier.js`,
+  `diagnostic-analysis.js`.
+
 ## Testing
 ```bash
-# Validate all move sequences are legal
+# Validate all move sequences are legal (parses index.html directly)
 node test/validate.js
+
+# Diagnostic pipeline unit tests (stubbed -- no network, no engine)
+node test/chesscom-diagnostic.test.js
+node test/lib/tactics-classifier.test.js
+node test/lib/stockfish-engine.test.js     # spawns real Stockfish
+node test/lib/chesscom-fetch.test.js       # hits the real chess.com API
 
 # Deep audit for missed tactics (captures, checks, forks)
 node test/deep-audit.js
@@ -102,6 +140,11 @@ node test/deep-audit.js
 # Hippo-specific audit for hanging material
 node test/deep-audit-hippo.js
 ```
+Tests are plain node scripts (no framework). `assert()` must **throw**, never call
+`process.exit()` — `process.exit` skips `finally` blocks and leaks temp files.
+
+Installed `chess.js` (npm) uses the **snake_case** API (`load_pgn`, `in_checkmate`); the
+CDN build in `index.html` is a different version. Don't mix them up in Node code.
 
 ## Deployment
 Hosted on GitHub Pages (public repo). Push to `main` triggers automatic deploy.

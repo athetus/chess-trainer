@@ -1,5 +1,28 @@
 # Chess.com Tactics/Blunder Scanner Implementation Plan
 
+> ## ⚠️ PARTIALLY SUPERSEDED — 2026-08-01
+>
+> This plan was executed in full (all 9 tasks), then **the puzzle-generation half was
+> deliberately deleted**. Do not rebuild from this document without reading
+> `docs/TRAINING_PLAN.md` and the STATUS.md section "Diagnostic Command + Training Plan"
+> first.
+>
+> **Kept and shipped:** Tasks 1-3's libraries (`stockfish-engine.js`,
+> `chesscom-fetch.js`, `tactics-classifier.js`), now powering
+> `test/chesscom-diagnostic.js`.
+>
+> **Deleted:** Tasks 4-8 — `puzzle-selection.js`, `puzzle-store.js`,
+> `chesscom-tactics.js`, `tactics-puzzles.js`, the index.html Tactics tab, and the
+> validate.js puzzle path.
+>
+> **Why:** ranking puzzles by eval-swing severity meant forced-mate positions (encoded
+> as a ~1000-point sentinel) filled all 15 slots while 195 instances of the user's most
+> common error never surfaced. More fundamentally, chess skill is thousands of stored
+> patterns (Chase/Simon chunking), so ~15-50 positions/month cannot compete with
+> Lichess's millions. The diagnosis was worth keeping; the puzzles were not.
+>
+> Everything remains recoverable from git history.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a Claude-Code-session-run script that scans the user's real chess.com games for blunders and missed wins (via Stockfish), and turns confirmed findings into puzzles drillable in the existing app under a new "Tactics" tab.
