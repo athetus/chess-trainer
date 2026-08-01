@@ -56,6 +56,11 @@ assert(classifyPly({
   evalBefore: { cp: 20, mate: null }, evalAfter: { cp: 220, mate: null }, userColor: 'b',
 }) === 'blunder', 'a 2 pawn drop for Black (White cp went up) should be a blunder for Black');
 
+// --- classifyPly: large collapse within winning range is a missed-win, not null ---
+assert(classifyPly({
+  evalBefore: { cp: 1000, mate: null }, evalAfter: { cp: 310, mate: null }, userColor: 'w',
+}) === 'missed-win', 'a 6.9 pawn drop from +10 to +3.1 (both winning) is a missed-win, not null');
+
 // --- buildPuzzle ---
 const puzzleEvalBefore = { cp: 20, mate: null };
 const puzzleEvalAfter = { cp: -180, mate: null };

@@ -36,13 +36,21 @@ function classifyPly({ evalBefore, evalAfter, userColor }) {
   const before = toUserPerspective(evalBefore, userColor);
   const after = toUserPerspective(evalAfter, userColor);
 
+  // Still a forced mate for the user on both sides -- just a different
+  // distance, not a mistake (e.g. mate in 2 becoming mate in 5).
+  const bothForcedMateForUser =
+    before.mate != null && before.mate > 0 &&
+    after.mate != null && after.mate > 0;
+  if (bothForcedMateForUser) return null;
+
   const wasWinningBig = isWinningFor(before);
   const stillWinningBig = isWinningFor(after);
   if (wasWinningBig && !stillWinningBig) return 'missed-win';
-  if (wasWinningBig && stillWinningBig) return null; // still winning by force/margin, not a mistake
 
   const drop = scoreToPawns(before) - scoreToPawns(after);
-  if (drop >= BLUNDER_THRESHOLD_PAWNS) return 'blunder';
+  if (drop >= BLUNDER_THRESHOLD_PAWNS) {
+    return wasWinningBig ? 'missed-win' : 'blunder';
+  }
   return null;
 }
 
