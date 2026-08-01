@@ -132,9 +132,14 @@ masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
 ## Blockers / Decisions
 
 ### Decisions (2026-08-01)
-- **Puzzle generation deleted, diagnostic kept.** Reasoning in the section above and in
-  `docs/TRAINING_PLAN.md`. Recoverable from git history. Do not rebuild without
-  re-reading why.
+- **Puzzle generation deleted, then RE-APPROVED for rebuild (same day).** It was deleted
+  mid-session for the reasons above, but the user raised it three times and finally chose
+  to build it properly. They were right on a point I under-weighted: their errors are
+  **concentrated** (38% captures, five squares), and a narrow weakness is exactly where a
+  targeted set beats generic volume — plus nothing off the shelf turns *your own* mistakes
+  into a repeatable spaced-repetition drill. **This is the next session's main task; the
+  full design is in `docs/SESSION_HANDOFF.md` under "START HERE NEXT SESSION."** It is a
+  supplement to Lichess volume, not a replacement. Do not re-litigate the decision.
 - **The north star is 1000 ELO, not "a better app."** The measured conclusion is that
   the largest remaining lever needs no code — tactical reps, exchange counting, and game
   review. Future sessions should be willing to say "this feature doesn't serve the goal."
