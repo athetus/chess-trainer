@@ -15,7 +15,8 @@ remaining lever requires **no more code**, just tactical reps.
   Hippo, Stockfish 18 engine-audited AND cross-checked vs chessdb.cn + the actual
   GothamChess/Ruddell source repertoires; the 15 Tactics puzzles are the user's own real
   chess.com mistakes, generated from the diagnostic's cache (see "Diagnostic Command"
-  section below) — not yet drilled in a live browser, see that section for why
+  section below) — user-tested live on 2026-08-02, one playback-speed bug found and
+  fixed same day, confirmed working since
 - Ponziani mains follow GothamChess's real line (7.Nxg6! 8.Qf3! with the Qxf7# threat); Hippo captures ...dxe5 against every e5 push (never the old ...d5 lock)
 - Gamification (XP, levels, streaks), spaced repetition via localStorage
 - Error reporting synced to Supabase (project: oomuupminexahfipgktd, ap-southeast-1)
@@ -76,10 +77,26 @@ Shipped: 15 real puzzles from the user's own July-Aug 2026 games, wired into ind
 as a third "Tactics" tab (`test/lib/tactics-classifier.js`'s `buildPuzzle` +
 `test/lib/puzzle-store.js` write `tactics-puzzles.js`, committed — GitHub Pages serves
 it as a static script like `index.html`). `node test/validate.js` — 65 lines (50 + 15
-tactics), 0 issues. **Not verified in a live browser** — no browser automation tool was
-available this session; verification was static (syntax check, chess.js legality check
-of every puzzle's full move sequence, element-id existence check for the wiring). Worth
-an actual drill-through next session before fully trusting the UI path.
+tactics), 0 issues.
+
+**User-reported bug, fixed same day (2026-08-02):** each puzzle animated through every
+setup move at 150ms/move before letting the user play. Fine for opening lines
+(`baseMoves` 4-5), broken for tactics puzzles — `baseMoves` there is the real ply number
+the mistake happened at in an actual game, up to 105 in this set, so some puzzles took
+15+ seconds just to reach the user's turn. Fixed in `playBaseMoves()`
+(`index.html`): tactics puzzles (`currentLine.opening==='tactics'`) now replay setup
+synchronously with no delay and update the board once at the final position; opening
+lines are unchanged. Verified with a standalone chess.js simulation (no DOM needed)
+against all 15 real puzzles: each reaches the correction ply instantly with the correct
+FEN, landing exactly on the user's turn. User confirmed "looks ok now" after this fix
+went live.
+
+**Still not verified end-to-end in a live browser session by Claude** — no browser
+automation tool was available. Verification was static (syntax checks, chess.js
+legality checks of every puzzle's full move sequence, element-id existence checks, and
+the playback-logic simulation above) plus the user's own confirmation after trying it.
+That combination is solid but isn't the same as Claude having driven the UI directly —
+worth keeping in mind if something subtle surfaces later.
 
 ## Full Repertoire Cross-Check (2026-07-16, same session)
 User asked for verification against DBs and the actual source repertoires (not engine-only). Method: chessdb.cn sweep of all 51 lines (engine-consensus DB, no auth; Lichess explorer now needs a token) + researched GothamChess's actual Ponziani video/study and The Chess Giant's actual Hippo videos + Stockfish 18 depth-24 checks of every flag. 5 more real bugs found and fixed (all tails engine-verified before + after):
@@ -189,13 +206,14 @@ masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
   retries next run. Did not recur on the Aug 1 re-scan (109/109 games, 0 failures), so
   still just a watch item, not something worth fixing preemptively. If failures grow,
   raise the timeout in `test/lib/stockfish-engine.js`.
-- **Live-browser verification of the new Tactics tab is still outstanding** — no browser
-  automation tool was available in the session that built it (Aug 1 AFK session).
-  Verified statically instead: `node test/validate.js` (65 lines incl. 15 puzzles, 0
-  legality issues), inline-script syntax check, and manual review that every DOM id the
-  wiring references (`#tab-tactics`, `#move-list`, `#explanation-box`, `#btn-next`,
-  `#btn-retry`, `#status`) actually exists. Drill at least one real Tactics puzzle in an
-  actual browser next session before fully trusting the UI path — see the acceptance
-  criteria this was built against in git history / this session's work.
+- **Resolved 2026-08-02:** the Tactics tab's first real-world use surfaced a bug static
+  checks couldn't catch — puzzles animated through every setup move at 150ms each
+  before letting the user play, taking 15+ seconds on puzzles with a deep `baseMoves`
+  (up to 105 plies, vs. 4-5 for opening lines). Fixed in `playBaseMoves()`: tactics
+  puzzles now jump straight to the position. User confirmed "looks ok now." Claude still
+  has not driven the UI directly (no browser automation tool available this session) —
+  verification was static checks + a standalone playback-logic simulation + the user's
+  own confirmation. Worth remembering that combination isn't identical to Claude having
+  used it directly, if anything subtle surfaces later.
 - Keep-alive hardened Jul 16 (3x/day + real write + self-re-enable). If Supabase still sends a pause warning, next escalation is a service key, an Edge Function heartbeat, or moving error sync off Supabase.
 - Decision (Jul 16): retired ponz-nxf2-trap, ponz-qh4-trap, ponz-main-positional — all premised on 7.Bd3, which ...Nxe5! refutes. Their positions can't occur once the mains play Nxg6. This is intentional, not a regression.

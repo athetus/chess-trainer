@@ -1,27 +1,39 @@
 # Chess.com Tactics/Blunder Scanner Implementation Plan
 
-> ## ⚠️ PARTIALLY SUPERSEDED — 2026-08-01
+> ## ⚠️ SUPERSEDED — deleted, then rebuilt differently (2026-08-01/02)
 >
 > This plan was executed in full (all 9 tasks), then **the puzzle-generation half was
-> deliberately deleted**. Do not rebuild from this document without reading
-> `docs/TRAINING_PLAN.md` and the STATUS.md section "Diagnostic Command + Training Plan"
-> first.
+> deliberately deleted** the same day over a real design flaw (below). The user asked
+> for it back three times; it was rebuilt on 2026-08-02 with the flaw fixed rather than
+> repeated, and is now **live** on the site's third "Tactics" tab. This document is kept
+> for the original design rationale, but the current implementation diverges from it —
+> read `CLAUDE.md`'s "Tactics Puzzles" section and STATUS.md for what actually shipped.
 >
-> **Kept and shipped:** Tasks 1-3's libraries (`stockfish-engine.js`,
-> `chesscom-fetch.js`, `tactics-classifier.js`), now powering
+> **Kept and shipped as originally planned:** Tasks 1-3's libraries
+> (`stockfish-engine.js`, `chesscom-fetch.js`, `tactics-classifier.js`), powering
 > `test/chesscom-diagnostic.js`.
 >
-> **Deleted:** Tasks 4-8 — `puzzle-selection.js`, `puzzle-store.js`,
-> `chesscom-tactics.js`, `tactics-puzzles.js`, the index.html Tactics tab, and the
-> validate.js puzzle path.
+> **Deleted, then rebuilt with a different architecture:** `puzzle-selection.js`,
+> `puzzle-store.js`, `tactics-puzzles.js`, the index.html Tactics tab, and the
+> validate.js puzzle path all exist again, but `test/build-tactics-puzzles.js`
+> replaces `chesscom-tactics.js` — it reads the diagnostic's own cache instead of
+> running a second Stockfish scan, and `puzzle-selection.js` uses fixed category
+> quotas instead of pure eval-swing ranking.
 >
-> **Why:** ranking puzzles by eval-swing severity meant forced-mate positions (encoded
-> as a ~1000-point sentinel) filled all 15 slots while 195 instances of the user's most
-> common error never surfaced. More fundamentally, chess skill is thousands of stored
-> patterns (Chase/Simon chunking), so ~15-50 positions/month cannot compete with
-> Lichess's millions. The diagnosis was worth keeping; the puzzles were not.
+> **Why the original was deleted:** ranking puzzles by eval-swing severity meant
+> forced-mate positions (encoded as a ~1000-point sentinel) filled all 15 slots while
+> 195 instances of the user's most common error never surfaced.
 >
-> Everything remains recoverable from git history.
+> **Why the rebuild is different:** fixed quotas (~5 mate / ~5 catastrophic ≥3 pawns /
+> ~5 common 1.5-3 pawns) guarantee the common band its own slots regardless of how many
+> rare mate instances exist. A second real bug was found and fixed during the rebuild:
+> ~2% of flagged plies had the engine's own best move identical to the move actually
+> played (an eval-swing classifier artifact in decided endgames) — filtered out before
+> puzzle selection runs. See `tasks/lessons.md`.
+>
+> Chess skill is still thousands of stored patterns (Chase/Simon chunking) that 15
+> puzzles/month can't build alone — this remains a narrow supplement to daily Lichess
+> volume for the user's specific recurring mistakes, not a replacement for it.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

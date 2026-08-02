@@ -1,23 +1,35 @@
 # Chess.com Tactics/Blunder Scanner — Design Spec
 
-> ## ⚠️ PARTIALLY SUPERSEDED — 2026-08-01
+> ## ⚠️ SUPERSEDED — deleted, then rebuilt differently (2026-08-01/02)
 >
-> Built, then the puzzle half was deleted. What survives is the *diagnosis* — shipped as
-> `test/chesscom-diagnostic.js`. See `docs/TRAINING_PLAN.md` for what replaced it and
-> STATUS.md for the reasoning.
+> Built, then the puzzle half was deleted over a real ranking-design flaw. The user
+> asked for it back three times; it was rebuilt on 2026-08-02 as a **consumer of the
+> diagnostic's own cache** (no second Stockfish scan) with **fixed category quotas**
+> instead of pure eval-swing ranking, and is now live as the site's third "Tactics" tab
+> — see `CLAUDE.md`'s "Tactics Puzzles" section and STATUS.md for the current design.
+> The *diagnosis* this spec produced also still ships unchanged as
+> `test/chesscom-diagnostic.js`.
 >
-> **Two severe bugs this spec did not anticipate, both found only by running against real
-> games — worth knowing if any of this is ever revisited:**
+> **Three severe bugs this spec did not anticipate, all found only by running against
+> real games — worth knowing if any of this is ever revisited:**
 > 1. Stockfish reports `score mate 0` for *any* position with zero legal moves, which is
 >    ambiguous between checkmate and stalemate. Every checkmate the user *delivered* was
 >    therefore classified as a "missed win." Fixed by disambiguating with chess.js's
 >    `in_checkmate()` on the game's true final move.
 > 2. The mate-severity sentinel (`1000 - mateDistance`) leaked into human-facing text as
 >    nonsense like "drops 988.3 pawns."
+> 3. (found during the 2026-08-02 rebuild) An eval-swing classifier flags a ply from its
+>    before/after eval delta alone, with no check that the played move differs from the
+>    engine's own top choice. ~2% of flagged plies (10/483 on the real archive) had
+>    `correctMoveSan` identical to the move actually played — a fixed-depth search
+>    artifact in already-decided endgames, not a real mistake. Showing "you played X,
+>    correct was X" is nonsensical; now filtered out in `test/build-tactics-puzzles.js`
+>    before puzzle selection runs.
 >
-> Both are fixed in the surviving `tactics-classifier.js`. The lesson generalises: an
-> eval number alone cannot distinguish game-over states, and internal ranking sentinels
-> must never reach display text.
+> All three are fixed (1-2 in the surviving `tactics-classifier.js`, 3 in
+> `build-tactics-puzzles.js`). The lesson generalises: an eval number alone cannot
+> distinguish game-over states or confirm a move was actually wrong, and internal
+> ranking sentinels must never reach display text.
 
 Date: 2026-07-31
 

@@ -169,6 +169,15 @@ merge bookkeeping, since building from an already-scanned cache is cheap and pur
 empty Tactics tab instead of crashing Ponziani/Hippo too. `test/validate.js` includes
 `tactics-puzzles.js` in the legality check when present.
 
+**Gotcha found only by actually using it (2026-08-02):** a tactics puzzle's `baseMoves`
+is the real ply number the mistake happened at in an actual game (up to 105 in this set),
+NOT the small 4-5 used by opening lines. `playBaseMoves()` in `index.html` therefore
+takes a fast path for `currentLine.opening==='tactics'` — it replays all setup moves
+synchronously with no per-move delay/redraw, then updates the board once at the final
+position. Opening lines keep the original animated walk-through (`baseMoves` is small
+there and watching it play out is part of the point) — don't "simplify" that branch away
+too, it's intentionally different behavior for a good reason.
+
 ## Testing
 ```bash
 # Validate all move sequences are legal (parses index.html directly)
