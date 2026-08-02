@@ -649,6 +649,25 @@ var app=(function(){
   }
 
   function playBaseMoves(){
+    // Tactics puzzles set baseMoves to the actual ply number from a real game
+    // (can be 100+), unlike opening lines (baseMoves 4-5) -- animating those
+    // move-by-move at 150ms each would take 15+ seconds just to reach the
+    // puzzle. Jump straight to the position instead; opening lines keep the
+    // animated walk-through since it's short and pedagogically useful there.
+    if(currentLine.opening==='tactics'){
+      isAnimating=true;
+      while(moveIndex<currentLine.baseMoves&&moveIndex<currentLine.moves.length){
+        var san=currentLine.moves[moveIndex];
+        var m=game.move(san);
+        if(!m){console.error('Invalid base move:',san,moveIndex,game.fen());moveIndex++;continue}
+        updateMoveList(m,moveIndex);
+        moveIndex++;
+      }
+      board.position(game.fen(),false);
+      isAnimating=false;
+      playNextAutoOrWait();
+      return;
+    }
     if(moveIndex<currentLine.baseMoves&&moveIndex<currentLine.moves.length){
       isAnimating=true;
       var san=currentLine.moves[moveIndex];
