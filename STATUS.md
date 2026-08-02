@@ -17,12 +17,56 @@ remaining lever requires **no more code**, just tactical reps.
   chess.com mistakes, generated from the diagnostic's cache (see "Diagnostic Command"
   section below) — user-tested live on 2026-08-02, one playback-speed bug found and
   fixed same day, confirmed working since
+- **`docs/training-ledger.html`** — a local (not hosted-elsewhere) reference page with
+  the actual daily/in-game training plan, rebuilt from user feedback into concrete
+  drills and clock-visible triggers. See "Training Ledger" section below.
 - Ponziani mains follow GothamChess's real line (7.Nxg6! 8.Qf3! with the Qxf7# threat); Hippo captures ...dxe5 against every e5 push (never the old ...d5 lock)
 - Gamification (XP, levels, streaks), spaced repetition via localStorage
 - Error reporting synced to Supabase (project: oomuupminexahfipgktd, ap-southeast-1)
 - `move_explanations` table for personalized wrong-move feedback — plus a client-side seed map in index.html (anon key can't write the table; cloud rows merge on top)
 - GitHub Actions keep-alive: 3 runs/day, reads both tables + real DB write, self-re-enables to survive GitHub's 60-day cron auto-disable
 - `test/validate.js` parses index.html directly — can no longer drift out of sync
+
+## Training Ledger (2026-08-02)
+Built `docs/training-ledger.html` — a local, self-contained HTML reference (not an
+Artifact; the user set a standing global rule against those unless explicitly
+requested, now in `~/.claude/CLAUDE.md`) turning the training plan into something
+actually followable day to day. Went through two real revisions from user feedback,
+both instructive:
+
+**First cut rejected — not actionable.** The user's actual words: *"i wont remember
+which move i'm on in the middle of a game. give it to me in actionable terms. this is
+true for everything on this page."* Specific failures:
+- "Watch the clock at move 30" required tracking move count mid-game — reframed
+  around the clock reading itself (already visible constantly): *clock shows under
+  4:00 → slow down on the next move.*
+- "Count the exchange before every capture" was a bare mental-discipline instruction
+  with no trainable mechanism — the user asked directly: *"how do i make this a
+  trainable thing? Lichess puzzles for a particular theme?"* Reframed as the
+  `hangingPiece` + `capturingDefender` Lichess puzzle themes, linked inline in the
+  daily checklist item itself.
+- The Monthly section (diagnostic + tracking table + Lichess Dashboard comparison) was
+  rejected outright: *"I am not going to do this... have it in your memory for what
+  all you need to do on your end."* Removed from the page entirely; captured as a
+  standing memory (`chess-monthly-review-trigger`) so "look at my latest games" (or
+  similar) now triggers the full routine from me, not a checklist for the user.
+- The Supabase housekeeping item was flagged as not belonging on a training page at
+  all — removed (still tracked below in Blockers/Open).
+
+Both corrections were also saved as memories (`chess-monthly-review-trigger`,
+`chess-advice-must-be-actionable-not-mental-discipline`) so future training content in
+this project starts from the corrected bar instead of repeating the mistake.
+
+**A real interaction bug found on self-review, not by the user:** the checklist's
+click-to-toggle handler only excluded the checkbox `INPUT` from re-toggling on click,
+not the inline `<a>` Lichess links added during the actionability rewrite — clicking a
+link silently also marked the habit done as a side effect. Fixed (`tagName === "A"` now
+returns early).
+
+**Lichess theme slugs were verified, not guessed** — fetched `lichess.org/training/themes`
+directly rather than trusting memory for `hangingPiece`, `capturingDefender`,
+`middlegame`, `mateIn1`/`mateIn2`, and the puzzle dashboard path
+(`training/dashboard/30/dashboard`), since a wrong slug would just 404 on the user.
 
 ## Diagnostic Command + Training Plan (2026-08-01)
 Built `test/chesscom-diagnostic.js` — one command that pulls the real chess.com archive,

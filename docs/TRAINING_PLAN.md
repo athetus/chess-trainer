@@ -1,11 +1,20 @@
 # Training Plan — → 1000 chess.com
 
 Derived from measured data, not general chess advice. Every claim below traces to a
-number in the July 2026 baseline (109-game archive). Re-measure monthly and update the
-tracking table:
+number in the July 2026 baseline (109-game archive).
+
+**This is the analytical/Claude-facing document.** The actionable, user-facing version
+is `docs/training-ledger.html` — a local page with concrete drills and in-game triggers
+instead of the raw findings below. Update both when re-measuring.
+
+**Re-measurement is triggered by the user, not run on a schedule they track.** When they
+say something like "look at my latest games," run this and update the tracking table
+myself — they explicitly rejected having a monthly checklist of their own (see
+STATUS.md's "Training Ledger" section, 2026-08-02):
 
 ```
 node test/chesscom-diagnostic.js optimizerprime --months 2
+node test/build-tactics-puzzles.js
 ```
 
 **Use `--months 2`, not `--months 1`.** The flag counts chess.com *archive months*, so
@@ -137,7 +146,7 @@ at — so move 10 is a continuation instead of a cliff.
 Only soft spot: French Defense as White, 25% over 4 games. Too small a sample to act
 on — revisit if it persists across another month of data.
 
-**6. Re-measure monthly.**
+**6. Re-measure monthly (my job, triggered by the user's phrase — not theirs to run).**
 Run the diagnostic, update the table below, and check whether mistakes/game is actually
 falling. If it isn't after two months, the plan is wrong and we change it — that is the
 point of measuring. Judge it on the leading indicators, not on rating: at ~+0.4 rating

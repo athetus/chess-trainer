@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training Ledger — optimizerprime</title>
+<style>
+  :root{
+    --paper:#eef1ee;
+    --paper-raised:#e3e8e1;
+    --paper-card:#f6f8f5;
+    --ink:#1b201d;
+    --ink-soft:#4c534d;
+    --ink-faint:#7c837c;
+    --accent:#1f6f5c;
+    --accent-ink:#0f4438;
+    --accent-soft:#dfebe6;
+    --rule:#c9cec5;
+    --danger:#8f2d2d;
+    --shadow:0 1px 2px rgba(27,32,29,.06),0 6px 20px rgba(27,32,29,.05);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#14170f;
+      --paper-raised:#1b1f16;
+      --paper-card:#191d15;
+      --ink:#e7ece5;
+      --ink-soft:#a7afa2;
+      --ink-faint:#767d72;
+      --accent:#57bd9f;
+      --accent-ink:#bdf0dd;
+      --accent-soft:#1b2d26;
+      --rule:#2c3226;
+      --danger:#e08a7a;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#14170f; --paper-raised:#1b1f16; --paper-card:#191d15;
+    --ink:#e7ece5; --ink-soft:#a7afa2; --ink-faint:#767d72;
+    --accent:#57bd9f; --accent-ink:#bdf0dd; --accent-soft:#1b2d26;
+    --rule:#2c3226; --danger:#e08a7a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ee; --paper-raised:#e3e8e1; --paper-card:#f6f8f5;
+    --ink:#1b201d; --ink-soft:#4c534d; --ink-faint:#7c837c;
+    --accent:#1f6f5c; --accent-ink:#0f4438; --accent-soft:#dfebe6;
+    --rule:#c9cec5; --danger:#8f2d2d;
+    --shadow:0 1px 2px rgba(27,32,29,.06),0 6px 20px rgba(27,32,29,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent-soft);color:var(--accent-ink)}
+  .page{max-width:700px;margin:0 auto;padding:48px 24px 96px}
+  a{color:var(--accent-ink);text-decoration-color:var(--rule);text-underline-offset:3px}
+  a:hover{text-decoration-color:currentColor}
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- letterhead ---------- */
+  .letterhead{border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:36px}
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--serif);font-weight:500;font-size:2.1rem;margin:0 0 6px;
+    text-wrap:balance;letter-spacing:.01em;color:var(--ink);
+  }
+  .subtitle{margin:0;color:var(--ink-soft);font-size:1.02rem}
+  .goal-line{
+    margin-top:16px;display:flex;align-items:baseline;gap:10px;
+    font-family:var(--mono);font-size:.85rem;color:var(--ink-soft);
+  }
+  .goal-line b{font-size:1rem;color:var(--accent-ink);font-weight:600}
+  .goal-arrow{color:var(--ink-faint)}
+
+  /* ---------- section scaffolding ---------- */
+  section{margin-bottom:44px}
+  .section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+  .cadence{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent-ink);background:var(--accent-soft);padding:3px 8px;border-radius:3px;
+    white-space:nowrap;
+  }
+  h2{font-family:var(--serif);font-weight:500;font-size:1.36rem;margin:0;color:var(--ink)}
+  .section-sub{color:var(--ink-soft);font-size:.95rem;margin:8px 0 18px;max-width:60ch}
+
+  /* ---------- checklist ---------- */
+  .checklist{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--rule)}
+  .check-row{
+    display:flex;gap:14px;align-items:flex-start;padding:14px 4px;
+    border-bottom:1px solid var(--rule);cursor:pointer;
+  }
+  .check-row input{
+    appearance:none;-webkit-appearance:none;flex:none;width:19px;height:19px;margin-top:2px;
+    border:1.5px solid var(--ink-faint);border-radius:3px;background:var(--paper-card);
+    position:relative;cursor:pointer;
+  }
+  .check-row input:checked{background:var(--accent);border-color:var(--accent)}
+  .check-row input:checked::after{
+    content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+    border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(40deg);
+  }
+  .check-row .txt{flex:1}
+  .check-row .txt-title{font-weight:600;color:var(--ink)}
+  .check-row.done .txt-title{color:var(--ink-faint);text-decoration:line-through;text-decoration-color:var(--rule)}
+  .check-row .txt-detail{color:var(--ink-soft);font-size:.92rem;margin-top:3px}
+  .check-row .txt-detail em{color:var(--ink);font-style:normal;background:var(--accent-soft);
+    padding:0 4px;border-radius:2px}
+  .streak-note{
+    font-family:var(--mono);font-size:.78rem;color:var(--ink-faint);margin-top:12px;
+  }
+  .subgroup-label{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-faint);margin:26px 0 10px;
+  }
+
+  /* ---------- in-game trigger cards (not checkboxes -- standing rules) ---------- */
+  .trigger-card{
+    border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;
+    background:var(--paper-card);padding:14px 18px;margin-bottom:10px;
+  }
+  .trigger-card .signal{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--accent-ink);display:block;margin-bottom:6px;
+  }
+  .trigger-card .rule{font-weight:600;color:var(--ink);display:block;margin-bottom:4px}
+  .trigger-card .why{color:var(--ink-soft);font-size:.9rem}
+
+  /* ---------- lichess link cards ---------- */
+  .linkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+  .linkcard{
+    display:block;background:var(--paper-card);border:1px solid var(--rule);border-radius:6px;
+    padding:14px 16px;box-shadow:var(--shadow);
+  }
+  .linkcard .k{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-faint);display:block;margin-bottom:6px;
+  }
+  .linkcard .t{font-weight:600;color:var(--ink);display:block;margin-bottom:4px}
+  .linkcard .u{font-family:var(--mono);font-size:.82rem;color:var(--accent-ink)}
+  .linkcard.primary{border-color:var(--accent);border-width:1.5px}
+  .linkcard .d{color:var(--ink-soft);font-size:.88rem;margin-top:6px;display:block}
+
+  /* ---------- data section ---------- */
+  .stat-table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .stat-table th{
+    text-align:left;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-faint);font-weight:500;
+    border-bottom:1px solid var(--rule);padding:0 10px 8px 0;
+  }
+  .stat-table td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  .stat-table td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+  .stat-table td.note{color:var(--ink-soft)}
+  .overflow-wrap{overflow-x:auto}
+
+  .barchart{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .bar-row{display:grid;grid-template-columns:82px 1fr 46px;align-items:center;gap:10px}
+  .bar-label{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft)}
+  .bar-track{background:var(--paper-raised);border-radius:3px;height:14px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+  .bar-fill.danger{background:var(--danger)}
+  .bar-value{font-family:var(--mono);font-size:.82rem;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .squares-block{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .board8{
+    --sq:26px;display:grid;grid-template-columns:repeat(8,var(--sq));grid-template-rows:repeat(8,var(--sq));
+    border:1px solid var(--rule);border-radius:2px;overflow:hidden;flex:none;
+  }
+  .sq{background:var(--paper-card)}
+  .sq.dark{background:var(--paper-raised)}
+  .sq.hot{background:var(--accent);position:relative}
+  .sq.hot::after{content:attr(data-sq);position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-family:var(--mono);font-size:.52rem;color:var(--paper);opacity:.9}
+  .squares-note{color:var(--ink-soft);font-size:.9rem;max-width:34ch}
+  .squares-note b{color:var(--ink)}
+
+  footer{border-top:1px solid var(--rule);padding-top:22px;margin-top:52px;
+    color:var(--ink-faint);font-size:.82rem;font-family:var(--mono);display:flex;
+    justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  @media (max-width:480px){
+    h1{font-size:1.7rem}
+    .board8{--sq:22px}
+    .bar-row{grid-template-columns:66px 1fr 40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="letterhead">
+    <p class="eyebrow">Training ledger · optimizerprime · chess.com rapid</p>
+    <h1>What to actually do</h1>
+    <p class="subtitle">Derived from a Stockfish-audited scan of 109 real games. Everything below is either a drill with a link, or a rule tied to something you can already see mid-game — nothing to remember, nothing to count.</p>
+    <div class="goal-line"><span>822</span><span class="goal-arrow">→</span><b>1000</b><span>· the only outcome this ledger is judged against</span></div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="cadence">Daily</span><h2>Train these</h2></div>
+    <p class="section-sub">Tick these off as you go — the box resets itself the next day it's opened.</p>
+    <div class="checklist" id="dailyList">
+      <label class="check-row" data-key="exchange">
+        <input type="checkbox" />
+        <span class="txt">
+          <span class="txt-title">Exchange-counting reps</span>
+          <span class="txt-detail"><a href="https://lichess.org/training/hangingPiece" target="_blank" rel="noopener">Hanging piece</a> + <a href="https://lichess.org/training/capturingDefender" target="_blank" rel="noopener">Capture the defender</a> themes, ~10–15 puzzles. This is what "count the exchange" turns into as an actual drill instead of something to remember mid-game — <em>38%</em> of your real mistakes are capture-related, clustered on <em>e5 · d5 · f6 · c5 · c4</em>.</span>
+        </span>
+      </label>
+      <label class="check-row" data-key="puzzles">
+        <input type="checkbox" />
+        <span class="txt">
+          <span class="txt-title">General puzzle volume</span>
+          <span class="txt-detail"><a href="https://lichess.org/training" target="_blank" rel="noopener">Mixed, adaptive puzzles</a>, 15–30 min. No theme filter — broad pattern exposure is the actual mechanism. Lichess has millions of these; this repo has 15.</span>
+        </span>
+      </label>
+    </div>
+    <p class="streak-note">Today: <span id="streakCount">0</span>/2 done · last opened <span id="lastOpened">—</span></p>
+
+    <p class="subgroup-label">Also rotate in</p>
+    <div class="linkgrid">
+      <a class="linkcard" href="https://lichess.org/training/middlegame" target="_blank" rel="noopener">
+        <span class="k">Weekly</span>
+        <span class="t">Theme: Middlegame</span>
+        <span class="u">lichess.org/training/middlegame</span>
+        <span class="d">46.6% of your flagged mistakes land in moves 16–30. Swap one session a week for this theme.</span>
+      </a>
+      <a class="linkcard" href="https://lichess.org/training/mateIn1" target="_blank" rel="noopener">
+        <span class="k">Weekly, once easy → mateIn2</span>
+        <span class="t">Theme: Mate in 1</span>
+        <span class="u">lichess.org/training/mateIn1</span>
+        <span class="d">46 allowed mates + 35 missed mates in the latest scan. Once these feel easy, swap the URL's <code>mateIn1</code> → <code>mateIn2</code>.</span>
+      </a>
+      <a class="linkcard" href="https://lichess.org/training/dashboard/30/dashboard" target="_blank" rel="noopener">
+        <span class="k">Whenever curious</span>
+        <span class="t">Your Puzzle Dashboard</span>
+        <span class="u">lichess.org/training/dashboard</span>
+        <span class="d">Lichess's own read on which themes you personally miss most, from your own solved puzzles.</span>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="cadence">In-game</span><h2>Standing rules, not habits to remember</h2></div>
+    <p class="section-sub">Both tied to something you already see during a game — not a move count, not a mental checklist.</p>
+    <div class="trigger-card">
+      <span class="signal">Signal: clock shows under 4:00</span>
+      <span class="rule">Slow down on your next move, especially a capture or a check.</span>
+      <span class="why">Your blunder rate roughly doubles below 4 minutes remaining (13% → 24% under 30s). You already think longer on moves you get wrong than clean ones — this isn't "play faster" or "play slower" in general, it's specifically that under-4:00 moment being the flag.</span>
+    </div>
+    <div class="trigger-card">
+      <span class="signal">Signal: you just lost</span>
+      <span class="rule">Spend 2 minutes on it before queuing the next game.</span>
+      <span class="why">Chess.com's own Game Review, or just scroll back through your own moves. The habit is "before the next game," not "sometime later" — later doesn't happen.</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Why this plan, specifically</h2></div>
+    <p class="section-sub">The data behind the two drills and the two in-game rules above.</p>
+
+    <p style="font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 8px">Blunder rate by clock remaining</p>
+    <div class="barchart">
+      <div class="bar-row"><span class="bar-label">4 min+</span><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="bar-value">13.0%</span></div>
+      <div class="bar-row"><span class="bar-label">2–4 min</span><div class="bar-track"><div class="bar-fill" style="width:20.2%"></div></div><span class="bar-value">20.2%</span></div>
+      <div class="bar-row"><span class="bar-label">1–2 min</span><div class="bar-track"><div class="bar-fill" style="width:20.5%"></div></div><span class="bar-value">20.5%</span></div>
+      <div class="bar-row"><span class="bar-label">under 30s</span><div class="bar-track"><div class="bar-fill danger" style="width:24.2%"></div></div><span class="bar-value">24.2%</span></div>
+    </div>
+
+    <div class="squares-block">
+      <div class="board8" id="board8"></div>
+      <p class="squares-note"><b>e5 · d5 · f6 · c5 · c4</b> — the five squares where captures go wrong most often. Central, contested, exactly where "count the exchange" pays off.</p>
+    </div>
+
+    <div class="overflow-wrap" style="margin-top:22px">
+      <table class="stat-table">
+        <thead><tr><th>Measured</th><th>Value</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr><td>Mistakes / game</td><td class="num">4.4</td><td class="note">~4–5 times a game you drop real material</td></tr>
+          <tr><td>Median mistake size</td><td class="num">2.5 pawns</td><td class="note">a hanging minor piece, not a subtle slip</td></tr>
+          <tr><td>Time on blunders vs. clean moves</td><td class="num">13.9s / 6.8s</td><td class="note">you already think longer on the ones you get wrong</td></tr>
+          <tr><td>Mistakes involving a capture</td><td class="num">38%</td><td class="note">21% bad captures played, 17% good ones declined</td></tr>
+          <tr><td>Errors in the middlegame (16–30)</td><td class="num">46.6%</td><td class="note">right where opening prep runs out</td></tr>
+          <tr><td>Allowed / missed forced mate</td><td class="num">46 / 35</td><td class="note">of 483 flagged mistakes, latest scan</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Baseline: Jul–Aug 2026, 109 games · re-measured whenever you say "look at my latest games" — not your job</span>
+    <span>Live app: athetus.github.io/chess-trainer</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var HOT = ["e5","d5","f6","c5","c4"];
+  var board = document.getElementById("board8");
+  var files = "abcdefgh";
+  for(var r=8;r>=1;r--){
+    for(var f=0;f<8;f++){
+      var sqName = files[f]+r;
+      var div = document.createElement("div");
+      var isDark = (f + r) % 2 === 0;
+      div.className = "sq" + (isDark ? " dark" : "");
+      if(HOT.indexOf(sqName) !== -1){
+        div.className += " hot";
+        div.setAttribute("data-sq", sqName);
+      }
+      board.appendChild(div);
+    }
+  }
+
+  var today = new Date().toISOString().slice(0,10);
+  var KEY = "trainingLedger";
+  var state = {};
+  try{ state = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ state = {}; }
+  if(state.date !== today){ state = { date: today, checks: {} }; }
+  state.checks = state.checks || {};
+
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function refreshCount(){
+    var doneCount = Object.keys(state.checks).filter(function(k){return state.checks[k]}).length;
+    document.getElementById("streakCount").textContent = doneCount;
+  }
+
+  document.querySelectorAll(".check-row").forEach(function(row){
+    var key = row.getAttribute("data-key");
+    var input = row.querySelector("input");
+    input.checked = !!state.checks[key];
+    row.classList.toggle("done", input.checked);
+    row.addEventListener("click", function(e){
+      if(e.target.tagName === "A"){ return; }
+      if(e.target.tagName !== "INPUT"){ input.checked = !input.checked; }
+      state.checks[key] = input.checked;
+      row.classList.toggle("done", input.checked);
+      refreshCount();
+      save();
+    });
+  });
+
+  refreshCount();
+  document.getElementById("lastOpened").textContent = today;
+  save();
+})();
+</script>
+</body>
+</html>

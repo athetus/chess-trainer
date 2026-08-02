@@ -124,6 +124,12 @@ reports what is actually costing rating: time-vs-blunder correlation, blunder ra
 clock remaining, error phase distribution, severity, repertoire coverage, worst games.
 Fill the tracking table in `docs/TRAINING_PLAN.md` after each run.
 
+**This is triggered by the user, not run on a schedule they track.** When the user says
+something like "look at my latest games," run the diagnostic + `node
+test/build-tactics-puzzles.js` + fill the tracking table + report what changed, without
+being asked for each step — they explicitly rejected having a monthly checklist on their
+own reference page (`docs/training-ledger.html`) and want this handled on my end.
+
 - **Use `--months 2`, not `--months 1`.** The flag counts chess.com *archive months*, so
   early in a calendar month `--months 1` returns only the few games played so far. Verified
   on 1 Aug: it produced a one-game report.
@@ -177,6 +183,19 @@ synchronously with no per-move delay/redraw, then updates the board once at the 
 position. Opening lines keep the original animated walk-through (`baseMoves` is small
 there and watching it play out is part of the point) — don't "simplify" that branch away
 too, it's intentionally different behavior for a good reason.
+
+## Training Ledger
+`docs/training-ledger.html` is the user-facing companion to the diagnostic/Tactics work
+above — a local, standalone HTML page (never an Artifact; see the user's global rule in
+`~/.claude/CLAUDE.md`) with the actual daily/in-game plan. Two rules learned from real
+user feedback, both now standing:
+- **Every item must be a concrete drill (named Lichess theme + link) or an in-game
+  trigger tied to something already visible during play (the clock reading) — never a
+  mental habit to remember mid-game.** "Watch the clock at move 30" and "count the
+  exchange before every capture" were both rejected as unfollowable in their first form.
+- **No recurring checklist for the user to run themselves.** The monthly
+  diagnostic/tracking-table routine lives on my side, triggered by a phrase — see "The
+  Monthly Diagnostic" above. Don't add it back to this page.
 
 ## Testing
 ```bash
