@@ -1,238 +1,177 @@
-# Session Handoff - 2026-08-01
+# Session Handoff - 2026-08-02
 
----
-
-# ▶ START HERE NEXT SESSION: rebuild custom puzzles (user-approved)
-
-**Decision reversed at the very end of the session — read this before anything else.**
-
-Earlier in this session the puzzle generator was built and then deleted (reasoning in
-"Built and deliberately deleted" below, and in STATUS.md). The user then raised custom
-puzzles **three separate times**. On the third, after a genuine re-examination, they
-chose **"Build it now, properly."** Their closing point: *"obviously this is remembering
-my end goal."*
-
-**They are right and the earlier deletion was over-corrected on one point.** What I
-under-weighted: their errors are **concentrated, not diffuse** — 38% involve captures,
-clustered on five squares (e5/d5/f6/c5/c4). A narrow specific weakness is exactly where
-a targeted set beats generic volume. Also, nothing off the shelf does this: Lichess
-puzzles come from *other people's* games, and Chess.com Game Review shows your mistakes
-once but is not a repeatable spaced-repetition drill. That gap is real.
-
-**Do not re-litigate this with the user.** They decided, they were asked three times,
-the reasoning is sound. Build it well. It is a *supplement* to Lichess volume, not a
-replacement — that framing still holds.
-
-## The design (worked out but NOT implemented)
-
-### Key architectural insight — do this differently than last time
-The old version ran its own 60-90 minute Stockfish scan. **Don't.** The diagnostic
-already scans and caches to `.chesscom-diagnostic-cache.json` (gitignored). Puzzle
-generation should be a **consumer of that cache** — one scan, two consumers.
-
-**But the cache must be extended first.** As of now `moveRecords` (pushed at
-`test/chesscom-diagnostic.js:114`) persists only:
-```
-gameId, moveNumber, phase, cat, dropPawns, mateMissed, mateAllowed, secondsSpent
-```
-Puzzle construction additionally needs, all already in scope at that push site:
-```
-sanMoves (or just the 0..plyIndex prefix), plyIndex, userColor,
-correctMoveSan, opponent, endTime, timeClass, url
-```
-`correctMoveSan` is the one that needs new work: **the diagnostic never calls
-`engine.bestMoveSan()`** (verified). Add it **only for flagged plies** (~476 of ~2700
-user moves), costing roughly 8 extra minutes on a full run — not 2x.
-
-Extending the cache means the existing cache is stale for puzzle purposes, so a full
-re-scan is required once, in the background, before puzzles can be generated.
-
-### The selection fix — this is what was broken before
-Do **not** rank purely by eval-swing severity. Mate scores are sentinel-encoded
-(`1000 - mateDistance`) so they outrank all material, and last time that filled **all 15
-slots with rare forced-mate positions while 195 instances of the most common error —
-the 1.5-3 pawn hang — never surfaced**.
-
-Use **fixed category quotas** instead, roughly a third each:
-- ~5 mate-related (allowed a forced mate / missed one)
-- ~5 catastrophic material drops (6+ pawns)
-- ~5 of the most common band (1.5-3 pawn hangs) ← the actual leak
-Keep the per-game cap of 2 so one bad game can't dominate. Report anything over quota
-rather than silently dropping it.
-
-### What to restore vs write fresh
-Recoverable from git history (all pushed to origin/main):
-```
-git show 45eeea4:test/chesscom-tactics.js
-git show 45eeea4:test/lib/puzzle-selection.js
-git show 45eeea4:test/lib/puzzle-store.js
-git show 95fe352:tactics-puzzles.js
-git show 95fe352:index.html          # the Tactics tab wiring
-git show df2abea:test/validate.js    # the puzzle validation path
-```
-Branch `worktree-chesscom-tactics-scanner` on GitHub also holds all of it.
-
-`puzzle-store.js` and the index.html wiring can be restored close to as-is.
-`puzzle-selection.js` needs the quota rewrite. `chesscom-tactics.js` should mostly
-*not* come back — its scan loop is superseded by reading the diagnostic cache.
-
-### index.html wiring — 4 edits plus the merge (all were verified working before)
-1. Tab button **with `id="tab-tactics"`**
-2. `switchOpening()` — add a third `$('#tab-tactics').toggleClass('active', op==='tactics')`;
-   it hardcodes one line per tab
-3. `CATEGORIES.tactics` entry — without it `showLineSelector()` renders a correct header
-   over an **empty, unclickable list**
-4. The display-text ternary → 3-way
-5. `ALL_LINES` merge: `TACTICS_PUZZLES.map(l => { l.opening='tactics'; return l })` —
-   **must NOT set `playerColor` or `baseMoves`**. The Ponziani/Hippo maps hardcode those
-   per-array; copying that pattern silently breaks every puzzle's board orientation and
-   auto-play length, since puzzles carry their own per-instance values.
-6. Keep the empty-pool guard in `startDrill()` (added last time) — without it, clicking
-   the tab with zero puzzles dereferences `undefined.id` and crashes.
-
-### Two bugs that MUST NOT regress (both only surfaced against real games)
-1. **Stockfish returns `score mate 0` for any zero-legal-move position** — ambiguous
-   between checkmate and stalemate. This made every checkmate the user *delivered* score
-   as a "missed win." Fix: `replay.in_checkmate()` (chess.js, snake_case) on the game's
-   true final ply, and skip classification for that ply. Stalemate must still be
-   classified normally.
-2. **Never let the mate sentinel reach display text** — it once printed
-   "drops 988.3 pawns." Text must branch on mate-vs-cp before formatting.
-
-Both fixes live in the surviving `test/lib/tactics-classifier.js`; keep using it.
-
-### Acceptance
-- `node test/validate.js` still reports **50 lines, 0 issues** (plus puzzles once generated)
-- All existing tests still pass; tests must `throw` in `assert()`, never `process.exit()`
-- Full scan run in background (60-90 min, silent until the end), then real puzzles committed
-- Manually drill one real puzzle in a browser before calling it done — last time only
-  the empty state was ever verified
-
----
+## The Actual Goal (repeat this to yourself before proposing work)
+**Reach 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026). This repo is
+a means to that end. See `docs/TRAINING_PLAN.md` for the measured plan — daily Lichess
+tactics volume + exchange-counting on captures + clock management through moves 11-20
+are the actual levers; this repo's job is a supporting supplement, not the main event.
 
 ## What We Were Doing
-Started as "read handoff + can you analyse my chess.com profile and make me practice
-where I go wrong — be my chess coach?" Became: design and build a tactics scanner, point
-it at the user's real games, and then **delete half of what was built** because the
-measurements said it wouldn't serve the goal.
+Prior session (2026-08-01) ended with the user re-approving a custom Tactics puzzle
+feature after it had been built and deliberately deleted earlier that same day (ranking
+by eval-swing severity let mate-sentinel scores dominate; see git history / the plan doc
+banners for the full story). This session (2026-08-02, continuing in AFK mode per the
+user's request) built it for real, shipped it, then fixed a real bug the user found on
+first actual use.
 
-**The goal was restated and now leads CLAUDE.md and STATUS.md: reach 1000+ chess.com
-rapid ELO. Currently 822 (was 662 on 1 Jul).** The app is a means, not the end. The user
-explicitly instructed "remember the end goal always" after work drifted into building
-for its own sake, and separately corrected me with "remember elo is exponential."
+## What Was Completed This Session
 
-## What Was Completed (28 commits, pushed to origin/main @ 6e47b15)
+### 1. Rebuilt the Tactics tab (AFK mode, no check-ins requested)
+- Extended `test/chesscom-diagnostic.js`'s cached `moveRecords`/`gameSummaries` with
+  `plyIndex`, raw `evalBefore`/`evalAfter`, `correctMoveSan` (engine best move, fetched
+  only for flagged plies — ~476 of ~3263 this run, +~8 min not 2x) and
+  `sanMoves`/`userColor`/`timeClass` per game. Backward compatible with the existing
+  diagnostic report.
+- New `test/lib/puzzle-selection.js`: fixed category quotas (`mate` /
+  `catastrophic` ≥3 pawns / `common` 1.5-3 pawns, ~5 each) instead of pure severity
+  ranking, so the common band (38%-of-mistakes leak) can't be crowded out again. Both
+  `blunder` and `missed-win` eligible in every bucket. Per-game cap 2. Overflow reported,
+  never silently dropped.
+- New `test/build-tactics-puzzles.js`: reads the diagnostic cache (no second Stockfish
+  scan), joins `moveRecords`+`gameSummaries`, runs selection, writes
+  `tactics-puzzles.js`. **Found and fixed a real data bug against the actual 109-game
+  archive**: ~2% of flagged plies (10/483) had the engine's own best move identical to
+  the move actually played (eval-swing classifier artifact in already-decided endgame
+  races — a fixed-depth search sees further into a bad continuation than the "before"
+  eval did). One such case ("you played Ke4, correct was Ke4") was in the first
+  real-data build; now filtered out before selection runs. Recorded in
+  `tasks/lessons.md`.
+- New `test/lib/puzzle-store.js` (simplified vs. the deleted original — full
+  regeneration each run, no incremental merge bookkeeping, since building from an
+  already-scanned cache is cheap and pure). Puzzle ids are stable
+  (`tactics-<gameId>-ply<plyIndex>`) so localStorage spaced-repetition progress survives
+  regeneration for anything that stays selected.
+- `index.html`: restored the 6-edit Tactics tab wiring (tab button, `switchOpening`,
+  `CATEGORIES.tactics`, `ALL_LINES` merge, display-text ternary, empty-pool guard in
+  `startDrill`), plus a `typeof TACTICS_PUZZLES!=='undefined'` guard so a
+  missing/stale `tactics-puzzles.js` degrades to an empty tab instead of crashing
+  Ponziani/Hippo too.
+- `test/validate.js`: includes `tactics-puzzles.js` in the legality check when present,
+  tolerates its absence otherwise.
+- Full 2-month re-scan run in background (109 games, 0 failures, 483 flagged
+  instances), 15 real puzzles generated and shipped, committed to `main`, pushed,
+  deployment confirmed live via `gh run watch` + cache-busted `curl` (a plain fetch
+  right after push showed the OLD content due to GitHub Pages' CDN cache —
+  don't trust a push-then-immediate-curl check; wait for the Action or cache-bust).
 
-### Built and kept
-`test/chesscom-diagnostic.js` — pulls the real chess.com archive, runs Stockfish over
-every user move, reports what is actually costing rating (time-vs-blunder correlation,
-blunder rate by clock, error phases, severity, repertoire coverage, worst games).
-Libs in `test/lib/`: `chesscom-fetch.js`, `stockfish-engine.js`, `tactics-classifier.js`,
-`diagnostic-analysis.js`. Findings cache to a gitignored JSON; `--report-only` replays instantly.
+### 2. User-reported bug found on first real use, fixed same session
+User: "for each puzzle, it plays every move and then finally gets to the move i need to
+make. it take too long." Root cause: `playBaseMoves()` animates every setup move at
+150ms each. Fine for opening lines (`baseMoves` 4-5, ≤750ms). Broken for tactics puzzles
+— `baseMoves` there is the actual ply number the mistake happened at in a real game (up
+to 105 in this set), so setup alone took 15+ seconds on the deepest puzzles.
 
-### Built and deliberately deleted
-A full puzzle generator (selection, store, orchestrator, index.html Tactics tab,
-validate.js integration). Ranking by eval-swing severity filled all 15 slots with rare
-forced-mate positions while 195 instances of the most common error never surfaced — and
-more fundamentally, chess skill is thousands of stored patterns (Chase/Simon chunking),
-so ~15-50 positions/month can't compete with Lichess's millions. Recoverable:
-`git show 45eeea4:test/chesscom-tactics.js`. Backup branch also pushed:
-`worktree-chesscom-tactics-scanner`.
+Fix: `playBaseMoves()` now takes a fast path when `currentLine.opening==='tactics'` —
+replays all setup moves synchronously with no delay/redraw, updates the board once at
+the final position, then hands off to `playNextAutoOrWait()` exactly as before. Opening
+lines are untouched (that branch is intentionally different — don't merge them back
+into one "simplified" path, see CLAUDE.md's Tactics Puzzles section).
 
-### Docs
-`docs/TRAINING_PLAN.md` (new — measured plan + monthly tracking table), CLAUDE.md,
-STATUS.md, `tasks/lessons.md` (+6 rules), status banners on all three superpowers docs.
+Verified with a standalone Node simulation (chess.js standing in for the real game
+object, no DOM/browser needed) against all 15 real puzzles: each reaches the correction
+ply instantly with the correct FEN, landing exactly on the user's turn. Committed,
+pushed, deployment confirmed live. **User confirmed "looks ok now."**
 
-## The Measurements (109 real games, 476 engine-confirmed mistakes)
-- **4.7 mistakes/game**, median drop 2.5 pawns (a hanging piece)
-- **Blunder moves take 2x LONGER than clean ones** (13.5s vs 6.8s) — "slow down" is the
-  wrong prescription for this player
-- **Blunder rate doubles below 4 min** on the clock (13% → 20-24%); 30% of games end
-  under 2 min; moves 11-20 alone burn 3.4 of the 10 minutes
-- **38% of mistakes involve a capture** (21% bad ones played, 17% good ones declined),
-  clustered on e5/d5/f6/c5/c4 — exchange counting
-- **First mistake lands at median move 10**, exactly where prep ends
-- Repertoire coverage excellent: Hippo 55/55 Black games, Ponziani 19/19 when allowed,
-  Jaenisch line 89% over 9
-- Rating 662 → 822, but rate collapsed from ~+6/game (one 26-game burst) to ~+0.4/game.
-  **ELO is exponential — never extrapolate a rate forward.**
+### 3. Docs reconciled (this pass)
+STATUS.md, CLAUDE.md, and the two `docs/superpowers/{plans,specs}/2026-07-31-*`
+status banners all updated so none of them still describe the Tactics tab as deleted
+or unverified — see the `docs:` commit for the full list.
 
 ## Current State
 | Metric | Value |
-|--------|-------|
-| Git | main @ 6e47b15, clean, pushed |
-| Backup branch on GitHub | worktree-chesscom-tactics-scanner |
-| Tests | 5 files all passing; validate.js still 50 lines / 0 issues |
-| Live app | **Unchanged** — index.html byte-identical to pre-session |
-| Rating | 822, 178 from goal |
-| Supabase pending reports | 35 STILL PENDING (pre-existing) |
+|---|---|
+| Git | main @ 82d0a5f, clean, pushed, deployment confirmed live |
+| Live app | https://athetus.github.io/chess-trainer/ — 65 lines total (50 openings + 15 Tactics) |
+| Tests | `node test/validate.js` — 65 lines, 0 issues. All 6 non-engine test files pass (`chesscom-diagnostic.test.js`, `tactics-classifier.test.js`, `chesscom-fetch.test.js`, `puzzle-selection.test.js`, `build-tactics-puzzles.test.js`, plus `stockfish-engine.test.js` which spawns real Stockfish) |
+| Rating | 822 (unchanged this session — no games played during this work) |
+| Supabase pending reports | 35 STILL PENDING (pre-existing, untouched — see Open below) |
 
 ## Open Bugs / Issues
-- **One game failed the scan** on a 30s Stockfish timeout (1 of 108). Fault isolation
-  skipped it without marking it processed, so it retries. Raise the timeout in
-  `test/lib/stockfish-engine.js` if failures grow.
-- 35 Supabase `error_reports` rows still `pending`; anon key is RLS-blocked from UPDATE.
-  One-liner in STATUS.md Blockers.
-- Parked minor: `stockfish-engine.js` polling recursion isn't cancelled when its own
-  timeout rejects (harmless today — callers exit on error).
+- **35 Supabase `error_reports` rows stuck `pending`** — anon key is RLS-blocked from
+  UPDATE. One-liner in Supabase SQL editor (project `oomuupminexahfipgktd`):
+  `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate
+  future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as
+  `SUPABASE_SERVICE_KEY=...`.
+- **Claude still hasn't personally driven the Tactics tab UI** — no browser automation
+  tool was available in either the build session or this one. Verification has been
+  static checks + logic simulations + the user's own live use, which is solid but not
+  identical to Claude having used it directly. If something subtle surfaces later
+  (visual glitch, a specific puzzle that feels wrong), that's the gap to remember.
+- One game failed the diagnostic scan on a 30s Stockfish timeout once (Jul 16, 1 of
+  108). Did not recur on the Aug 1 re-scan (109/109, 0 failures) — still just a watch
+  item, not worth fixing preemptively.
 
 ## Next Steps (in order)
-**Most are not code. That is the finding, not an omission.**
-1. **Count the exchange before every capture** — 38% of mistakes live there. Narrow and
-   specific; distinct from blanket blunder-checking, which the timing data rules out.
-2. **Daily Lichess puzzle reps**, theme-filtered to forks/pins/exchanges. The chunking
-   mechanism; nothing in this repo substitutes.
-3. **Fewer games, more review** — 108/month without review repeats the same mistake.
-4. **Monthly:** `node test/chesscom-diagnostic.js optimizerprime --months 2`, then fill
-   the tracking table in `docs/TRAINING_PLAN.md`. Judge on leading indicators
-   (mistakes/game, clock at move 30), not rating — at ~+0.4/game a month is noise.
-5. **Optional build:** middlegame plan notes on the 50 existing lines (pawn breaks, piece
-   placement, target). The one build item the research supports, since the first mistake
-   lands where the book ends. A day of chess thinking, not a software project.
-6. Pre-existing: clear the 35 Supabase reports; optional Lichess API token for
-   human-game stats in future repertoire audits.
+**Still mostly not code — this is the finding, not an omission.**
+1. **Keep using the Tactics tab and report anything that looks wrong** via the existing
+   Report button — it flows into the same Supabase pipeline already read each session.
+2. **Daily Lichess puzzle volume remains the primary lever**, not this repo's 15
+   puzzles. Count the exchange before every capture (38% of measured mistakes are
+   capture-related, clustered e5/d5/f6/c5/c4).
+3. **Fewer games, more review** — the diagnostic already names your worst games each
+   run.
+4. **Monthly:** `node test/chesscom-diagnostic.js optimizerprime --months 2`, fill
+   `docs/TRAINING_PLAN.md`'s tracking table, then `node test/build-tactics-puzzles.js`
+   to refresh the Tactics tab with the latest mistakes. Judge on mistakes/game and
+   clock-at-move-30, not rating (still ~+0.4/game, noisy over a single month).
+5. Clear the 35 Supabase reports whenever convenient (not urgent, not blocking
+   anything).
+6. If a future session touches `playBaseMoves()`, keep the two-path split
+   (`opening==='tactics'` fast path vs. animated opening-line path) — see CLAUDE.md.
 
 ## Decisions Made
-- **Puzzle generation deleted, diagnostic kept.** Do not rebuild without re-reading why.
-- **North star is 1000 ELO, not "a better app."** Be willing to tell the user a feature
-  doesn't serve the goal — including one just built.
-- **No GM masterclass/video content** (wrong altitude for hanging-piece errors);
-  **no new opening lines** (coverage already excellent — add *plans* instead).
-- Puzzle-selection's wrapper return shape was kept deliberately (it matched the real
-  caller); the spec's interface line was what was wrong.
+- **Tactics tab: rebuilt, shipped, bug-fixed, user-confirmed working.** Do not
+  re-litigate whether it should exist — it was asked for three times, built, deleted,
+  asked for again, rebuilt with the design flaw actually fixed, and now verified via
+  real use. It remains a supplement to Lichess puzzle volume, not a replacement.
+- **North star is still 1000 ELO, not "a better app."** Willing to say a feature
+  doesn't serve the goal — but this one, done properly, does (concentrated, repeating
+  mistakes on the user's own five most common squares).
+- **No GM masterclass/video content, no new opening lines** — unchanged from prior
+  sessions, still not worth building for a player whose errors are hanging pieces on
+  move 22 with excellent existing repertoire coverage.
 
 ## Warnings / Gotchas
 
 ### New this session
-- **Use `--months 2`, never `--months 1`.** The flag counts chess.com *archive months*;
-  early in a calendar month `--months 1` returns a near-empty report (verified on 1 Aug —
-  one game). Green unit tests did not catch this; running the command did.
-- **Always re-fetch the archive before any trend analysis.** A two-day-old snapshot was
-  missing 8 games, ended mid-dip, and produced a confidently wrong "the climb has stalled"
-  conclusion that reversed on re-fetch.
-- **Stockfish reports `score mate 0` for any zero-legal-move position** — ambiguous
-  between checkmate and stalemate. This made every checkmate the user *delivered* score as
-  a "missed win." Fixed via chess.js `in_checkmate()` on the true final move; don't regress.
-- **Never let ranking sentinels reach display text** — the mate encoding
-  (`1000 - distance`) once surfaced as "drops 988.3 pawns."
-- Installed npm `chess.js` is **snake_case** (`load_pgn`, `in_checkmate`); the CDN build in
-  index.html is a different version.
-- Tests must `throw` in `assert()`, never `process.exit()` — the latter skips `finally`
-  and leaks temp files. Shipped once; took two fix rounds.
-- A full scan is **60-90 min** and prints nothing until the end. Background it with a log.
-- **Four confident claims were wrong this session**, each corrected only by measuring:
-  "openings don't matter," "you're rushing," "you're not in time trouble," "the climb has
-  stalled." Measure before asserting.
+- **A tactics puzzle's `baseMoves` is NOT like an opening line's.** Opening lines use
+  4-5 (quick to animate). Tactics puzzles use the puzzle's real ply index (up to 105
+  here). `playBaseMoves()` in `index.html` has two paths for exactly this reason —
+  don't unify them.
+- **An eval-swing classifier can flag a ply as a mistake even when the played move WAS
+  the engine's own best move** — always filter `playedMove !== correctMoveSan` before
+  presenting something as correctable. Found on ~2% of the real flagged plies, mostly
+  wild endgames where deeper search sees further into an already-bad continuation.
+- **GitHub Pages' CDN caches `index.html` for up to 10 minutes** — a plain `curl` right
+  after a push can show stale content and look like a failed deploy when it isn't. Use
+  `gh run watch <run-id>` to confirm the Action finished, then cache-bust the fetch
+  (`?cb=$(date +%s)`) before concluding anything about what's actually live.
+- **No browser automation tool is available in this environment.** UI changes were
+  verified via: chess.js legality checks of full move sequences, DOM-id existence
+  checks, inline-script syntax checks, and standalone logic simulations reusing chess.js
+  as a stand-in for the real game object. That combination catches a lot but not
+  everything — the setup-speed bug this session only surfaced once the user actually
+  used it.
 
 ### Still true from prior sessions
-- **Ponziani = White, even move-indices = White's moves. Hippo = Black, odd indices.**
-  Audits print White's perspective, so a +0.8 Hippo final is normal, not a bug.
-- **`3.c3` always shows a ~0.5 "drop"** vs Ruy/Italian — that's the Ponziani premise. In
-  trap lines Black's blunder is intentional; only White's refutation must be engine-best.
-- **Lichess opening explorer returns 401 without a personal API token.** Use chessdb.cn
-  (`cdb.php?action=queryall&board=<FEN>&json=1`, no auth) for auth-free DB checks.
-- **validate.js reads index.html between the `function L(...)` marker and the `];`
-  closing HIPPO_LINES.** Restructuring those means updating validate.js's markers.
+- **`--months 2`, never `--months 1`** for the diagnostic — the flag counts chess.com
+  archive months, and `--months 1` early in a calendar month returns a near-empty
+  report.
+- **Always re-fetch the chess.com archive before any trend analysis** — a stale
+  snapshot once produced a confidently wrong "climb has stalled" conclusion.
+- **Never extrapolate a rating rate forward** — ELO is exponential; +160 in July was
+  one 26-game burst, not a repeatable monthly rate (~+0.4/game since).
+- **Stockfish reports `score mate 0` for any zero-legal-move position** — ambiguous
+  between checkmate/stalemate. Fixed via chess.js `in_checkmate()` on the game's true
+  final ply; don't regress (there's now a dedicated regression test for this in
+  `test/chesscom-diagnostic.test.js`).
+- **Never let a ranking sentinel (`1000 - mateDistance`) reach display text** — it once
+  printed "drops 988.3 pawns."
+- Installed `chess.js` (npm) is snake_case (`load_pgn`, `in_checkmate`); the CDN build
+  in `index.html` is different. Don't mix them up in Node code.
 - **Never hand-build FEN strings** — generate from move lists via chess.js.
-- **Cross-check lines against external DBs and the named source**, not just engine walks
-  of the scripted moves.
+- Tests must `throw` in `assert()`, never `process.exit()` — the latter skips `finally`
+  blocks and leaks temp files.
+- `validate.js` reads `index.html` between the `function L(...)` marker and the closing
+  `];` of `HIPPO_LINES`, and now also reads `tactics-puzzles.js` if present — keep both
+  markers in sync with any restructuring.
