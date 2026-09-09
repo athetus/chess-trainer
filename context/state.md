@@ -50,10 +50,12 @@ report.
   UPDATE on the anon key, a known open item).
 
 ## Immediate Next Action
-Two threads open with the user: (1) whether to do a full audit pass on the remaining
-31 pending Supabase rows, and (2) what to actually do about the unused Tactics tab --
-asked the user directly rather than redesigning unprompted (see STATUS.md's session
-log). Otherwise: same as above, next trigger is "look at my latest games."
+Both threads from the last update are closed: (1) the batch audit of the remaining 31
+pending Supabase rows ran (subagent, isolated worktree) -- 0 new bugs, all either
+stale-DB-status or already-sound, see `docs/research/2026-09-09-pending-reports-audit.md`;
+(2) the Tactics tab discoverability question resolved into a shipped "Mix" default tab
+(user's own proposal) plus a multi-move puzzle follow-up feature (also user-driven).
+Nothing open from this thread. Next trigger is "look at my latest games."
 
 ## Blockers
 None active. See STATUS.md's "Open" section for the pre-existing minor watch items

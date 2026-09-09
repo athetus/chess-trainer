@@ -264,10 +264,18 @@ Stockfish:
   sound, just not winning). Exactly the "Result text must match the engine eval"
   failure mode the Tactical Audit Process warns about, caught this time by a live user
   report rather than a proactive audit.
-- The other 31 pending rows were not re-audited today (would need a full Stockfish pass
-  per position); per the dated session logs above most map to content already fixed in
-  git between March and July 2026 -- the DB status is stale, not necessarily the line.
-  Worth a dedicated audit pass if they keep surfacing as "doesn't make sense."
+- The other 31 pending rows were batch-audited by a subagent (isolated worktree, same
+  day) per CLAUDE.md's Tactical Audit Process -- see
+  `docs/research/2026-09-09-pending-reports-audit.md`. **Result: 0 new bugs.** 16 rows
+  were already fixed by an earlier commit (the report is just stale DB bookkeeping);
+  15 check out as sound on a fresh Stockfish pass (depth 20-22). One methodology bug
+  was caught and corrected mid-audit: comparing a report's OWN (possibly stale) FEN
+  against the CURRENT line is invalid for "(end)"-type reports once earlier moves in
+  that line have since been edited -- fixed by regenerating a fresh FEN from the
+  current move list via chess.js instead. So: the repertoire content really is sound
+  across all 33 originally-pending reports; the "doesn't make sense" feeling traces to
+  DB-status staleness (real fixes, unflipped tracking rows) and the two genuine issues
+  already found and fixed above, not to undiscovered bad lines.
 
 **User also asked why the Tactics tab exists as a separate tab when they've never used
 it.** Not defended reflexively -- see conversation for the honest take: the north star
