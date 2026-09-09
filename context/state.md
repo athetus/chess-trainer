@@ -1,63 +1,67 @@
 # Current State
 
 ## Phase
-Post-launch maintenance + monthly measurement cycle. No active feature build — the
-project's own conclusion (see `docs/TRAINING_PLAN.md`) is that the largest remaining
-lever is off-repo (Lichess tactics volume), so this repo's job is: keep the repertoire
-content correct, keep the diagnostic/Tactics pipeline trustworthy, and report real
-findings from the user's actual games when asked.
+Post-launch maintenance + monthly measurement cycle. The project's own conclusion
+(`docs/TRAINING_PLAN.md`) is that the largest remaining lever is off-repo (Lichess
+tactics volume); this repo's job is keeping the repertoire content correct, the
+diagnostic/Tactics pipeline trustworthy, and reporting real findings from the user's
+actual games when asked. A same-day multi-angle review (2026-09-09) added one more
+explicit constraint: don't invest further engineering in the Tactics/Mix tab without
+an actual usage check first (see "Immediate Next Action").
 
 ## Immediate Next Action
-None queued. Next trigger is the user saying something like "look at my latest games"
-again — run `node test/chesscom-diagnostic.js optimizerprime --months 2`, rebuild
-`tactics-puzzles.js`, update `docs/TRAINING_PLAN.md`'s tracking table and `METRICS.md`,
-report.
+Two things are genuinely open, both deliberately left for the user rather than acted
+on unilaterally:
+1. **Check whether the Mix tab / Tactics tab actually get used** before building on
+   either further — no usage metric currently exists to answer this, and the project
+   has already deleted one feature once for being built on this exact kind of
+   unmeasured assumption.
+2. **The user's suspicion that the repertoire is too Stockfish-safe/sterile rather
+   than genuinely Gotham-aggressive is confirmed real and untouched** by anything
+   shipped so far (see `ROADMAP.md`'s Next section). Worth a dedicated session if the
+   user wants to pursue it.
 
-## Recent Changes (2026-09-09 session)
-- Fixed a real bug in `test/chesscom-diagnostic.js`: `mateAllowed` was gated on
-  `cat === 'blunder'`, missing the case where a `missed-win` classification (was
-  winning big, then walked into a forced mate) should also count as `mateAllowed`.
-  Uncaught, this let `scoreToPawns()`'s ~1000-point mate sentinel leak into the
-  "material drop" mean, inflating it 3.5x (10.7 vs the true 3.0). Regression test added
-  in `test/chesscom-diagnostic.test.js`. Fixed cache in place (backed up first as
-  `.chesscom-diagnostic-cache.pre-fix-backup.json`, gitignored) rather than re-running
-  the 60-90 min Stockfish scan.
-- Full 221-game diagnostic scan (Aug-Sep 2026), report corrected and folded into
-  `docs/TRAINING_PLAN.md` and `METRICS.md`.
-- Tactics tab (`tactics-puzzles.js`) rebuilt from the corrected cache.
-- Independent 221-game repertoire-adherence audit (pure move-sequence diff against the
-  live lines in `index.html`, no engine) — found the content itself is correct
-  (validate.js passes, 84% of Ponziani divergence is the opponent going off-book), but
-  two concrete real-game application gaps: Hippo `...a6` played prematurely 45% of the
-  time, and three specific Ponziani decision points (Bg5 poisoned-pawn, Qb3 attack,
-  Countergambit 4.Qa4) missed 100% of the times they came up this window (small sample,
-  2 occurrences each).
-- Created `ROADMAP.md`, `METRICS.md`, `context/` (this directory) — the project-docs
-  skill was overdue; `STATUS.md` existed without them.
+Otherwise: next trigger is the user saying "look at my latest games" — run
+`node test/chesscom-diagnostic.js optimizerprime --months 2`, rebuild
+`tactics-puzzles.js`, update `docs/TRAINING_PLAN.md`'s tracking table and `METRICS.md`.
 
-## Recent Changes (same-day follow-up)
-- Archived the repertoire audit + a dated diagnostic-report snapshot into
-  `docs/research/` (was only in the session scratchpad — real risk of loss).
-- Refreshed every stale number in `docs/training-ledger.html` (was still showing the
-  822/109-games/July figures).
-- Queried Supabase directly: **33 `error_reports` rows are still `pending`**, 2 from
-  this same session. Investigated those 2 with Stockfish: one was a real bug (fixed --
-  `ponz-leonhardt`'s result text claimed "up a clean pawn, winning" at a position that's
-  actually -0.10/dead equal), one was not a bug (`ponz-deviation-sicilian`'s O-O is
-  engine-best; the user's Be2 alternative just isn't in the scripted move order). The
-  other 31 pending rows are NOT re-audited -- STATUS.md's session logs suggest most map
-  to content already fixed in git, but the DB status was never flipped (RLS blocks
-  UPDATE on the anon key, a known open item).
-
-## Immediate Next Action
-Both threads from the last update are closed: (1) the batch audit of the remaining 31
-pending Supabase rows ran (subagent, isolated worktree) -- 0 new bugs, all either
-stale-DB-status or already-sound, see `docs/research/2026-09-09-pending-reports-audit.md`;
-(2) the Tactics tab discoverability question resolved into a shipped "Mix" default tab
-(user's own proposal) plus a multi-move puzzle follow-up feature (also user-driven).
-Nothing open from this thread. Next trigger is "look at my latest games."
+## Recent Changes (2026-09-09, one long session)
+- Fixed a real diagnostic bug (`mateAllowed` misclassification let a mate-sentinel
+  value leak into the "material drop" mean, inflating it 3.5x) with a regression test.
+- Full 221-game diagnostic scan; fresh rating trend (906, peak 940) re-fetched live
+  rather than trusting a self-reported peak.
+- Independent repertoire-adherence audit (move-sequence diff, not engine severity):
+  content is correct, but Hippo `...a6` is played prematurely 45% of the time and
+  three specific Ponziani decision points were missed 100% of the times they came up
+  (small samples). Archived permanently to `docs/research/` (was scratchpad-only).
+- Batch-audited the remaining 31 pending Supabase `error_reports` rows (isolated
+  worktree subagent): 0 new bugs. Combined with 2 live-investigated fresh reports (1
+  real fix — `ponz-leonhardt`'s result-text overclaim — 1 non-bug), all 33
+  originally-pending rows are now verified sound. DB rows themselves stay `pending`
+  (anon key is RLS-blocked from UPDATE — unresolved, see Blockers).
+- Shipped a "Mix" tab (default) pooling Ponziani+Hippo+Tactics by the existing
+  per-line weighted-mistake mechanism, fixing "I forget the Tactics tab exists."
+- Extended Tactics puzzles past their single corrective move into a Stockfish-PV-based
+  resolved sequence (mate in full, or forcing moves until the first quiet move).
+- Created `ROADMAP.md`, `METRICS.md`, this `context/` directory (were missing).
+- **Same-day 4-agent multi-angle review** (code-verifier, 2x architect, general-purpose)
+  of all of the above. Found and fixed: a real UX regression (Mix mode flipped board
+  orientation between reps with no warning — added a "You are playing White/Black"
+  badge); a factual error in my own commit message/STATUS.md (falsely claimed a
+  pre-existing Tactics-tab bug that never existed — I'd misread `CATEGORIES`, stopping
+  one line before its `tactics` entry); a `docs/training-ledger.html` refresh that had
+  been claimed complete but was actually partial (fixed thoroughly this time, verified
+  by an exhaustive grep sweep); a missing STATUS.md entry for the multi-move-puzzle
+  feature. Also surfaced but deliberately not acted on: multi-move puzzles now require
+  exact-PV-move matching across up to 8 plies with no alternate-solution tolerance
+  (code-verifier's design note, low severity, not a regression — worth watching if
+  users report a legitimate alternate move being marked wrong).
 
 ## Blockers
-None active. See STATUS.md's "Open" section for the pre-existing minor watch items
-(stuck `pending` Supabase rows -- now confirmed 33, not fully re-audited; one
-intermittent Stockfish scan timeout — neither is blocking).
+- **Supabase `error_reports`: 33 rows stuck `pending`**, content-verified sound, purely
+  a DB-status problem (anon key is RLS-blocked from UPDATE). Named across multiple
+  sessions now; the fix is a five-minute service-role key drop
+  (`~/Documents/dotenv/chess-trainer.env`, `SUPABASE_SERVICE_KEY=...`) or a manual SQL
+  one-liner the user can run — actually worth doing next time instead of re-noting.
+- One intermittent Stockfish scan timeout (1 game of 108, Jul 16) — a watch item, not
+  blocking, hasn't recurred since.
