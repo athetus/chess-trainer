@@ -1,195 +1,212 @@
-# Session Handoff - 2026-08-02
+# Session Handoff - 2026-09-09
 
 ## The Actual Goal (repeat this to yourself before proposing work)
-**Reach 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026). This repo is
-a means to that end. See `docs/TRAINING_PLAN.md` for the measured analysis and
-`docs/training-ledger.html` for the actionable, user-facing version of the same plan —
-daily Lichess tactics volume + exchange-counting drills + clock-visible in-game triggers
-are the actual levers; this repo's job is a supporting supplement, not the main event.
+**Reach 1000+ chess.com rapid ELO.** Currently **906**, peak touched **940** (was 822 on
+1 Aug 2026, 662 on 1 Jul 2026). Always re-fetch the live chess.com archive before citing
+this number — a peak is not "current," and this session caught the user's own
+self-reported peak being treated as current state. This repo is a supporting supplement;
+the project's own evidence says the biggest remaining lever (daily Lichess tactics
+volume) needs no code. See `docs/TRAINING_PLAN.md` and `METRICS.md`.
 
 ## What We Were Doing
-Continuing from the 2026-08-01/02 AFK session that rebuilt the Tactics puzzle tab (see
-prior handoff content in git history at commit `fb76f72` if needed — this file has been
-rewritten since). This session had two parts:
-
-1. **Verification loop on the shipped Tactics tab.** The user reported it was too slow
-   (animated through every setup move at 150ms each — fine for opening lines'
-   `baseMoves` of 4-5, broken for a tactics puzzle's `baseMoves` which is the real ply
-   number a mistake happened at, up to 105 in this set). Fixed, verified via a
-   standalone chess.js simulation (no browser available), deployed, user confirmed
-   "looks ok now."
-2. **A training reference page, built and then substantially corrected.** User asked
-   for an HTML page capturing the training plan and exact Lichess instructions. Built
-   it as a Claude Artifact first — user immediately corrected: never use the Artifact
-   tool unless explicitly asked, always default to a local file, and made this a
-   **global rule** now in `~/.claude/CLAUDE.md`. Rebuilt as `docs/training-ledger.html`,
-   a real standalone file in the repo. Then a second, more substantive round of
-   feedback: most of the page wasn't actually actionable. See below.
+User opened asking for a thorough audit of recent games ("not following the Gotham
+lines... be thorough"). That single request grew into one long session covering: a
+full diagnostic re-scan, a real bug fix in the diagnostic itself, a repertoire-adherence
+audit, two live chess questions that turned into real content fixes, a UX redesign the
+user proposed mid-conversation, a new puzzle feature, and finally a 4-agent multi-angle
+review of everything shipped that day — which found and fixed several real problems in
+this session's own earlier work. Nothing here is theoretical; every claim below traces
+to a verified check (Stockfish, live Supabase query, or the live deployed site).
 
 ## What Was Completed This Session
 
-### 1. Tactics tab playback-speed fix (see prior commits `8d86747`, `82d0a5f`, `fb76f72`, `0ff1f1f`)
-Already shipped and confirmed working before this session's later work began. No new
-changes here this session beyond re-verifying it's still live.
+### 1. Diagnostic bug fix (commit `758d8b5`)
+`mateAllowed` in `test/chesscom-diagnostic.js` was gated on `cat === 'blunder'`, missing
+the case where a position was winning big and then walked into forced mate (classifies
+as `'missed-win'`, not `'blunder'`). This let `scoreToPawns()`'s ~1000-point internal
+mate-ranking sentinel leak into the "material drop" severity mean, inflating it 3.5x
+(10.7 vs the true 3.0). Fixed with a regression test; patched the existing 221-game
+cache in place (recomputed the pure function from already-cached raw evals, no re-scan
+needed).
 
-### 2. `docs/training-ledger.html` — built, corrected twice, shipped
-**Round 1 (structural):** Published as a Claude Artifact. User: *"never create an
-artifact unless i explicitly ask for 1, i want a local html page. add this to your
-overall claude code settings for me. this is a rule for all projects."* Actions taken:
-- Added a new `## Artifacts` section to `~/.claude/CLAUDE.md` (global, all projects):
-  never use the Artifact tool unless explicitly asked; default to a local file;
-  standalone HTML files need real `<!DOCTYPE html><html><head>...</head><body>` structure
-  since there's no publishing wrapper to add it.
-- Converted the page to `docs/training-ledger.html` with proper document structure.
-- Logged the correction in `tasks/lessons.md` too.
+### 2. Full 221-game diagnostic + repertoire-adherence audit (`758d8b5`, `19f7ab1`)
+Fresh scan, Aug-Sep 2026. Corrected numbers: 4.1 mistakes/game, median drop 2.3 pawns,
+89 allowed / 54 missed forced mates, blunder rate still roughly doubles below 4 min on
+the clock (11.6% → ~20%). Separately, an independent move-sequence-diff audit (not
+engine severity) found the repertoire *content* is correct — `test/validate.js` passes,
+84% of Ponziani-line divergence is the opponent going off-book — but two real
+application gaps: Hippo `...a6` played prematurely 45% of the time it appears, and three
+specific Ponziani decision points (Bg5 poisoned-pawn, Qb3 attack, Countergambit 4.Qa4)
+missed 100% of the times they came up this window (small samples, n=2 each). Both are
+practice gaps, not content gaps — no line edits were needed there. Archived permanently
+to `docs/research/` (was originally scratchpad-only — real risk of loss, since flagged
+by the user directly: "make sure my games are saved properly").
 
-**Round 2 (content — the more important one):** User rejected most of the page's actual
-content as impractical:
-> *"i am not going to do this [Monthly section]... have it in your memory for what all
-> you need to do on your end."*
-> *"this is not practically actionable. i wont remember which move i'm on in the middle
-> of a game. give it to me in actionable terms. this is true for everything on this
-> page."*
-> *"how do i make this a trainable thing? Lichess puzzles for a particular theme? Then
-> add it there."*
+### 3. Two live content bugs found and fixed via direct user reports
+- **`ponz-leonhardt`**: result text claimed "White is up a clean pawn... win the
+  endgame." Stockfish at the exact final position: **-0.10, dead equal**. Fixed the
+  text; moves were already sound.
+- Queried Supabase directly rather than trusting this file's own past claims — found
+  **33 rows still `pending`** (not "35, all processed" as previously stated). Batch-
+  audited all 33 (2 live + 31 via an isolated-worktree subagent): **0 further bugs**,
+  16 already fixed by earlier commits (stale DB status only), 15 confirmed sound.
+  Content is verified clean; the DB rows themselves stay `pending` (RLS blocks UPDATE
+  on the anon key — see Open Bugs).
 
-Fixes:
-- **Monthly section removed entirely.** Diagnostic re-scan + puzzle refresh + tracking
-  table is now triggered by the user saying "look at my latest games" (or similar) and
-  run fully on Claude's side. Saved as memory `chess-monthly-review-trigger`.
-- **Supabase housekeeping item removed** — wrong page for it (still tracked in
-  STATUS.md/Blockers, just not user-facing training content).
-- **Clock-management habit reframed** from move-number-based ("watch the clock at move
-  30") to clock-visible-trigger-based ("clock shows under 4:00 → slow down on your next
-  move"). Moved out of the checkbox daily list into a new non-checkbox "In-game standing
-  rules" section, since it's continuous behavior during play, not a discrete task to
-  tick off.
-- **Exchange-counting habit reframed** from a bare mental-discipline instruction into an
-  actual drill: the `hangingPiece` + `capturingDefender` Lichess puzzle themes, linked
-  inline in the checklist item itself.
-- **Lichess URLs verified, not guessed** — fetched `lichess.org/training/themes`
-  directly to confirm exact slugs (`hangingPiece`, `capturingDefender`, `middlegame`,
-  `mateIn1`/`mateIn2`, `training/dashboard/30/dashboard`) before using them.
-- Saved a second memory, `chess-advice-must-be-actionable-not-mental-discipline`, so
-  future training content in this project starts from this bar rather than repeating
-  the mistake.
-- **Self-caught bug (not user-reported):** the checklist row's click-to-toggle handler
-  excluded the checkbox `INPUT` from re-toggling but not the newly-added inline `<a>`
-  Lichess links, so clicking a link silently also marked the habit done. Fixed with an
-  early return on `tagName === "A"`.
+### 4. Mix tab (commit `fbfe50a`) — user's own proposal, better than what was offered
+User reported never opening the Tactics tab ("I forget it exists"). Rather than a
+bigger redesign, they proposed: pool Ponziani+Hippo+Tactics into one default tab,
+weighted by mistakes, keep the single-category tabs for focused practice. Shipped as
+`#tab-mix` (now default): `getLines()` returns `ALL_LINES` unfiltered when
+`currentOpening==='mix'`, reusing the existing per-line weighted-random selection with
+zero new weighting logic.
 
-### 3. Full re-verification pass (user asked "double check everything")
-Beyond re-running tests and re-checking the live site, read through all six memory
-files in the project's memory system and found two stale ones:
-- `chess-north-star-elo-1000` still said "~700" in its description — current rating is
-  822. Fixed.
-- `chess-custom-puzzles-approved-rebuild` pointed at a `SESSION_HANDOFF.md` "START HERE
-  NEXT SESSION" section that no longer exists (this file has been rewritten twice
-  since). Updated to point at CLAUDE.md's "Tactics Puzzles" section and mark the
-  feature as shipped instead of pending.
+### 5. Multi-move Tactics puzzles (commit `4265210`)
+User: puzzles ending the instant you find the fix show no payoff — "I have no idea
+why I played it." Extended puzzles to continue "until the tactic resolves" (user's own
+choice over a fixed ply count) via a new `StockfishEngine.principalVariationSan()` +
+`resolveFollowUp()`: a PV ending in mate is kept in full, otherwise the opponent's
+immediate reply is always kept and the sequence extends through further forcing
+(capture/check) moves only, capped at 8 plies. Zero changes needed to the drill-playing
+code in `index.html` — it already walks any line's moves generically.
 
-### 4. Docs reconciled (this pass, `update-github`)
-`CLAUDE.md`, `STATUS.md`, `docs/TRAINING_PLAN.md`, `tasks/lessons.md` all updated to
-reflect the ledger's existence, the actionability/no-checklist rules, and the
-monthly-diagnostic-is-my-job workflow change. See commit `3bc2953` for the full list.
+### 6. Same-day 4-agent multi-angle review (commits `19dea0c`, `dc54868`, `da224b2`)
+User asked to double-check everything "from multiple angles... user experience...
+end goal." Dispatched 4 parallel read-only subagents: code-verifier, UX (architect),
+ROI/end-goal alignment (architect), doc consistency (general-purpose). Real findings,
+all fixed same session:
+- **Real UX regression**: Mix mode flips board orientation between reps with no
+  warning (Ponziani=white, Hippo=black, tactics=either, drawn randomly) — real friction
+  for a user who's explicitly said visualizing the board is hard. **Fixed**: new
+  `#color-badge` ("You are playing White/Black") shown above the board on every drill.
+- **A factual error I made and wrote into a commit message**: claimed the Mix-tab fix
+  also fixed a pre-existing Tactics-tab bug. False — `CATEGORIES.tactics` already
+  existed; I'd read the object but stopped one line before that entry and asserted its
+  absence without checking. Corrected the code comment, this file, and logged the
+  lesson in `context/insights.md`.
+- **Doc staleness I'd claimed was fixed but wasn't**: `docs/training-ledger.html` still
+  had the old 822/109-games baseline, mismatched mate counts, and the old blunder-square
+  cluster after I'd said it was fully refreshed. Fixed thoroughly this time, verified
+  with an exhaustive grep sweep.
+- **A missing STATUS.md entry** for the multi-move-puzzle feature (a real, substantial
+  change) — added retroactively.
+- **A duplicate-header bug in `context/state.md`** from an earlier same-day edit
+  (stacked "Immediate Next Action" sections instead of consolidated) — rewritten clean.
+- **ROI review's verdict** (not acted on unilaterally, logged as an open decision): the
+  diagnostic fix and repertoire audit were justified; the Mix tab and especially the
+  multi-move Tactics feature are unverified investment into a tab whose usage is
+  unmeasured, echoing a pattern the project already deleted a feature over once.
+- **UX review's verdict** (also not acted on): the user's suspicion that the repertoire
+  is too Stockfish-safe/sterile rather than genuinely Gotham-aggressive is confirmed
+  real and untouched by anything shipped this session.
+
+### 7. Docs reconciled in depth (this pass, `update-github`)
+`CLAUDE.md` itself had drifted — still cited 822/109-games/the old square cluster, and
+never mentioned the Mix tab or multi-move puzzles despite Mix being the actual default
+experience. Updated "The Actual Goal," "Features," and "Tactics Puzzles" sections.
 
 ## Current State
 | Metric | Value |
 |---|---|
-| Git | main @ `3bc2953`, clean, pushed |
-| Live app | https://athetus.github.io/chess-trainer/ — unchanged this session (playback fix already live from prior session) |
-| New file | `docs/training-ledger.html` — local, standalone, not deployed to GitHub Pages (it's a reference doc, not part of the app) |
-| Tests | Full suite green — `node test/validate.js` (65 lines, 0 issues) + all 6 non-engine test files |
-| Rating | 822 (unchanged — no new games scanned this session) |
-| Memory | 6 files in the project's memory system, all current as of this session; MEMORY.md index up to date |
-| Supabase pending reports | 35 STILL PENDING (pre-existing, untouched) |
+| Git | main @ `a6c2d82`, clean, pushed — verified local/remote match, not assumed |
+| Live app | https://athetus.github.io/chess-trainer/ — verified live (fetched directly, confirmed Mix tab + color badge present, GitHub Pages deploy for the latest commit shown `success` via `gh run view`) |
+| Tests | Full suite green — `node test/validate.js` (65 lines, 0 issues) + all non-engine and engine test files |
+| Rating | 906 (peak 940 at game 126/221 of the current window) |
+| Repertoire content | Verified sound — all 33 originally-pending Supabase reports check out; no line edits made this session |
+| Docs | STATUS.md, ROADMAP.md, METRICS.md, `docs/TRAINING_PLAN.md`, `docs/training-ledger.html`, `context/*.md`, `CLAUDE.md`, `docs/research/*` all current as of this session |
 
 ## Open Bugs / Issues
-- **35 Supabase `error_reports` rows stuck `pending`** — anon key RLS-blocked from
-  UPDATE. One-liner in Supabase SQL editor (project `oomuupminexahfipgktd`):
-  `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';`
-- **Claude still hasn't personally driven either the Tactics tab or the training ledger
-  in a live browser** — no browser automation tool available. Both have been opened via
-  macOS `open` (real rendering, real JS execution) and the Tactics tab has real user
-  confirmation ("looks ok now"); the training ledger has been iterated on via detailed
-  user feedback (implying real use) but no explicit "looks right" confirmation yet on
-  the latest revision.
+- **33 Supabase `error_reports` rows stuck `pending`** — content-verified sound this
+  session, purely a DB-status problem (anon key RLS-blocked from UPDATE). Named across
+  multiple sessions now; actually worth fixing next time rather than re-noting. Either
+  a service-role key at `~/Documents/dotenv/chess-trainer.env`
+  (`SUPABASE_SERVICE_KEY=...`) or a manual SQL one-liner in the Supabase editor
+  (project `oomuupminexahfipgktd`): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';`
+- **Multi-move Tactics puzzles have no alternate-solution tolerance.** Matching the
+  engine's exact PV move at every step (up to 8 plies now, not 1) means a legitimately-
+  equal alternate move could get marked wrong. Known, not yet fixed — low severity per
+  the code-verifier review, watch for a user report before building a fix.
+- **No usage measurement exists for the Mix or Tactics tabs.** The ROI review's core
+  finding: don't invest further engineering in either without first checking if they
+  actually get used.
+- **Claude still hasn't personally driven the app in a live browser** — no browser
+  automation tool available this session either. Verification was: Stockfish checks
+  against real reported positions, JS syntax/logic checks, a faithful port-and-simulate
+  of the flexible-move-order algorithm, the full test suite, and direct fetches of the
+  live deployed site (confirmed content + deploy success, not just "should be live").
 
 ## Next Steps (in order)
-**Still mostly not code.**
-1. **When the user says "look at my latest games"** (or similar): run
+1. **When the user says "look at my latest games"**: run
    `node test/chesscom-diagnostic.js optimizerprime --months 2`, then
-   `node test/build-tactics-puzzles.js`, fill `docs/TRAINING_PLAN.md`'s tracking table,
-   compare leading indicators to the prior entry, and report back in plain terms — see
-   memory `chess-monthly-review-trigger` for the full checklist. Do NOT hand the user a
-   checklist to run themselves.
-2. Keep using the Tactics tab and the training ledger; report anything that looks or
-   feels wrong.
-3. Any new training content for this user must pass the actionability bar: a concrete
-   drill (named Lichess theme + link) or an in-game trigger tied to something already
-   visible during play — never a mental habit to remember mid-game. See memory
-   `chess-advice-must-be-actionable-not-mental-discipline`.
-4. Never use the Artifact tool for this user (or any project) unless they explicitly
-   ask for one — global rule in `~/.claude/CLAUDE.md`.
-5. Clear the 35 Supabase reports whenever convenient.
+   `node test/build-tactics-puzzles.js`, update `docs/TRAINING_PLAN.md`'s tracking
+   table and `METRICS.md`, report in plain terms.
+2. **Ask the user directly whether Mix/Tactics are actually getting used** before
+   shipping any further engineering on either — per the ROI review, don't infer it.
+3. **If the user wants to pursue it**: a real content review of whether the Ponziani/
+   Hippo lines are aggressive/trappy enough to win at ~1000 rated, vs. objectively
+   "fine" but practically passive — confirmed as a real, unaddressed gap this session.
+4. Clear the 33 Supabase `pending` rows whenever convenient (see Open Bugs).
+5. Any new training content for this user: concrete drill (named Lichess theme + link)
+   or a board-visible in-game trigger — never a mental habit, never notation-heavy
+   prose (this user has said reading SAN is genuinely hard for them — route
+   explanations through the app's own interactive board where possible).
 
 ## Decisions Made
-- **Tactics tab: shipped, bug-fixed, user-confirmed working.** Not up for
-  re-litigation.
-- **Training ledger: shipped as a local file, content corrected twice from direct user
-  feedback.** The corrected shape (drills + in-game triggers, no monthly checklist, no
-  Supabase item) is the standard going forward, not a one-off.
-- **Artifacts: never use unless explicitly asked, for any project.** Global rule, not
-  project-specific.
-- **Monthly diagnostic re-measurement is Claude's job, triggered by a user phrase, not
-  a task the user tracks themselves.**
-- **North star is still 1000 ELO, not "a better app" or "a better page."**
+- **Mix tab is now the default landing experience.** Not up for re-litigation without
+  new evidence; the ROI review's ask is to *measure* it, not revert it.
+- **Multi-move Tactics puzzles resolve "until the tactic resolves," not a fixed ply
+  count** — the user's own explicit choice over a simpler fixed-length alternative.
+- **North star is still 1000 ELO**, and the project's own conclusion that Lichess
+  volume is the primary lever, this repo a supplement, still stands — reaffirmed by
+  the ROI review, not revisited.
+- **Repertoire content needs no further edits right now** — all 33 pending reports
+  verified sound; the real gap is application under pressure, not the lines themselves.
 
 ## Warnings / Gotchas
 
 ### New this session
-- **A local standalone HTML file needs its own `<!DOCTYPE html><html><head>...</head>
-  <body>...</body></html>` structure** — there's no publishing wrapper to add it like
-  there is for an Artifact. Forgetting this still often "works" in a browser via
-  HTML5 error-recovery parsing, but don't rely on that.
-- **A container-level click-to-toggle handler must exclude every interactive child
-  element, not just the one you added it for.** Adding inline `<a>` links inside a
-  `<label>`/checkbox row without excluding `A` from the toggle logic caused link clicks
-  to silently also flip the checkbox.
-- **When rewriting user-facing training/habit content, ask "would they actually
-  remember to do this at the moment it matters?"** If the answer depends on tracking
-  something not naturally visible (move count), it will get rejected. Reframe around a
-  signal that's already visible (the clock) or a concrete off-board mechanism (a named
-  puzzle theme + link).
-- **Verify external URLs/slugs before shipping them**, even well-known ones — fetched
-  `lichess.org/training/themes` directly rather than trusting memory for the exact
-  theme slugs.
-- **Re-read the project's own memory files periodically for staleness**, not just
-  project docs — found a stale rating figure and a dead cross-reference this session
-  that would have misled a future session if left uncorrected.
+- **A "was winning, then walked into forced mate" position classifies as `missed-win`,
+  not `blunder`** (`classifyPly()`'s `wasWinningBig` branch fires first) — any code
+  gating on `cat` for mate-related logic must handle both categories, not just
+  `'blunder'`. This exact gap caused the `mateAllowed` bug.
+- **`scoreToPawns()`'s mate sentinel (`±(1000-|mate|)`) must never reach a human-facing
+  number or a bucketing decision without a mate-aware gate** — second time this project
+  has hit this failure class (first: the original deleted puzzle-severity design).
+- **Verify a "pre-existing bug" claim by reading the relevant object in full before
+  asserting it** — a truncated read led to a false claim that made it into a commit
+  message and this file before a same-day review caught it.
+- **A doc-refresh claimed complete should be spot-checked with an exhaustive grep
+  sweep, not just the specific numbers a targeted search happened to catch** —
+  `docs/training-ledger.html` was claimed fully refreshed twice before it actually was.
+- **A same-day append-only editing pattern on a "current state" doc (`context/state.md`)
+  can leave duplicate/stale sections** — periodically rewrite as one coherent snapshot
+  instead of stacking "Recent Changes" sections.
+- **Pooling multiple `playerColor` values into one weighted-random draw needs an
+  explicit orientation signal** — the mechanism working exactly as designed (re-setting
+  board orientation per line) is not the same as it being good UX for a user who
+  struggles to visualize; adversarial UX review, not just functional correctness,
+  caught this.
+- **Absolute counts across measurement windows of different lengths mislead without
+  per-game normalization** — "47 → 89 allowed mates" reads as worse; per-game it's
+  actually a slightly better rate once the window length (108→221 games) is accounted
+  for.
+- **A CDN-fronted static site (GitHub Pages) can show a stale fetch in the same instant
+  as a successful deploy** — a `curl` right at the deploy boundary came back empty;
+  re-fetching seconds later showed the real content. Don't conclude "not live" from one
+  fast check; confirm the deploy's own status (`gh run view`) too.
 
 ### Still true from prior sessions
-- **A tactics puzzle's `baseMoves` is NOT like an opening line's** — it's the real ply
-  number a mistake happened at (up to 105), not 4-5. `playBaseMoves()` has two paths
-  for this reason; don't unify them.
-- **An eval-swing classifier can flag a ply as a mistake even when the played move WAS
-  the engine's own best move** — always check `playedMove !== correctMoveSan` before
-  presenting something as correctable. ~2% of flagged plies on the real archive.
-- **GitHub Pages' CDN caches `index.html` for up to 10 minutes** — a plain `curl` right
-  after a push can show stale content. Use `gh run watch <run-id>` then cache-bust
-  (`?cb=$(date +%s)`) before concluding anything about what's actually live.
-- **No browser automation tool is available in this environment** — verify UI changes
-  via legality/logic simulations, DOM-id checks, syntax checks, and real user
-  confirmation, in that order of reliability.
-- **`--months 2`, never `--months 1`** for the diagnostic — counts archive months, and
-  `--months 1` early in a calendar month returns a near-empty report.
+- **`--months 2`, never `--months 1`** for the diagnostic — counts archive months.
 - **Always re-fetch the chess.com archive before any trend analysis.**
 - **Never extrapolate a rating rate forward** — ELO is exponential.
-- **Stockfish reports `score mate 0` for any zero-legal-move position** — ambiguous
-  between checkmate/stalemate. Fixed via chess.js `in_checkmate()`; regression-tested.
-- **Never let a ranking sentinel (`1000 - mateDistance`) reach display text.**
-- Installed `chess.js` (npm) is snake_case; the CDN build in `index.html` differs.
-- **Never hand-build FEN strings** — generate from move lists via chess.js.
-- Tests must `throw` in `assert()`, never `process.exit()`.
+- **A tactics puzzle's `baseMoves` is the real ply number the mistake happened at**
+  (up to 100+), not 4-5 like an opening line — `playBaseMoves()` has two paths.
+- **An eval-swing classifier can flag a ply even when the played move WAS the engine's
+  best** — always check `playedMove !== correctMoveSan`.
+- **Never hand-build FEN strings** — generate from move lists via chess.js, or use a
+  report's own stored `fen` field directly.
+- Tests must `throw` in `assert()`, never `process.exit()` (found and fixed two more
+  violations this session in files being directly extended).
+- **Never use the Artifact tool for this user unless explicitly asked** — global rule.
 - `validate.js` reads `index.html` between the `L(...)` marker and `HIPPO_LINES`'
   closing `];`, and reads `tactics-puzzles.js` if present — keep markers in sync.
