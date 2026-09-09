@@ -1,7 +1,9 @@
 # Project Status
 
 ## End Goal
-**Reach 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026).
+**Reach 1000+ chess.com rapid ELO.** Currently 906 (peak touched 940 mid-window; was
+822 on 1 Aug, 662 on 1 Jul 2026). See `ROADMAP.md`/`METRICS.md` for the outcome-focused
+summary (added 2026-09-09) — this file stays the detailed session-by-session log.
 
 Everything in this repo is a means to that, not the goal itself. The opening trainer
 (Ponziani as White, Hippopotamus as Black, https://athetus.github.io/chess-trainer/)
@@ -184,6 +186,52 @@ Ran the Stockfish audit across all 18 Hippo lines. Found a systemic problem wors
 - 3 text-only honest reframes: d4-e5-push, c5-break, b5-expand
 Residuals (left for a future deeper rebuild): f5-attack keeps a mid-line ...O-O in its break demo; bh6 depends on White's move order. Both end honestly.
 The 2 model lines that were already correct: hippo-spassky-deep (+0.13), hippo-vs-austrian (+0.20) — active ...Kh7+...f5 play, the template for the rest.
+
+## Session: Diagnostic Bug Fix + Repertoire-Adherence Audit (2026-09-09)
+User asked for a thorough audit of latest games (rating check + "am I actually following
+the Gotham/Hippo lines"), then separately gave standing authorization to run the whole
+pipeline (diagnostic → fixes → doc updates) automatically once a scan lands, without
+waiting for reconfirmation each time — the mandatory `test/validate.js`/audit checks
+still apply regardless, since that authorization covers not asking, not skipping
+correctness checks.
+
+**Real bug found and fixed:** `mateAllowed` in `test/chesscom-diagnostic.js` was gated
+on `cat === 'blunder'`, missing the case where a position was winning big and then
+walked into a forced mate (`classifyPly()` correctly returns `'missed-win'` for that,
+not `'blunder'`). 6 of 917 flagged plies in this scan hit it, each carrying a fake
+~1000-"pawn" `dropPawns` (the internal mate-ranking sentinel) into the "material drop"
+severity bucket — inflating the reported mean drop 3.5x (10.7 vs the true 3.0). Same
+failure class as the Aug 2026 puzzle-severity bug, just a narrower trigger condition
+that slipped through because there was no test for `mateAllowed`/`mateMissed` at all.
+Fixed with a regression test (`test/chesscom-diagnostic.test.js`); patched the existing
+cache in place (recomputing the pure `mateAllowed` function from already-cached raw
+evals, no re-scan needed) rather than re-running the 60-90 min engine pass.
+
+**Full 221-game diagnostic (Aug-Sep 2026) + Tactics tab rebuild**, corrected numbers
+folded into `docs/TRAINING_PLAN.md` and the new `METRICS.md`. Also re-fetched the live
+archive to compute rating trend directly (current 906, peak 940 at game 126/221, then a
+dip — same burst-then-dip shape as the July window, one level up) rather than trust the
+user's own "I think I peaked around 940" framing as current state.
+
+**Independent repertoire-adherence audit** (subagent; pure move-sequence diff of 221
+real games against the parsed `PONZIANI_LINES`/`HIPPO_LINES`, no engine — different
+question from the diagnostic's engine-quality grading): content itself is correct
+(`validate.js` 0 issues; 84% of Ponziani-line divergence is the opponent going
+off-book). Two concrete real-game gaps found: Hippo `...a6` played prematurely 45% of
+the time it's played (highest-volume, most fixable pattern), and three specific
+Ponziani decision points (Bg5 poisoned-pawn, Qb3 attack, Countergambit 4.Qa4) missed
+100% of the times they came up this window (small sample, 2 each). Both are practice/
+repetition gaps, not content gaps — no line edits were needed or made.
+
+**Process gap self-corrected mid-session:** `project-docs` skill should have run at
+session start (STATUS.md existed, ROADMAP.md didn't) and was missed until partway
+through. Ran it late — created `ROADMAP.md`, `METRICS.md`, `context/`.
+
+**A self-review catch worth recording:** an early draft of the game-analysis reply to
+the user misattributed a White move (`Na4` in the `hippo-f5-attack` line) to the user's
+own (Black's) knight play, and cited it as an example of a repositioning-before-the-break
+pattern that doesn't actually appear in any of the three documented Hippo plan lines —
+corrected in the same conversation before it could mislead future drilling.
 
 ## Key Learning
 - **An engine walk of the scripted moves is NOT enough.** It only tests our moves against the scripted opponent replies; it misses (a) stronger opponent replies that refute the whole line and (b) divergence from the named source's actual repertoire. The 2026-07-16 DB+source cross-check found 5 bugs that three prior pure-engine audits had passed. Always cross-check vs chessdb.cn AND the real source (Gotham video/study, Ruddell videos).

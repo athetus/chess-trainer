@@ -107,7 +107,15 @@ async function scanGameForDiagnostic(game, username, deps) {
       const mateMissed = cat === 'missed-win' &&
         beforeUser.mate != null && beforeUser.mate > 0 &&
         !(afterUser.mate != null && afterUser.mate > 0);
-      const mateAllowed = cat === 'blunder' && afterUser.mate != null && afterUser.mate < 0;
+      // Gate on cat !== null (blunder OR missed-win), not just 'blunder' --
+      // "was winning big, then walked into a forced mate" classifies as
+      // missed-win (see classifyPly's wasWinningBig branch), and that is
+      // just as much "allowed a forced mate" as a plain blunder is. Missing
+      // the missed-win case here used to leave afterUser.mate<0 positions
+      // uncounted as mateAllowed, so they fell into the generic material-drop
+      // bucket carrying scoreToPawns()'s ~1000-point mate sentinel as a fake
+      // pawn count -- inflating the reported mean drop by orders of magnitude.
+      const mateAllowed = cat !== null && afterUser.mate != null && afterUser.mate < 0;
       const moveNumber = Math.floor(ply / 2) + 1;
 
       // Only fetch the engine's best move for flagged plies -- puzzle

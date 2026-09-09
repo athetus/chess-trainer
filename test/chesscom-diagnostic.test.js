@@ -200,6 +200,52 @@ async function main() {
     assert(!moveRecords.some(r => r.moveNumber === 2), 'the checkmating move itself must never appear as a moveRecord (would misclassify as a missed win via the mate-0 ambiguity)');
   }
 
+  // --- regression: "was winning big, then walked into a forced mate" must
+  // classify as mateAllowed, not fall through to the generic material-drop
+  // bucket carrying scoreToPawns()'s ~1000-point mate sentinel as a fake pawn
+  // count. Found via a real scan: cp:652 (winning by 6.52) -> mate:-1 (mated
+  // next move) classified as cat:'missed-win' (correct) but mateAllowed:
+  // false (bug -- the old gate required cat==='blunder'), so it landed in
+  // "material drop" with a reported dropPawns of 1005.52, inflating the
+  // report's mean drop by orders of magnitude. ---
+  {
+    const fakeGame = {
+      uuid: 'walked-into-mate-fixture',
+      pgn: '[placeholder]',
+      time_control: '600',
+      time_class: 'rapid',
+      end_time: 1783257898,
+      url: 'https://example.com/game/walked-into-mate-fixture',
+      white: { username: 'FakeUser', result: 'checkmated' },
+      black: { username: 'opponent1', result: 'win' },
+    };
+    const { Chess } = require('chess.js');
+    const g = new Chess();
+    g.move('e4'); g.move('e5');
+    fakeGame.pgn = g.pgn();
+
+    let evalCallCount = 0;
+    const fakeDeps = {
+      makeEngine: () => ({
+        start: async () => {},
+        evalFen: async () => {
+          evalCallCount++;
+          // White's only move (ply 0): before = winning big by cp, after = mated.
+          if (evalCallCount === 1) return { cp: 652, mate: null };
+          return { cp: null, mate: -1 };
+        },
+        bestMoveSan: async () => 'f3',
+        quit: () => {},
+      }),
+    };
+    const { moveRecords } = await scanGameForDiagnostic(fakeGame, 'FakeUser', fakeDeps);
+    const move1 = moveRecords.find(r => r.moveNumber === 1);
+    assert(move1, 'expected a moveRecord for White\'s move 1');
+    assert(move1.cat === 'missed-win', `expected cat 'missed-win' (was winning, no longer winning), got ${move1.cat}`);
+    assert(move1.mateAllowed === true, `expected mateAllowed:true for a missed-win that ends in a forced mate against the user, got ${move1.mateAllowed}`);
+    assert(move1.mateMissed === false, 'mateMissed should be false -- there was no forced mate in the "before" position to miss');
+  }
+
   // --- repertoire check sanity (used by section 6, worth a direct unit test too) ---
   {
     const ponzianiPgn = '[Event "?"]\n\n1. e4 e5 2. Nf3 Nc6 3. c3 Nf6 4. d4 *';

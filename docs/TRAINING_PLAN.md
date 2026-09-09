@@ -23,37 +23,39 @@ verified on 1 Aug, where `--months 1` yielded a single game and a meaningless re
 Two months always gives a usable sample. Add `--report-only` to re-print the last
 report instantly instead of re-running the 60-90 minute engine scan.
 
-## Read this first: still climbing, but the rate has dropped sharply
+## Read this first: peak touched 940, but you're 34 points off it right now
 
-Measured over the full 109-game archive (July + 1 Aug 2026):
+Measured over the full 221-game archive (Aug-Sep 2026, re-fetched 9 Sep 2026):
 
 | | |
 |---|---|
-| Rating 1 Jul 2026 | 662 |
-| Rating now | **822** |
-| Peak | 827, at game 77 of 109 |
-| Quartile averages | 683 → 695 → 769 → **807** |
-| Net over the last 25 games | **+11** |
-| Slope, last 20 games | +86 per 100 games |
-| Slope, last 30 games | −10 per 100 games |
+| Rating start of window (1 Aug 2026) | 822 |
+| Rating now | **906** |
+| Peak | **940**, at game 126 of 221 |
+| Quartile averages | 788 → 834 → 905 → **882** |
+| Net over the last 25 games | **+28** |
+| Slope, last 20 games | +26 per 100 games |
+| Slope, last 30 games | +152 per 100 games |
 
-The shape is: a large burst over games 51-77 (+~130), then a dip to ~788, then a
-recovery back to 822. **Not a plateau — but not the burst rate either.**
+**Same shape as the July window, one level up: a burst, a peak, then a dip that hasn't
+fully recovered.** The 4th quartile average (882) is *below* the 3rd (905) — the peak
+of 940 was touched mid-window and receded, not held. The most recent game sits at 906,
+partway back up from the dip but still 34 below peak. This is exactly why "rating now"
+must always be the freshest single number, not the peak — a session that opened with
+"I've reached 940" was 34 points stale; re-fetching is what caught it, per the standing
+rule below.
 
-**Rating is exponential, and the deceleration is already visible.** During the burst
-the gain was roughly **+6 rating per game**. Over the last 25 games it is about
-**+0.4 per game** — a 15x slowdown. Early points came from the rating settling toward
-true strength and from fixing gross leaks; 820 → 1000 is a harder regime because
-opponents here stop handing over free material, so you have to stop giving it away
-rather than wait to receive it.
-
-**Realistic projection:** at the recent rate, 178 more points is on the order of
-**400+ games, i.e. several months** — and it will likely decelerate further. Any plan
-that assumes the July headline number repeats is wrong.
+**Still net positive and still the right direction.** +84 over the 2-month window,
+landing you 94 points from target — the closest this project has measured. But treat
+"almost there" as 94 points of harder opponents, not a formality: the whole premise of
+this plan (820→1000 is harder than 662→820 because opponents stop handing over material)
+still holds, and this window's own dip after the peak is direct evidence of it.
 
 > Methodology note: an earlier version of this file claimed the climb had stalled
 > outright. That was an artifact of analysing a stale archive snapshot that ended
-> mid-dip. Always re-fetch before drawing trend conclusions.
+> mid-dip. Always re-fetch before drawing trend conclusions — this window's own
+> peak-then-dip shape is the same trap in miniature: report the current number, not
+> the best number seen so far.
 
 ## The diagnosis
 
@@ -133,18 +135,30 @@ times. Cut to 1-2/day and actually look at the one you lost. The monthly diagnos
 names your worst games specifically for this.
 
 **5. Keep drilling the openings, but extend the exit — don't add lines.**
-The Hippo appears in **100%** of your Black games (55/55, ~55% win rate). The Ponziani
-appears in **35%** of White games (19/54) — and in **19 of 19** where the opponent
-allowed 1.e4 e5 2.Nf3 Nc6 — with the Jaenisch Counterattack line scoring **89% over 9
-games**. This prep works.
+Updated 9 Sep 2026, 221-game repertoire-adherence audit (pure move-sequence diff
+against the live lines in `index.html`, no engine): Hippo appears in **96%** of Black
+games (107/111, 50% win rate). Ponziani appears in **35%** of White games that reach
+the actual tabiya (38/110) — opponents decline it the other 65% of the time — and in
+**100%** of the games where the opponent allows 1.e4 e5 2.Nf3 Nc6 (38/38). The content
+itself is correct: `validate.js` passes 0 issues, and of the 38 reached Ponziani games,
+**84% of the divergence from book lines is the opponent going off-script**, not you.
 
-The gap is not coverage, it's the exit: your **first mistake comes at median move 10**,
-right where the book ends. Rather than adding new openings, know the *plan* for each
-line you already drill — the pawn breaks, which pieces belong where, what you're aiming
-at — so move 10 is a continuation instead of a cliff.
+**The repertoire's own content isn't the gap — applying it live is.** Two concrete,
+measured patterns:
+- **Hippo `...a6`: played prematurely (before White's knight can even reach b5) in
+  45% of the 96 times it was played.** This is a discipline gap, not a knowledge gap —
+  the line data already marks it conditional correctly; it's the habit under time
+  pressure that's off. Highest-volume, most fixable single pattern in this audit.
+- **Three specific Ponziani decision points, each missed 100% of the times they came
+  up this window** (small samples, 2 occurrences each): the Bg5 poisoned-e4-pawn idea
+  (played Ng5/Bb5+ instead), the Qb3 attack after 4.d4 exd4 5.e5 Nd5 (played cxd4/Bc4
+  instead), and 4.Qa4 in the 3...d5 Countergambit (played 4.d4 instead). Worth extra
+  reps on those three specifically via the app's own spaced repetition, not new content.
 
-Only soft spot: French Defense as White, 25% over 4 games. Too small a sample to act
-on — revisit if it persists across another month of data.
+Your **first mistake still comes at median move 10** (from the July measurement — worth
+re-checking next cycle), right where the book ends. Know the *plan* for each line you
+already drill — the pawn breaks, which pieces belong where, what you're aiming at — so
+move 10 is a continuation instead of a cliff.
 
 **6. Re-measure monthly (my job, triggered by the user's phrase — not theirs to run).**
 Run the diagnostic, update the table below, and check whether mistakes/game is actually
@@ -157,11 +171,20 @@ per game, a single month of rating movement is mostly noise.
 | Month | Rating (end) | Mistakes/game | Clock after move 30 | Games under 2 min | Allowed mates |
 |---|---|---|---|---|---|
 | Jul 2026 (baseline) | 822 | 4.7 | 3.1 min | 30% | 47 |
+| Aug-Sep 2026 (221 games) | 906 (peak 940) | 4.1 | 2.9 min | 31% | 89 |
 | | | | | | |
 
-**Targets for the next measurement:** mistakes/game under 4.0, clock after move 30
-above 4 min, games ending under 2 min below 20%, allowed forced mates under 30.
-Rating is the lagging indicator — these are the leading ones and should move first.
+**Read "Allowed mates" per-game, not as a raw count** — the Aug-Sep row covers 221
+games (2 months) vs July's 108 (1 month), so 89 vs 47 is actually a slightly *better*
+per-game rate (0.40 vs 0.44), not a doubling. The absolute-count target below inherited
+the July 1-month basis and needs updating to a per-game or per-month-normalized target
+next time this table gets a third row.
+
+**Targets for the next measurement:** mistakes/game under 4.0 (now **4.1** — nearly
+there), clock after move 30 above 4 min (now **2.9**, still the biggest gap), games
+ending under 2 min below 20% (now **31%**, unmoved from baseline), allowed forced
+mates under ~0.35/game (now **0.40/game** — close but not yet). Rating is the lagging
+indicator — these are the leading ones and should move first.
 
 Do **not** extrapolate July's +160 forward. It was earned in a single ~26-game burst
 (games 51-77); the rate since is roughly +0.4 rating per game, a 15x slowdown. Gains
