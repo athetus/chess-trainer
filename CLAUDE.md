@@ -1,14 +1,20 @@
 # Chess Opening Trainer
 
 ## The Actual Goal (read this before proposing work)
-**Get the user to 1000+ chess.com rapid ELO.** Currently 822 (was 662 on 1 Jul 2026).
+**Get the user to 1000+ chess.com rapid ELO.** Currently 906, peak touched 940 (was 822
+on 1 Aug 2026, 662 on 1 Jul 2026) — always re-fetch the live chess.com archive before
+citing this number; a peak is not "current," see `docs/TRAINING_PLAN.md`'s methodology
+notes for why that distinction has mattered twice.
 The app is a means to that end, not the end itself. Judge every proposed feature against
 whether it moves that number — and be willing to say "this doesn't," including about
 things already built. See `docs/TRAINING_PLAN.md` for the measured plan.
 
-**The evidence says the biggest remaining lever needs no code.** Measured over 109 real
-games: 4.7 significant mistakes/game, blunder rate doubling below 4 min on the clock, and
-38% of mistakes involving a capture, clustered on five squares (e5/d5/f6/c5/c4). Chess
+**The evidence says the biggest remaining lever needs no code.** Latest measurement
+(221 games, Aug-Sep 2026; see `METRICS.md` for the full table): 4.1 significant
+mistakes/game, blunder rate roughly doubling below 4 min on the clock, and 38% of
+mistakes involving a capture, clustered on five squares (currently d5/e5/g5/f5/d4 —
+this cluster shifts month to month, always check `METRICS.md` rather than citing a
+fixed list from memory). Chess
 skill is stored patterns numbering in the thousands (Chase/Simon chunking) — that needs
 puzzle *volume*, which Lichess supplies free at a scale this repo never could. **Daily
 Lichess puzzle volume remains the primary lever; do not deprioritize it in favor of this
@@ -58,6 +64,17 @@ Everything is inline in `index.html`:
 - **Flexible move order** — Hippo lines accept setup moves in any order
 - **Speed tracking** — avg seconds per move shown in stats and result screen
 - **Chess.com green board** — #EEEED2 / #769656 square colors with yellow highlights
+- **Mix tab (default landing tab, added 2026-09-09)** — pools Ponziani+Hippo+Tactics
+  into one weighted-random draw using the same per-line error/perfect weighting as the
+  single-category tabs, so whichever content the user is actually getting wrong
+  surfaces more often automatically. Shipped specifically because the user reported
+  never opening the separate Tactics tab ("I forget it exists"). Ponziani/Hippo/Tactics
+  tabs remain available unchanged for focused single-category practice.
+- **Color badge** — "You are playing White/Black" shown above the board on every drill
+  start (`#color-badge` in index.html). Added alongside Mix: pooling three tabs whose
+  `playerColor` differs (Ponziani=white, Hippo=black, Tactics=either) means board
+  orientation can now flip between reps with no other warning; this makes the flip
+  explicit rather than relying on the user to notice piece colors.
 
 ## Opening Lines
 - **32 Ponziani lines** — main lines (Nxg6+Qf3 mate threat), GothamChess Qb3 attack, traps (incl. the Bd7/Bg4 queen-sac), countergambit, beginner punishments, 3 deviation lines (Petrov, Alekhine, Sicilian Alapin)
@@ -170,10 +187,25 @@ Every run fully regenerates `tactics-puzzles.js` from the current cache — no i
 merge bookkeeping, since building from an already-scanned cache is cheap and pure.
 
 `index.html` loads `tactics-puzzles.js` via `<script src="tactics-puzzles.js">` and merges
-`TACTICS_PUZZLES` into `ALL_LINES` as the third tab. Guarded with
-`typeof TACTICS_PUZZLES!=='undefined'` so a missing/not-yet-generated file degrades to an
-empty Tactics tab instead of crashing Ponziani/Hippo too. `test/validate.js` includes
-`tactics-puzzles.js` in the legality check when present.
+`TACTICS_PUZZLES` into `ALL_LINES` as the Tactics tab (and, since 2026-09-09, into the
+default **Mix** tab's pool alongside Ponziani/Hippo — see "Features" above). Guarded
+with `typeof TACTICS_PUZZLES!=='undefined'` so a missing/not-yet-generated file
+degrades to an empty Tactics tab instead of crashing Ponziani/Hippo too.
+`test/validate.js` includes `tactics-puzzles.js` in the legality check when present.
+
+**Multi-move follow-up sequences (added 2026-09-09).** A puzzle no longer necessarily
+ends the instant the corrective move is found — `test/lib/tactics-classifier.js`'s
+`resolveFollowUp()` extends it with a Stockfish PV "until the tactic resolves": a PV
+ending in forced mate is kept in full, otherwise the opponent's immediate reply is
+always kept and the sequence extends through further forcing (capture/check) moves
+only, hard-capped at 8 plies. `test/build-tactics-puzzles.js`'s `attachFollowUps()`
+fetches this only for the ~15 already-selected puzzles (not the hundreds of flagged
+instances they're chosen from), gracefully leaving a puzzle at its original single-move
+length on any engine error or PV/correctMoveSan disagreement. Needed zero changes to
+the drill-playing code in `index.html` — it already walks any line's `moves` array
+generically. **Known limitation, not yet fixed:** the drill requires matching the
+engine's exact PV move at every step with no alternate-solution tolerance, now across
+up to 8 plies instead of 1 — a legitimately-equal alternate move can be marked wrong.
 
 **Gotcha found only by actually using it (2026-08-02):** a tactics puzzle's `baseMoves`
 is the real ply number the mistake happened at in an actual game (up to 105 in this set),
