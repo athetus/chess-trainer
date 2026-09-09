@@ -107,7 +107,8 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
   <header>
     <h1>Chess Opening Trainer</h1>
     <div class="tab-bar">
-      <button id="tab-ponziani" class="active" onclick="app.switchOpening('ponziani')">Ponziani (White)</button>
+      <button id="tab-mix" class="active" onclick="app.switchOpening('mix')">Mix</button>
+      <button id="tab-ponziani" onclick="app.switchOpening('ponziani')">Ponziani (White)</button>
       <button id="tab-hippo" onclick="app.switchOpening('hippo')">Hippo (Black)</button>
       <button id="tab-tactics" onclick="app.switchOpening('tactics')">Tactics</button>
     </div>
@@ -498,7 +499,7 @@ var app=(function(){
   var board,game,currentLine,moveIndex,selectedSquare;
   var playerMoveCount,playerCorrectCount,hintUsed,hintsUsedCount;
   var sessionCorrect=0,sessionTotal=0,sessionCompleted=0,perfectStreak=0;
-  var currentOpening='ponziani';
+  var currentOpening='mix';
   var isAnimating=false;
   var lineSelectMode=false;
   var autoAdvanceTimer=null;
@@ -607,13 +608,24 @@ var app=(function(){
 
   function switchOpening(op){
     currentOpening=op;
+    $('#tab-mix').toggleClass('active',op==='mix');
     $('#tab-ponziani').toggleClass('active',op==='ponziani');
     $('#tab-hippo').toggleClass('active',op==='hippo');
     $('#tab-tactics').toggleClass('active',op==='tactics');
     hideLineSelector();startDrill();
   }
 
-  function getLines(){return ALL_LINES.filter(function(l){return l.opening===currentOpening})}
+  // 'mix' pools every line (Ponziani + Hippo + Tactics) into one weighted-random
+  // draw -- same selectWeightedLine()/getLineStats() mechanism the single-opening
+  // tabs already use (errors raise a line's weight, perfects lower it), just over
+  // the full set instead of one category. Each line is fully self-describing
+  // (playerColor drives board orientation, opening drives the tactics fast-path in
+  // playBaseMoves()), so no per-item special-casing was needed to support this --
+  // see startDrill()/playBaseMoves() for where those per-item checks already live.
+  function getLines(){
+    if(currentOpening==='mix')return ALL_LINES;
+    return ALL_LINES.filter(function(l){return l.opening===currentOpening})
+  }
 
   function startDrill(specificLine){
     if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null}
@@ -1018,24 +1030,42 @@ var app=(function(){
     lineSelectMode=true;
     var lines=getLines();
     var cats=CATEGORIES[currentOpening]||[];
-    var openingLabel=currentOpening==='ponziani'?'Ponziani':(currentOpening==='hippo'?'Hippo':'Tactics');
+    var openingLabel=currentOpening==='mix'?'Mix':(currentOpening==='ponziani'?'Ponziani':(currentOpening==='hippo'?'Hippo':'Tactics'));
     var html='<h3>'+openingLabel+' Lines ('+lines.length+')</h3>';
-    cats.forEach(function(cat){
-      var catLines=lines.filter(function(l){return l.cat===cat.key});
-      if(!catLines.length)return;
-      html+='<div class="cat-label">'+cat.label+' ('+catLines.length+')</div>';
-      catLines.forEach(function(l){
-        var ls=getLineStats(l.id);
-        var acc=ls.attempts>0?Math.round((ls.perfect/ls.attempts)*100)+'% perfect':'New';
-        var stars=ls.mastery>=3?'***':ls.mastery>=2?'**':ls.mastery>=1?'*':'';
-        html+='<div class="line-item'+(l.isTrap?' trap':'')+'" onclick="app.selectLine(\''+l.id+'\')">';
-        html+='<div class="line-info"><div class="line-title">'+l.name+'</div>';
-        if(l.isTrap)html+='<span class="line-tag">TRAP</span>';
-        html+='</div>';
-        if(stars)html+='<span class="stars">'+stars+'</span>';
-        html+='<span class="line-acc">'+acc+'</span></div>';
+    function renderLine(l){
+      var ls=getLineStats(l.id);
+      var acc=ls.attempts>0?Math.round((ls.perfect/ls.attempts)*100)+'% perfect':'New';
+      var stars=ls.mastery>=3?'***':ls.mastery>=2?'**':ls.mastery>=1?'*':'';
+      html+='<div class="line-item'+(l.isTrap?' trap':'')+'" onclick="app.selectLine(\''+l.id+'\')">';
+      html+='<div class="line-info"><div class="line-title">'+l.name+'</div>';
+      if(l.isTrap)html+='<span class="line-tag">TRAP</span>';
+      html+='</div>';
+      if(stars)html+='<span class="stars">'+stars+'</span>';
+      html+='<span class="line-acc">'+acc+'</span></div>';
+    }
+    if(cats.length){
+      // Ponziani/Hippo: group by their own sub-categories (main/trap/... or vs-e4/threats/...).
+      cats.forEach(function(cat){
+        var catLines=lines.filter(function(l){return l.cat===cat.key});
+        if(!catLines.length)return;
+        html+='<div class="cat-label">'+cat.label+' ('+catLines.length+')</div>';
+        catLines.forEach(renderLine);
       });
-    });
+    }else{
+      // Tactics has no sub-categories at all, and Mix spans all three openings whose
+      // sub-category keys don't share a vocabulary (Ponziani's 'trap' vs Hippo's
+      // 'threats' vs Tactics' 'blunder'/'missed-win' aren't the same axis) -- group by
+      // opening instead so the list isn't either empty (the pre-Mix bug: CATEGORIES has
+      // no 'tactics' key, so this whole menu silently rendered nothing on that tab) or
+      // one flat unlabelled wall of 65 items.
+      var openingGroupLabel={ponziani:'Ponziani',hippo:'Hippo',tactics:'Tactics'};
+      ['ponziani','hippo','tactics'].forEach(function(op){
+        var opLines=lines.filter(function(l){return l.opening===op});
+        if(!opLines.length)return;
+        if(currentOpening==='mix')html+='<div class="cat-label">'+openingGroupLabel[op]+' ('+opLines.length+')</div>';
+        opLines.forEach(renderLine);
+      });
+    }
     $('#line-selector').html(html).slideDown(200);
   }
 
