@@ -293,12 +293,90 @@ default landing tab -- `getLines()` returns `ALL_LINES` unfiltered when
 `currentOpening==='mix'`, reusing the existing per-line weighted-random selection
 (`getLineStats()`/`selectWeightedLine()`) with no new weighting logic needed, since
 every line was already self-describing enough (playerColor, opening, cat) for this to
-just work. Also fixed a real bug found while in this code: `showLineSelector()`'s
-manual "Lines" menu only rendered items grouped by `CATEGORIES[currentOpening]`, which
-has no `'tactics'` key -- so that menu has silently shown an empty list on the Tactics
-tab for as long as the tab has existed. Fixed with an opening-grouped/flat fallback.
+just work. Also extended `showLineSelector()`'s category-grouping fallback for the new
+`'mix'` tab, which has no `CATEGORIES` entry of its own (correctly -- its lines span
+three vocabularies that aren't the same axis).
+
+**Correction (caught by a multi-angle review, same day):** the commit message and this
+file originally also claimed this fixed a pre-existing bug on the Tactics tab itself
+("the Lines menu has silently shown an empty list... for as long as the tab has
+existed"). That was false -- `CATEGORIES.tactics` already existed
+(`blunder`/`missed-win` keys, matching every tactics puzzle's actual `cat` field), so
+the Tactics tab was never broken; only `'mix'` genuinely lacked a `CATEGORIES` entry. I
+never actually read far enough into the `CATEGORIES` object to check before asserting
+this (my read was truncated one line before the `tactics:[...]` block began) --
+confirmed and corrected via `git blame`/direct inspection, not by trusting the earlier
+claim. The code fix itself was still correct and necessary for Mix; only the stated
+rationale was wrong. See `context/insights.md` for the lesson.
 `node test/validate.js` — 0 issues; full JS syntax-checked (extracted the inline
 `<script>` block, `node --check`).
+
+## Session: Multi-Move Tactics Puzzles (2026-09-09, same day)
+**Missed from STATUS.md the first time -- added retroactively after a same-day
+multi-angle review caught the gap** (see below). User's complaint: every Tactics
+puzzle ended the instant you found the corrective move, no opponent reply or
+follow-up, so there was no visible payoff proving the move mattered. Extended puzzles
+to continue "until the tactic resolves" (user's own choice over a fixed-length
+alternative) via a new `StockfishEngine.principalVariationSan()` and
+`resolveFollowUp()` (`test/lib/tactics-classifier.js`): a PV ending in forced mate is
+kept in full; otherwise the opponent's immediate reply is always kept, extended in
+(your move, their reply) pairs only while your move stays forcing (capture/check),
+hard-capped at 8 plies. New async `attachFollowUps()` step in
+`test/build-tactics-puzzles.js`, run only over the ~15 already-selected puzzles (not
+the hundreds of flagged instances), gracefully degrading to a single-move puzzle on
+any PV disagreement or engine error. Needed zero changes to the drill-playing code in
+`index.html` -- it already walks any line's `moves` array generically. On the real
+221-game cache: 10/15 puzzles got a genuine multi-move follow-up (1-8 plies). Full
+test coverage added (`resolveFollowUp` unit tests, `attachFollowUps` fake-engine
+tests, `principalVariationSan` real-Stockfish tests). `node test/validate.js` — 0
+issues.
+
+## Session: Multi-Angle Review of the Whole Day's Work (2026-09-09, same day)
+User asked for a review "from multiple angles" — dispatched 4 parallel read-only
+subagents (code-verifier, 2x architect, general-purpose) covering correctness, UX from
+this specific user's stated traits, end-goal ROI alignment, and doc consistency. Real
+findings, all addressed same session:
+- **Correctness (code-verifier): PASS, one factual comment error found** -- the
+  Mix-tab fix's justification wrongly claimed a pre-existing Tactics-tab bug; see the
+  correction above and `context/insights.md`. No functional bugs, no data loss risk,
+  all tests genuinely re-run and passing. Noted design limitation (not a regression):
+  multi-move puzzle follow-ups now require exact-PV-move matching with no alternate-
+  solution tolerance across up to 8 plies instead of 1.
+- **UX (architect): a real regression found.** Mix mode flips board orientation
+  every rep (Ponziani=White, Hippo=Black, drawn randomly) with no signal beyond the
+  board itself -- real added friction for a user who has explicitly said visualizing
+  the board is hard for them. Fixed (see below). Also confirmed: trait "wants
+  aggressive/tricky lines, distrusts sterile engine-safety" remains genuinely
+  unaddressed by anything shipped today -- not a code problem, a repertoire-content
+  question for a future session.
+- **End-goal ROI (architect): the diagnostic fix and repertoire audit were justified
+  (integrity work, falsifiable findings); the Mix tab and especially the multi-move
+  Tactics feature are unverified engineering investment into a tab whose low usage is
+  still unmeasured** -- direct tension with CLAUDE.md's own "Tactics tab is a
+  supplement, do not deprioritize Lichess" framing, and echoes the exact evidence-free-
+  feature-building pattern a past feature was deleted over. No usage metric exists to
+  check whether Mix actually gets opened more than the old Tactics tab did.
+  Opportunity cost named explicitly: the Supabase RLS/service-key fix (five minutes,
+  named across multiple sessions) stayed undone while this shipped instead.
+- **Doc consistency (general-purpose): 4 real inconsistencies found**, all from this
+  same day's own edits -- `docs/training-ledger.html` was NOT actually fully refreshed
+  despite an earlier claim that it was (footer still said "109 games," the stat table
+  showed numbers matching neither baseline nor current, two different mate-count pairs
+  on the same page, and the blunder-square diagram/JS array still showed the old
+  cluster while the checklist text above it showed the new one); STATUS.md's own
+  "Open" section hadn't been reconciled with its own later session entries; ROADMAP.md
+  and TRAINING_PLAN.md both still listed "first mistake move" as needing re-
+  verification when METRICS.md already had the fresh answer; the Mix tab and
+  multi-move Tactics feature hadn't reached ROADMAP.md's Completed list. All fixed
+  same session -- see the corrected files.
+
+**Standing takeaway:** the biggest cost this session wasn't a code bug, it was
+under-verified claims about *what was already true or already done* (a bug that
+didn't exist, a doc refresh that was partial, a doc-completeness pass that missed its
+own new work) -- exactly the class of error a second, adversarial pass catches and a
+single confident pass doesn't. **Before shipping the next Tactics/Mix-tab change,
+check actual usage first** (per the ROI review) rather than building further on an
+unmeasured assumption.
 
 ## Key Learning
 - **An engine walk of the scripted moves is NOT enough.** It only tests our moves against the scripted opponent replies; it misses (a) stronger opponent replies that refute the whole line and (b) divergence from the named source's actual repertoire. The 2026-07-16 DB+source cross-check found 5 bugs that three prior pure-engine audits had passed. Always cross-check vs chessdb.cn AND the real source (Gotham video/study, Ruddell videos).
@@ -359,7 +437,7 @@ masterclass content. Reasoning recorded in `docs/TRAINING_PLAN.md`.
   allowed). Add middlegame *plans* to existing lines instead if anything.
 
 ### Open
-- **35 error_reports rows stuck `pending`** (22 old + 13 from Jul 16, all processed) — anon key is RLS-blocked from UPDATE. User said they'll run it next time. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...`
+- **33 error_reports rows stuck `pending`** (confirmed count via direct Supabase query, 2026-09-09 -- supersedes the earlier "35, all processed" note, which itself was stale). Verified this session: content-wise all 33 check out (16 already fixed by an earlier commit, 15 sound as-is, 2 freshly investigated live -- 1 real bug found and fixed, 1 not a bug). Purely a DB-status problem now: anon key is RLS-blocked from UPDATE. One-liner in Supabase SQL editor (project oomuupminexahfipgktd): `UPDATE error_reports SET status = 'resolved' WHERE status = 'pending';` To automate future sessions, drop a service-role key at `~/Documents/dotenv/chess-trainer.env` as `SUPABASE_SERVICE_KEY=...` -- this has been sitting open across multiple sessions now and is a five-minute fix; worth actually doing next time rather than re-noting again.
 - **One game failed the diagnostic scan** on a 30s Stockfish timeout (of 108, Jul 16).
   Fault isolation handled it — the game is skipped and not marked processed, so it
   retries next run. Did not recur on the Aug 1 re-scan (109/109 games, 0 failures), so

@@ -24,6 +24,9 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
 .streak-badge{display:flex;align-items:center;gap:3px;font-size:.8em;font-weight:700;color:#ffd700;flex-shrink:0}
 .streak-badge .fire{font-size:1.1em}
 #line-name{font-size:.82em;color:#aaa;text-align:center;min-height:1.3em;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#color-badge{text-align:center;font-size:.85em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 0;margin-bottom:4px;border-radius:4px}
+#color-badge.badge-white{background:#eeeed2;color:#111}
+#color-badge.badge-black{background:#3a3a3a;color:#eee}
 #board-wrapper{position:relative;width:100%;margin:0 auto}
 #board{width:100%}
 #board-arrows{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
@@ -114,6 +117,7 @@ h1{font-size:1.1em;margin-bottom:6px;color:#e94560}
     </div>
   </header>
   <div id="line-name"></div>
+  <div id="color-badge"></div>
   <div id="board-wrapper"><div id="board"></div><svg id="board-arrows" xmlns="http://www.w3.org/2000/svg"></svg><div id="intro-card"><div class="intro-name"></div><div class="intro-desc"></div></div></div>
   <div id="status" class="neutral">Tap a piece to make your move</div>
   <div id="explanation-box"></div>
@@ -638,6 +642,7 @@ var app=(function(){
     if(!poolLines.length){
       currentLine=null;
       board.orientation('white');board.position('start');
+      $('#color-badge').hide();
       $('#line-name').text('No lines yet');
       $('#move-list').html('');
       $('#explanation-box').hide();
@@ -652,6 +657,12 @@ var app=(function(){
       moves:src.moves.slice(),explanations:$.extend({},src.explanations)};
     board.orientation(currentLine.playerColor==='w'?'white':'black');
     board.position('start');
+    // Explicit, unmissable color label -- not just relying on board orientation/piece
+    // colors to communicate it. Matters most in Mix mode, where a rep can be Ponziani
+    // (white) then Hippo (black) then a tactics puzzle (either) back to back, so the
+    // side you're playing changes with no warning otherwise.
+    $('#color-badge').show().text('You are playing '+(currentLine.playerColor==='w'?'White':'Black'))
+      .removeClass('badge-white badge-black').addClass(currentLine.playerColor==='w'?'badge-white':'badge-black');
     $('#line-name').text(currentLine.name);
     $('#move-list').html('');
     $('#explanation-box').hide();
@@ -1052,12 +1063,14 @@ var app=(function(){
         catLines.forEach(renderLine);
       });
     }else{
-      // Tactics has no sub-categories at all, and Mix spans all three openings whose
-      // sub-category keys don't share a vocabulary (Ponziani's 'trap' vs Hippo's
-      // 'threats' vs Tactics' 'blunder'/'missed-win' aren't the same axis) -- group by
-      // opening instead so the list isn't either empty (the pre-Mix bug: CATEGORIES has
-      // no 'tactics' key, so this whole menu silently rendered nothing on that tab) or
-      // one flat unlabelled wall of 65 items.
+      // Only 'mix' ever reaches here in practice -- CATEGORIES has a real entry for
+      // ponziani/hippo/tactics, so each of those tabs already takes the cats.forEach
+      // branch above. 'mix' has no CATEGORIES entry of its own (correctly: its 65
+      // lines span three vocabularies that aren't the same axis -- Ponziani's 'trap'
+      // vs Hippo's 'threats' vs Tactics' 'blunder'/'missed-win'), so cats.length is 0
+      // and without this branch the menu would silently render nothing at all for
+      // Mix specifically. Group by opening instead of leaving it empty or dumping an
+      // unlabelled wall of 65 items.
       var openingGroupLabel={ponziani:'Ponziani',hippo:'Hippo',tactics:'Tactics'};
       ['ponziani','hippo','tactics'].forEach(function(op){
         var opLines=lines.filter(function(l){return l.opening===op});

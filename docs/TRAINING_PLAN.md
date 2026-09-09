@@ -155,10 +155,11 @@ measured patterns:
   instead), and 4.Qa4 in the 3...d5 Countergambit (played 4.d4 instead). Worth extra
   reps on those three specifically via the app's own spaced repetition, not new content.
 
-Your **first mistake still comes at median move 10** (from the July measurement — worth
-re-checking next cycle), right where the book ends. Know the *plan* for each line you
-already drill — the pawn breaks, which pieces belong where, what you're aiming at — so
-move 10 is a continuation instead of a cliff.
+Your **first mistake now comes at median move 11** (re-checked against the fresh
+221-game archive, 9 Sep 2026 — essentially unchanged from July's move 10; 200/221
+games had at least one flagged mistake), right where the book ends. Know the *plan*
+for each line you already drill — the pawn breaks, which pieces belong where, what
+you're aiming at — so move 11 is a continuation instead of a cliff.
 
 **6. Re-measure monthly (my job, triggered by the user's phrase — not theirs to run).**
 Run the diagnostic, update the table below, and check whether mistakes/game is actually

@@ -29,6 +29,16 @@
   should route through the app's own interactive board/drills rather than SAN move
   lists or prose describing squares. See Auto Memory:
   `chess-user-cannot-visualize-notation`.
+- **Verify a "pre-existing bug" claim by actually reading the relevant object in full
+  before asserting it, not by reasoning from a partial read.** Claimed `CATEGORIES` had
+  no `'tactics'` key and that the Tactics tab's Lines menu had "silently shown an empty
+  list... for as long as the tab has existed" -- false. A `tactics:[...]` entry existed
+  the whole time; the earlier read of the `CATEGORIES` object had simply been cut off
+  one line before it. The Mix-tab code fix built on this false premise was still
+  correct and necessary (`'mix'` genuinely has no entry), but the stated rationale was
+  wrong and got written into a commit message and STATUS.md before a same-day
+  multi-angle review (`code-verifier` agent) caught it. Cost nothing this time only
+  because the "fix" was a superset of what was actually needed.
 - **`test/validate.js` auto-parses line definitions directly from `index.html`** — it
   can't drift out of sync with a hand-maintained copy. Always the first check after any
   line edit.
