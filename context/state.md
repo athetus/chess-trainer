@@ -35,7 +35,27 @@ report.
 - Created `ROADMAP.md`, `METRICS.md`, `context/` (this directory) — the project-docs
   skill was overdue; `STATUS.md` existed without them.
 
+## Recent Changes (same-day follow-up)
+- Archived the repertoire audit + a dated diagnostic-report snapshot into
+  `docs/research/` (was only in the session scratchpad — real risk of loss).
+- Refreshed every stale number in `docs/training-ledger.html` (was still showing the
+  822/109-games/July figures).
+- Queried Supabase directly: **33 `error_reports` rows are still `pending`**, 2 from
+  this same session. Investigated those 2 with Stockfish: one was a real bug (fixed --
+  `ponz-leonhardt`'s result text claimed "up a clean pawn, winning" at a position that's
+  actually -0.10/dead equal), one was not a bug (`ponz-deviation-sicilian`'s O-O is
+  engine-best; the user's Be2 alternative just isn't in the scripted move order). The
+  other 31 pending rows are NOT re-audited -- STATUS.md's session logs suggest most map
+  to content already fixed in git, but the DB status was never flipped (RLS blocks
+  UPDATE on the anon key, a known open item).
+
+## Immediate Next Action
+Two threads open with the user: (1) whether to do a full audit pass on the remaining
+31 pending Supabase rows, and (2) what to actually do about the unused Tactics tab --
+asked the user directly rather than redesigning unprompted (see STATUS.md's session
+log). Otherwise: same as above, next trigger is "look at my latest games."
+
 ## Blockers
 None active. See STATUS.md's "Open" section for the pre-existing minor watch items
-(stuck `pending` Supabase rows, one intermittent Stockfish scan timeout — neither is
-blocking).
+(stuck `pending` Supabase rows -- now confirmed 33, not fully re-audited; one
+intermittent Stockfish scan timeout — neither is blocking).

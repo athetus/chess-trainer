@@ -12,7 +12,9 @@ How we measure whether this project is working. Judged against the end goal in `
 | Ponziani reached when opponent allows it | 17/17 (100%) | maintain 100% | 38/38 (100%) | 2026-09-09 |
 | Hippo setup played | 51/51 (100%) | maintain ~100% | 107/111 (96%) | 2026-09-09 |
 | Hippo `...a6` played on-rule (not premature) | not measured | 100% | 53/96 (55%) | 2026-09-09 |
-| First mistake of the game (median move) | move 10 | later than 10 | not re-measured this cycle | 2026-07 |
+| First mistake of the game (median move) | move 10 | later than 10 | move 11 (200/221 games had ≥1 mistake) | 2026-09-09 |
+| Mistakes involving a capture | 38% | falling | 38.4% (352/917) — unchanged | 2026-09-09 |
+| Most common blunder squares | e5, d5, f6, c5, c4 | shrinking cluster | d5(65), e5(47), g5(45), f5(35), d4(32) — d5/e5 still top 2, g5/f5/d4 newly prominent, f6/c5/c4 fell to 7th+ | 2026-09-09 |
 
 **Note on the "Allowed forced mates" target:** the July baseline row is 1 month of games (108); the Sep row is a 2-month window (221 games). Read it per-game (0.40 vs 0.44), not as a raw count — comparing raw counts across windows of different length is misleading. The absolute-count target inherited from the July 1-month basis should be replaced with a per-game target the next time this table gets a third data column.
 

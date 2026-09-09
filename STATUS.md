@@ -233,6 +233,50 @@ own (Black's) knight play, and cited it as an example of a repositioning-before-
 pattern that doesn't actually appear in any of the three documented Hippo plan lines —
 corrected in the same conversation before it could mislead future drilling.
 
+## Session: Doc Archival + Live Error-Report Sweep (2026-09-09, same day)
+User asked to double-check nothing was missed and that the analysis was durably saved.
+Found and fixed a real gap: the full repertoire-adherence audit (~830KB, per-game
+deviation data) existed only in the session's ephemeral scratchpad, not the repo —
+archived to `docs/research/2026-09-09-repertoire-audit.md` +
+`docs/research/data/2026-09-09-{ponzi,hippo}-results.json`. Also archived a dated,
+never-overwritten snapshot of the corrected diagnostic report
+(`docs/research/2026-09-09-diagnostic-report.md`) and refreshed every stale number in
+`docs/training-ledger.html` (was still showing 822/109-games/July stats).
+
+**User then separately asked whether lines are genuinely Gotham's aggressive/tricky
+repertoire or just Stockfish-safe moves, citing past reports that "didn't make sense."**
+Checked Supabase directly rather than trusting STATUS.md's own prior claim that pending
+reports were "all processed" — **33 rows are still `status: pending`**, including 2
+filed *during this same session* (`ponz-deviation-sicilian` move 12, `ponz-leonhardt`
+move 17). STATUS.md's claim was about the underlying line content having been fixed in
+git (true, per the dated session logs above), not the DB row status (never flipped —
+known RLS-on-UPDATE limitation, open item below). Investigated the 2 fresh ones with
+Stockfish:
+- **`ponz-deviation-sicilian` (O-O vs Be2, move 12): not a bug.** Engine confirms O-O
+  is the actual best move (+0.21, dead level either way) — the user's Be2 is a
+  reasonable alternative move order, not a refutation. The Ponziani side doesn't have
+  Hippo's `flexible:true` tolerance for transpositions, so an equally-fine alternate
+  order still reads as "wrong" to the drill engine.
+- **`ponz-leonhardt` (move 17, real bug, fixed):** the line's result text claimed
+  "White is up a clean pawn... win the endgame." Stockfish at that exact final FEN says
+  **-0.10 -- dead equal.** Black's bishop pair/activity is full compensation for the
+  pawn. Fixed the text to say so honestly (moves unchanged -- d3/Be2/Nd2 are still
+  sound, just not winning). Exactly the "Result text must match the engine eval"
+  failure mode the Tactical Audit Process warns about, caught this time by a live user
+  report rather than a proactive audit.
+- The other 31 pending rows were not re-audited today (would need a full Stockfish pass
+  per position); per the dated session logs above most map to content already fixed in
+  git between March and July 2026 -- the DB status is stale, not necessarily the line.
+  Worth a dedicated audit pass if they keep surfacing as "doesn't make sense."
+
+**User also asked why the Tactics tab exists as a separate tab when they've never used
+it.** Not defended reflexively -- see conversation for the honest take: the north star
+doc is explicit that this tab is a *supplement* to daily Lichess volume, not a
+replacement, so low usage isn't automatically a failure, but an unused feature is only
+neutral if that's *why* it's unused (correctly judged redundant with Lichess) rather
+than a discoverability/habit problem (built, then never surfaces at a moment the user
+would reach for it). Asked the user directly rather than assuming a redesign.
+
 ## Key Learning
 - **An engine walk of the scripted moves is NOT enough.** It only tests our moves against the scripted opponent replies; it misses (a) stronger opponent replies that refute the whole line and (b) divergence from the named source's actual repertoire. The 2026-07-16 DB+source cross-check found 5 bugs that three prior pure-engine audits had passed. Always cross-check vs chessdb.cn AND the real source (Gotham video/study, Ruddell videos).
 - The Ponziani mostly EQUALIZES but gives easy, aggressive club-level play (the Qf3 mate threat wins games at 700-1000). The Hippo is solid and, in the rebuilt e5-push lines, even slightly BETTER for Black after ...dxe5 — it works when Black plays ACTIVELY, not passively.
