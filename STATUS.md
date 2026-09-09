@@ -277,6 +277,21 @@ neutral if that's *why* it's unused (correctly judged redundant with Lichess) ra
 than a discoverability/habit problem (built, then never surfaces at a moment the user
 would reach for it). Asked the user directly rather than assuming a redesign.
 
+## Session: Mix Tab (2026-09-09, same day)
+Following the Tactics-tab discoverability discussion, user proposed (better than any
+option offered): a default tab pooling Ponziani+Hippo+Tactics, weighted by mistakes,
+with the single-category tabs kept for focused practice. Shipped as `#tab-mix`, now the
+default landing tab -- `getLines()` returns `ALL_LINES` unfiltered when
+`currentOpening==='mix'`, reusing the existing per-line weighted-random selection
+(`getLineStats()`/`selectWeightedLine()`) with no new weighting logic needed, since
+every line was already self-describing enough (playerColor, opening, cat) for this to
+just work. Also fixed a real bug found while in this code: `showLineSelector()`'s
+manual "Lines" menu only rendered items grouped by `CATEGORIES[currentOpening]`, which
+has no `'tactics'` key -- so that menu has silently shown an empty list on the Tactics
+tab for as long as the tab has existed. Fixed with an opening-grouped/flat fallback.
+`node test/validate.js` — 0 issues; full JS syntax-checked (extracted the inline
+`<script>` block, `node --check`).
+
 ## Key Learning
 - **An engine walk of the scripted moves is NOT enough.** It only tests our moves against the scripted opponent replies; it misses (a) stronger opponent replies that refute the whole line and (b) divergence from the named source's actual repertoire. The 2026-07-16 DB+source cross-check found 5 bugs that three prior pure-engine audits had passed. Always cross-check vs chessdb.cn AND the real source (Gotham video/study, Ruddell videos).
 - The Ponziani mostly EQUALIZES but gives easy, aggressive club-level play (the Qf3 mate threat wins games at 700-1000). The Hippo is solid and, in the rebuilt e5-push lines, even slightly BETTER for Black after ...dxe5 — it works when Black plays ACTIVELY, not passively.
