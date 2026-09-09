@@ -9,12 +9,17 @@
 // missing or stale for puzzle purposes (i.e. predates plyIndex/correctMoveSan).
 const fs = require('fs');
 const path = require('path');
-const { buildPuzzle } = require('./lib/tactics-classifier');
+const { buildPuzzle, resolveFollowUp } = require('./lib/tactics-classifier');
 const { selectPuzzles } = require('./lib/puzzle-selection');
 const { writeStore } = require('./lib/puzzle-store');
 
 const DEFAULT_CACHE_PATH = path.join(__dirname, '..', '.chesscom-diagnostic-cache.json');
 const DEFAULT_STORE_PATH = path.join(__dirname, '..', 'tactics-puzzles.js');
+// Must match chesscom-diagnostic.js's STOCKFISH_DEPTH -- the follow-up PV is
+// fetched at the same depth the cached correctMoveSan was found at, so PV[0]
+// should agree with it (guarded below in case a sharp position disagrees
+// across separate engine invocations anyway).
+const FOLLOWUP_DEPTH = 15;
 
 // Joins a cache's moveRecords (per-ply) with its gameSummaries (per-game) to
 // produce one flagged instance per flagged ply, carrying everything
@@ -105,14 +110,60 @@ function buildPuzzles({ cachePath = DEFAULT_CACHE_PATH, storePath = DEFAULT_STOR
   return { puzzles, overflow, counts, report: reportLines.join('\n') };
 }
 
-if (require.main === module) {
+// Extends each already-built puzzle's single corrective move into a short
+// resolved sequence (engine's reply, your follow-up, ...) by asking Stockfish
+// for its PV at the position right before the corrective move (replayed via
+// chess.js from the puzzle's own moves/baseMoves -- never hand-built). Kept
+// separate from buildPuzzles() deliberately: that function stays synchronous
+// and untouched (its existing tests never exercise an engine), and this only
+// ever runs over the final ~15 selected puzzles, not the hundreds of flagged
+// instances buildPuzzles() selects from -- cheap regardless of archive size.
+// Mutates and returns the given puzzles array; failures for one puzzle (no
+// PV, or the fresh PV disagreeing with the already-cached correctMoveSan)
+// just leave that puzzle at its original single-move length, never crash.
+async function attachFollowUps(puzzles, { makeEngine, depth = FOLLOWUP_DEPTH } = {}) {
+  const { Chess } = require('chess.js');
+  const engine = makeEngine();
+  await engine.start();
   try {
-    const { report } = buildPuzzles();
-    console.log(report);
-  } catch (e) {
-    console.error('Puzzle build failed:', e.message);
-    process.exitCode = 1;
+    for (const p of puzzles) {
+      const g = new Chess();
+      for (let i = 0; i < p.baseMoves; i++) g.move(p.moves[i]);
+      const fen = g.fen();
+      const correctMoveSan = p.moves[p.baseMoves];
+      let pv;
+      try {
+        pv = await engine.principalVariationSan(fen, depth);
+      } catch (e) {
+        continue;
+      }
+      if (pv.sanMoves[0] !== correctMoveSan) continue; // engine disagreed across calls -- skip, don't guess
+      const followUp = resolveFollowUp(pv.sanMoves.slice(1), pv.endsInMate);
+      if (followUp.length === 0) continue;
+      p.moves = p.moves.slice(0, p.baseMoves + 1).concat(followUp);
+    }
+  } finally {
+    engine.quit();
   }
+  return puzzles;
 }
 
-module.exports = { buildPuzzles, flaggedInstancesFromCache, buildPuzzleFromInstance };
+if (require.main === module) {
+  (async () => {
+    try {
+      const { puzzles, report } = buildPuzzles();
+      console.log(report);
+      const { StockfishEngine } = require('./lib/stockfish-engine');
+      console.log('Fetching follow-up sequences for ' + puzzles.length + ' puzzle(s)...');
+      await attachFollowUps(puzzles, { makeEngine: () => new StockfishEngine() });
+      writeStore(DEFAULT_STORE_PATH, puzzles);
+      const withFollowUp = puzzles.filter(p => p.moves.length > p.baseMoves + 1).length;
+      console.log(withFollowUp + '/' + puzzles.length + ' puzzle(s) got a multi-move follow-up sequence.');
+    } catch (e) {
+      console.error('Puzzle build failed:', e.message);
+      process.exitCode = 1;
+    }
+  })();
+}
+
+module.exports = { buildPuzzles, flaggedInstancesFromCache, buildPuzzleFromInstance, attachFollowUps };

@@ -112,6 +112,38 @@ class StockfishEngine {
     return move.san;
   }
 
+  // Returns the engine's full principal variation from this position, as SAN
+  // (converted move by move via chess.js, so a corrupt/illegal PV move fails
+  // loudly instead of silently truncating). Also returns whether the PV ends
+  // in a forced mate, since "the PV ends in mate" is the cleanest possible
+  // definition of "the tactic has fully resolved" for puzzle-building.
+  async principalVariationSan(fen, depth) {
+    const startLen = this.buffer.length;
+    this.proc.stdin.write(`position fen ${fen}\n`);
+    this.proc.stdin.write(`go depth ${depth}\n`);
+    await this._waitForBestmove(startLen);
+    const relevant = this.buffer.slice(startLen);
+    const infoLines = relevant.split('\n').filter(l => l.startsWith('info depth') && l.includes(' pv '));
+    if (infoLines.length === 0) throw new Error(`no PV found for fen ${fen}`);
+    const last = infoLines[infoLines.length - 1];
+    const pvMatch = last.match(/ pv (.+)$/);
+    if (!pvMatch) throw new Error(`could not parse PV from line: ${last}`);
+    const uciMoves = pvMatch[1].trim().split(/\s+/);
+    const mateMatch = last.match(/score mate (-?\d+)/);
+    const endsInMate = mateMatch !== null;
+
+    const { Chess } = require('chess.js');
+    const g = new Chess(fen);
+    const sanMoves = [];
+    for (const uciMove of uciMoves) {
+      const from = uciMove.slice(0, 2), to = uciMove.slice(2, 4), promotion = uciMove.slice(4) || undefined;
+      const move = g.move({ from, to, promotion });
+      if (!move) break; // PVs can run past a position chess.js/depth disagrees on -- stop, don't crash
+      sanMoves.push(move.san);
+    }
+    return { sanMoves, endsInMate };
+  }
+
   async quit() {
     this.proc.stdin.write('quit\n');
     this.proc.kill();

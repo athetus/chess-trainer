@@ -4,10 +4,15 @@ const {
   toUserPerspective,
   classifyPly,
   buildPuzzle,
+  resolveFollowUp,
+  MAX_FOLLOWUP_PLIES,
 } = require('./tactics-classifier');
 
 function assert(cond, msg) {
-  if (!cond) { console.error('FAIL:', msg); process.exit(1); }
+  // Must throw, never process.exit() -- exit skips finally blocks and leaks
+  // temp files (see CLAUDE.md's Testing section). Fixed while touching this
+  // file for the follow-up-sequence tests below; pre-existing violation.
+  if (!cond) { throw new Error('FAIL: ' + msg); }
 }
 
 // --- scoreToPawns ---
@@ -129,5 +134,42 @@ assert(allowsMatePuzzle.dropPawns > 900, `dropPawns must still carry the large s
 // --- buildPuzzle: plain cp-only swing text must be unchanged ---
 assert(puzzle.result.includes('drops 2.0 pawns'), `plain cp swing result text must keep the existing "drops N.N pawns" wording, got: ${puzzle.result}`);
 assert(puzzle.explanations['10'].includes('dropping 2.0 pawns'), `plain cp swing explanation text must keep the existing "dropping N.N pawns" wording, got: ${puzzle.explanations['10']}`);
+
+// --- resolveFollowUp: no PV at all -> no follow-up ---
+assert(resolveFollowUp([], false).length === 0, 'an empty PV should produce no follow-up');
+assert(resolveFollowUp(null, false).length === 0, 'a missing PV should produce no follow-up, not throw');
+
+// --- resolveFollowUp: PV ending in mate is used in full, however long ---
+const mateFollowUp = resolveFollowUp(['Qh5', 'Kg8', 'Qxh7#'], true);
+assert(mateFollowUp.length === 3, `a mate-ending PV should be kept in full, got ${JSON.stringify(mateFollowUp)}`);
+assert(mateFollowUp[2] === 'Qxh7#', 'the mating move itself must be included');
+
+// --- resolveFollowUp: quiet reply with no further forcing moves -> just the one reply ---
+const quietFollowUp = resolveFollowUp(['Kg8', 'Re1', 'Nf6'], false);
+assert(quietFollowUp.length === 1 && quietFollowUp[0] === 'Kg8',
+  `a quiet PV should keep only the immediate reply, got ${JSON.stringify(quietFollowUp)}`);
+
+// --- resolveFollowUp: forcing moves (captures/checks) extend the sequence, first quiet move stops it ---
+const forcingFollowUp = resolveFollowUp(['Kxh7', 'Qh5+', 'Kg8', 'Nf3', 'Bxf3'], false);
+assert(forcingFollowUp.length === 3, `should extend through both forcing replies and stop at the first quiet move, got ${JSON.stringify(forcingFollowUp)}`);
+assert(forcingFollowUp[2] === 'Kg8', 'should stop right after the last forcing move, not include the quiet Nf3');
+
+// --- resolveFollowUp: hard-capped even when EVERY move keeps being forcing (a long recapture chain) ---
+const longForcing = ['Rxd4', 'Nxd4', 'Bxd4', 'Rxd4', 'Qxd4', 'Nxd4', 'Rxd4', 'Bxd4', 'Qxd4', 'Rxd4'];
+const cappedFollowUp = resolveFollowUp(longForcing, false);
+assert(cappedFollowUp.length === MAX_FOLLOWUP_PLIES,
+  `an all-forcing PV longer than the cap should be trimmed to exactly ${MAX_FOLLOWUP_PLIES}, got ${cappedFollowUp.length}`);
+
+// --- buildPuzzle: followUpSan appended after the corrective move, existing callers (no followUpSan) unaffected ---
+const withFollowUpPuzzle = buildPuzzle({
+  id: 'tactics-followup', sanMoves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5', 'Nxe5', 'Nxe5'],
+  plyIndex: 6, userColor: 'w', correctMoveSan: 'Bxf7+',
+  evalBefore: { cp: 30, mate: null }, evalAfter: { cp: -100, mate: null },
+  cat: 'blunder', gameMeta: { opponent: 'x', endTime: 1, timeClass: 'rapid', url: '' },
+  followUpSan: ['Kxf7', 'Qh5+'],
+});
+assert(withFollowUpPuzzle.moves.length === 9, `expected baseMoves(6) + correctMove(1) + followUp(2) = 9, got ${withFollowUpPuzzle.moves.length}`);
+assert(withFollowUpPuzzle.moves[7] === 'Kxf7' && withFollowUpPuzzle.moves[8] === 'Qh5+', 'follow-up moves should append in order after the corrective move');
+assert(puzzle.moves.length === puzzle.baseMoves + 1, 'a puzzle built without followUpSan (the existing call above) must be unaffected -- still just the one corrective move');
 
 console.log('tactics-classifier.test.js: all assertions passed');

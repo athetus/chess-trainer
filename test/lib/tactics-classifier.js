@@ -86,9 +86,44 @@ function describeSwing(before, after, dropPawns) {
   };
 }
 
-function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBefore, evalAfter, cat, gameMeta }) {
+// How far past the corrective move a puzzle continues, and where it stops.
+// A puzzle that ends the instant you find the fix never shows why the fix
+// mattered -- no opponent reply, no visible payoff. followUpSan is the PV
+// AFTER the corrective move (engine's reply, your follow-up, ...); this trims
+// it down to "until the tactic resolves":
+//   - a PV that ends in forced mate is used in full (mate IS the resolution)
+//   - otherwise, the opponent's immediate reply is always kept (you need to
+//     see the position settle), then extended only through further forcing
+//     moves (captures/checks) -- the first quiet move means the point has
+//     already been made and anything after is just technique, not the tactic
+//   - hard-capped regardless, so a messy PV can't balloon a puzzle
+const MAX_FOLLOWUP_PLIES = 8;
+function resolveFollowUp(pvAfterCorrectMove, endsInMate) {
+  if (!pvAfterCorrectMove || pvAfterCorrectMove.length === 0) return [];
+  const capped = pvAfterCorrectMove.slice(0, MAX_FOLLOWUP_PLIES);
+  if (endsInMate) return capped;
+  if (capped.length === 0) return [];
+  // capped[0] is the opponent's immediate reply to the corrective move -- always
+  // keep it, you need to see the position settle. From there, capped[1],[3],[5]...
+  // are YOUR moves; walk them in (your move, their reply) pairs and keep extending
+  // through a pair as long as your move in it is forcing (capture/check) -- their
+  // reply is included too since it's the direct, usually forced, consequence of
+  // your forcing move, not a free choice. Stop at the first pair where your move
+  // is quiet: the tactic has already made its point, anything past that is just
+  // technique.
+  var cut = 1;
+  for (var i = 1; i < capped.length; i += 2) {
+    var yourMove = capped[i];
+    var forcing = yourMove.indexOf('x') >= 0 || yourMove.indexOf('+') >= 0 || yourMove.indexOf('#') >= 0;
+    if (!forcing) break;
+    cut = Math.min(i + 2, capped.length);
+  }
+  return capped.slice(0, cut);
+}
+
+function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBefore, evalAfter, cat, gameMeta, followUpSan }) {
   const prefix = sanMoves.slice(0, plyIndex);
-  const moves = prefix.concat([correctMoveSan]);
+  const moves = prefix.concat([correctMoveSan]).concat(followUpSan || []);
   const before = toUserPerspective(evalBefore, userColor);
   const after = toUserPerspective(evalAfter, userColor);
   const dropPawns = scoreToPawns(before) - scoreToPawns(after);
@@ -111,4 +146,4 @@ function buildPuzzle({ id, sanMoves, plyIndex, userColor, correctMoveSan, evalBe
   };
 }
 
-module.exports = { scoreToPawns, toUserPerspective, classifyPly, buildPuzzle, describeSwing, BLUNDER_THRESHOLD_PAWNS, MISSED_WIN_CP_THRESHOLD };
+module.exports = { scoreToPawns, toUserPerspective, classifyPly, buildPuzzle, describeSwing, resolveFollowUp, MAX_FOLLOWUP_PLIES, BLUNDER_THRESHOLD_PAWNS, MISSED_WIN_CP_THRESHOLD };

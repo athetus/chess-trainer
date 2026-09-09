@@ -2,10 +2,24 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { buildPuzzles } = require('./build-tactics-puzzles');
+const { buildPuzzles, attachFollowUps } = require('./build-tactics-puzzles');
 
 function assert(cond, msg) {
   if (!cond) { throw new Error('FAIL: ' + msg); }
+}
+
+// Fake engine for attachFollowUps tests -- avoids spawning real Stockfish
+// (that's stockfish-engine.test.js's job) and lets each test script its own
+// PV deterministically.
+function fakeEngine(pvByFen) {
+  return {
+    start: async () => {},
+    principalVariationSan: async (fen) => {
+      if (!(fen in pvByFen)) throw new Error('no scripted PV for fen: ' + fen);
+      return pvByFen[fen];
+    },
+    quit: () => {},
+  };
 }
 
 function tmpPath(name) {
@@ -137,4 +151,44 @@ function main() {
   console.log('build-tactics-puzzles.test.js: all assertions passed');
 }
 
+async function mainAsync() {
+  const { Chess } = require('chess.js');
+
+  // --- attachFollowUps: extends a puzzle's moves with the PV's follow-up, guarded by agreement on the corrective move ---
+  {
+    const g = new Chess();
+    ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6', 'Ng5', 'd5'].forEach(m => g.move(m));
+    const fen = g.fen();
+    const puzzle = { id: 'p1', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6', 'Ng5', 'd5', 'exd5'], baseMoves: 8, playerColor: 'w' };
+    const engine = fakeEngine({ [fen]: { sanMoves: ['exd5', 'Nxd5', 'Nxf7'], endsInMate: false } });
+    await attachFollowUps([puzzle], { makeEngine: () => engine });
+    assert(puzzle.moves.length === 11, `expected baseMoves(8) + correctMove(1) + followUp(2) = 11, got ${puzzle.moves.length}`);
+    assert(puzzle.moves[9] === 'Nxd5' && puzzle.moves[10] === 'Nxf7', `expected the PV's follow-up appended in order, got ${JSON.stringify(puzzle.moves.slice(9))}`);
+  }
+
+  // --- attachFollowUps: PV disagreeing with the puzzle's own corrective move is skipped, not trusted ---
+  {
+    const g = new Chess();
+    ['e4', 'e5'].forEach(m => g.move(m));
+    const fen = g.fen();
+    const puzzle = { id: 'p2', moves: ['e4', 'e5', 'Nf3'], baseMoves: 2, playerColor: 'w' };
+    const engine = fakeEngine({ [fen]: { sanMoves: ['Bc4', 'Bc5'], endsInMate: false } }); // disagrees with 'Nf3'
+    await attachFollowUps([puzzle], { makeEngine: () => engine });
+    assert(puzzle.moves.length === 3, `a disagreeing PV must leave the puzzle unchanged, got ${JSON.stringify(puzzle.moves)}`);
+  }
+
+  // --- attachFollowUps: an engine error for one puzzle doesn't crash the batch or affect other puzzles ---
+  {
+    const g = new Chess();
+    const fen = g.fen();
+    const puzzle = { id: 'p3', moves: ['e4'], baseMoves: 0, playerColor: 'w' };
+    const engine = { start: async () => {}, principalVariationSan: async () => { throw new Error('engine timeout'); }, quit: () => {} };
+    await attachFollowUps([puzzle], { makeEngine: () => engine });
+    assert(puzzle.moves.length === 1, 'a puzzle whose PV fetch throws should be left as a single-move puzzle, not crash');
+  }
+
+  console.log('build-tactics-puzzles.test.js (async): all assertions passed');
+}
+
 main();
+mainAsync().catch(e => { console.error(e); process.exit(1); });

@@ -65,7 +65,8 @@ var TACTICS_PUZZLES = [
       "Kf7",
       "Qc4+",
       "Kf6",
-      "f3"
+      "f3",
+      "Rc8"
     ],
     "explanations": {
       "54": "You played Nd2 here, allowing a forced mate against you in 1. f3 was correct."
@@ -468,7 +469,8 @@ var TACTICS_PUZZLES = [
       "Qg3",
       "Nc4",
       "Qh3",
-      "Qxb1"
+      "Qxb1",
+      "Qh5"
     ],
     "explanations": {
       "69": "You played Nxb2 here, dropping 14.2 pawns. Qxb1 was correct."
@@ -622,7 +624,14 @@ var TACTICS_PUZZLES = [
       "h5",
       "Qf7",
       "Kh7",
-      "Bf5"
+      "Bf5",
+      "Qc1",
+      "Qxg6+",
+      "Kg8",
+      "Be6+",
+      "Kh8",
+      "Qxh5+",
+      "Qh6"
     ],
     "explanations": {
       "70": "You played Qg8+ here, dropping 11.7 pawns. Bf5 was correct."
@@ -681,7 +690,8 @@ var TACTICS_PUZZLES = [
       "Kb8",
       "Qxc6",
       "Rd2",
-      "Rac1"
+      "Rac1",
+      "Rf2"
     ],
     "explanations": {
       "42": "You played Rf8+ here, dropping 11.1 pawns. Rac1 was correct."
@@ -751,7 +761,12 @@ var TACTICS_PUZZLES = [
       "Qxb5",
       "Bxd2",
       "Kxd2",
-      "Qxe4"
+      "Qxe4",
+      "Re1",
+      "Qxg2+",
+      "Re2",
+      "Qxh3",
+      "Qd3"
     ],
     "explanations": {
       "53": "You played Qg5+ here, dropping 10.8 pawns. Qxe4 was correct."
@@ -814,7 +829,8 @@ var TACTICS_PUZZLES = [
       "Bxe1",
       "Bf4",
       "g5",
-      "Rxe1"
+      "Rxe1",
+      "Qe7"
     ],
     "explanations": {
       "46": "You played Bxg5 here, dropping 3.0 pawns. Rxe1 was correct."
@@ -849,7 +865,15 @@ var TACTICS_PUZZLES = [
       "f6",
       "Qh5+",
       "Kd7",
-      "Qf5+"
+      "Qf5+",
+      "Ke8",
+      "Qe6+",
+      "Ne7",
+      "Qf7+",
+      "Kd7",
+      "Be6+",
+      "Kc6",
+      "d5+"
     ],
     "explanations": {
       "18": "You played Qf7+ here, dropping 3.0 pawns. Qf5+ was correct."
@@ -951,7 +975,8 @@ var TACTICS_PUZZLES = [
       "Rg8",
       "c5",
       "Rxg5",
-      "Bb3"
+      "Bb3",
+      "Kf2"
     ],
     "explanations": {
       "85": "You played b5 here, dropping 3.0 pawns. Bb3 was correct."
@@ -995,7 +1020,8 @@ var TACTICS_PUZZLES = [
       "Ng3",
       "c5",
       "d5",
-      "Ne5"
+      "Ne5",
+      "Qe2"
     ],
     "explanations": {
       "27": "You played exd5 here, dropping 3.0 pawns. Ne5 was correct."
@@ -1072,7 +1098,8 @@ var TACTICS_PUZZLES = [
       "Rf8",
       "Rxf8+",
       "Kxf8",
-      "hxg4"
+      "hxg4",
+      "Bxa2"
     ],
     "explanations": {
       "60": "You played Nd6 here, dropping 3.0 pawns. hxg4 was correct."
